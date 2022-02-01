@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/fatihdumanli/cnote/config"
+	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/fatihdumanli/cnote/survey"
 	"github.com/spf13/cobra"
 )
@@ -29,6 +30,8 @@ func runRoot(c *cobra.Command, args []string) {
 
 	notebook, err := survey.AskNotebook(defaultOptions)
 	section, err := survey.AskSection(defaultOptions, notebook)
+
+	onenote.Authorize(config.GetMicrosoftGraphConfig())
 
 	_ = notebook
 	_ = noteContent

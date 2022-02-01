@@ -5,7 +5,7 @@ import (
 
 	s "github.com/AlecAivazis/survey/v2"
 	"github.com/fatihdumanli/cnote/config"
-	"github.com/fatihdumanli/cnote/onenote"
+	"github.com/fatihdumanli/cnote/pkg/onenote"
 )
 
 type AppOptions = config.AppOptions
