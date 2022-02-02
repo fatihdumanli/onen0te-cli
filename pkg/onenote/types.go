@@ -1,15 +1,14 @@
 package onenote
 
-type GetNotebooksResponse struct {
-	Notebooks []Notebook `json:"value"`
-}
+type NotebookName string
 
 type Notebook struct {
 	ID          string `json:"id"`
 	DisplayName string `json:"displayName"`
+	SectionsUrl string `json:"sectionsUrl"`
+	Sections    []Section
 }
 
 type Section struct {
-	Name string
+	Name string `json:"displayName"`
 }
-type NotebookName string

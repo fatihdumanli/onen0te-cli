@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatihdumanli/cnote/config"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/fatihdumanli/cnote/storage"
 	"github.com/fatihdumanli/cnote/survey"
 	"github.com/spf13/cobra"
@@ -19,11 +20,56 @@ var rootCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
+type Notebook onenote.Notebook
+type Section onenote.Section
+
 func runRoot(c *cobra.Command, args []string) {
+	var defaultOptions = config.GetOptions()
+
+	t, err := getValidAccount()
+	if err != nil {
+		panic(err)
+	}
+
+	noteContent, err := survey.AskNoteContent(defaultOptions)
+	if err != nil {
+		panic(err)
+	}
+
+	notebooks, err := onenote.GetNotebooks(t)
+	if err != nil {
+		panic(err)
+	}
+
+	n, err := survey.AskNotebook(notebooks)
+
+	sections, err := onenote.GetSections(t, n)
+	if err != nil {
+		panic(err)
+	}
+
+	//iterating over the sections and adding them to the notebook struct
+	for _, s := range sections {
+		n.Sections = append(n.Sections, s)
+	}
+
+	section, err := survey.AskSection(n)
+
+	_ = noteContent
+	_ = section
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stdout, err)
+		os.Exit(1)
+	}
+}
+
+func getValidAccount() (oauthv2.OAuthToken, error) {
 	var defaultOptions = config.GetOptions()
 	var oauthParams = getOAuthParams()
 
-	//check token here.
 	t, st := storage.CheckToken()
 	if st == storage.DoesntExist {
 		answer, err := survey.AskSetupAccount()
@@ -49,27 +95,14 @@ func runRoot(c *cobra.Command, args []string) {
 		} else {
 			//save the token on local storage
 			err = storage.StoreToken(newToken)
+			if err != nil {
+				return t, nil
+			}
 		}
 	}
 
-	noteContent, err := survey.AskNoteContent(defaultOptions)
-	if err != nil {
-		panic(err)
-	}
+	return t, nil
 
-	notebook, err := survey.AskNotebook(defaultOptions)
-	//	section, err := survey.AskSection(defaultOptions, notebook)
-
-	//	_ = notebook
-	_ = noteContent
-	_ = notebook
-}
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stdout, err)
-		os.Exit(1)
-	}
 }
 
 func getOAuthParams() oauthv2.OAuthParams {
