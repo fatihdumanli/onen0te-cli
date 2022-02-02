@@ -36,10 +36,9 @@ type OAuthToken struct {
 }
 
 func Authorize(p OAuthParams) error {
-
 	authCode, err := getAuthCode(p)
-
 	if err != nil {
+		return err
 	}
 
 	var getTokenParams = getTokenParams{
@@ -48,15 +47,14 @@ func Authorize(p OAuthParams) error {
 	}
 
 	token, err := getToken(getTokenParams)
-	fmt.Println(token.AccessToken)
+	_ = token
 
 	return nil
 }
 
 func getAuthCode(p OAuthParams) (string, error) {
-	scope := strings.Join(p.Scope, " ")
 
-	authCodeUrl := fmt.Sprintf("%s/authorize?client_id=%s&response_type=code&redirect_uri=%s&response_mode=query&scope=%s&state=%s", p.OAuthEndpoint, p.ClientId, p.RedirectUri, scope, p.State)
+	authCodeUrl := fmt.Sprintf("%s/authorize?client_id=%s&response_type=code&redirect_uri=%s&response_mode=query&scope=%s&state=%s", p.OAuthEndpoint, p.ClientId, p.RedirectUri, strings.Join(p.Scope, " "), p.State)
 
 	var authCode string
 
@@ -70,22 +68,19 @@ func getAuthCode(p OAuthParams) (string, error) {
 
 	httpServerExitDone := &sync.WaitGroup{}
 	httpServerExitDone.Add(1)
-	srv := startHttpServer(httpServerExitDone, fnCallback)
+	srv := startOauthHttpServer(httpServerExitDone, ":5992", "/oauthv2", fnCallback)
 
 	//open a browser to authenticate the user
 	openWebBrowser(authCodeUrl)
 
 	fmt.Println("Please complete authentication process through your web browser...")
-
 	time.Sleep(20 * time.Second)
-	fmt.Println("Timeout.")
 
 	if err := srv.Shutdown(context.TODO()); err != nil {
 		panic(err)
 	}
-	httpServerExitDone.Wait()
 
-	_ = authCodeUrl
+	httpServerExitDone.Wait()
 
 	return authCode, nil
 }
@@ -139,12 +134,9 @@ func openWebBrowser(url string) {
 	}
 }
 
-func startHttpServer(wg *sync.WaitGroup, callback http.HandlerFunc) *http.Server {
-
-	srv := &http.Server{Addr: ":5992"}
-
-	http.HandleFunc("/oauthv2", callback)
-
+func startOauthHttpServer(wg *sync.WaitGroup, addr string, pattern string, callback http.HandlerFunc) *http.Server {
+	srv := &http.Server{Addr: addr}
+	http.HandleFunc(pattern, callback)
 	go func() {
 		defer wg.Done()
 
