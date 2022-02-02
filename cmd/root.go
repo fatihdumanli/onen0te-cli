@@ -31,12 +31,14 @@ func runRoot(c *cobra.Command, args []string) {
 		panic(err)
 	}
 
-	noteContent, err := survey.AskNoteContent(defaultOptions)
+	_, err = survey.AskNoteContent(defaultOptions)
 	if err != nil {
 		panic(err)
 	}
 
 	notebooks, err := onenote.GetNotebooks(t)
+	fmt.Println("Getting your notebooks... This might take a while...")
+
 	if err != nil {
 		panic(err)
 	}
@@ -54,8 +56,7 @@ func runRoot(c *cobra.Command, args []string) {
 
 	section, err := survey.AskSection(n)
 
-	_ = noteContent
-	_ = section
+	fmt.Fprintf(defaultOptions.Out, "Your note has saved to the notebook %s and the section %s", n.DisplayName, section.Name)
 }
 
 func Execute() {

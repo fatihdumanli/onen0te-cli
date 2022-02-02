@@ -1,6 +1,7 @@
 package survey
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -21,6 +22,7 @@ func AskNoteContent(opts AppOptions) (string, error) {
 		Prompt: &survey.Multiline{
 			Message: "Enter your note content.\n",
 		},
+		Validate: survey.Required,
 	}
 
 	var answer string
@@ -30,11 +32,9 @@ func AskNoteContent(opts AppOptions) (string, error) {
 	return answer, nil
 }
 
-//TODO: a 'where' function might be useful here.
 func AskNotebook(nlist []Notebook) (Notebook, error) {
 
 	var notebookOptions []string
-	var nindex int
 
 	for _, n := range nlist {
 		notebookOptions = append(notebookOptions, n.DisplayName)
@@ -46,6 +46,7 @@ func AskNotebook(nlist []Notebook) (Notebook, error) {
 			Message: "Select notebook\n",
 			Options: notebookOptions,
 		},
+		Validate: survey.Required,
 	}
 
 	var answer string
@@ -53,20 +54,18 @@ func AskNotebook(nlist []Notebook) (Notebook, error) {
 		panic(err)
 	}
 
-	for i, n := range nlist {
-		if n.DisplayName == answer {
-			nindex = i
-		}
+	if n, ok := findNotebook(nlist, func(nx Notebook) bool {
+		return nx.DisplayName == answer
+	}); ok {
+		return n, nil
+	} else {
+		return n, errors.New("An error has occured")
 	}
 
-	return nlist[nindex], nil
 }
 
-//TODO: a 'where' function might be useful here.
 func AskSection(n Notebook) (Section, error) {
-
 	var sections []string
-	var sindex int
 
 	for _, s := range n.Sections {
 		sections = append(sections, s.Name)
@@ -79,6 +78,7 @@ func AskSection(n Notebook) (Section, error) {
 			Options:  sections,
 			PageSize: 100,
 		},
+		Validate: survey.Required,
 	}
 
 	var answer string
@@ -86,13 +86,13 @@ func AskSection(n Notebook) (Section, error) {
 		return n.Sections[0], err
 	}
 
-	for i, s := range n.Sections {
-		if s.Name == answer {
-			sindex = i
-		}
+	if s, ok := findSection(n.Sections, func(x Section) bool {
+		return x.Name == answer
+	}); ok {
+		return s, nil
+	} else {
+		return s, errors.New("An error has occured")
 	}
-
-	return n.Sections[sindex], nil
 }
 
 func AskSetupAccount() (bool, error) {
@@ -109,4 +109,22 @@ func AskSetupAccount() (bool, error) {
 		return answer, err
 	}
 	return answer, nil
+}
+
+func findSection(arr []Section, f func(x Section) bool) (Section, bool) {
+	for _, s := range arr {
+		if f(s) {
+			return s, true
+		}
+	}
+	return Section{}, false
+}
+
+func findNotebook(arr []Notebook, f func(x Notebook) bool) (Notebook, bool) {
+	for _, s := range arr {
+		if f(s) {
+			return s, true
+		}
+	}
+	return Notebook{}, false
 }
