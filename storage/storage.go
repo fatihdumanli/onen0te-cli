@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/xujiajun/nutsdb"
 )
 
@@ -22,7 +23,13 @@ const (
 	Valid
 )
 
+//Friendly names
+type Alias = onenote.Alias
+type NotebookName = onenote.NotebookName
+type SectionName = onenote.SectionName
+
 //expired, doesnt exist
+//TODO: is it really the job of storage package to check if the token has expired?
 func CheckToken() (oauthv2.OAuthToken, TokenStatus) {
 
 	var token oauthv2.OAuthToken
@@ -107,6 +114,10 @@ func StoreToken(t interface{}) error {
 		return err
 	}
 
+	return nil
+}
+
+func SaveAlias(a Alias, n NotebookName, s SectionName) error {
 	return nil
 }
 
