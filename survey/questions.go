@@ -9,8 +9,10 @@ import (
 )
 
 //TODO: add validations
+//TODO: it gets executed upon startup, we should avoid that.
 var getNotebookOptions = func() []string {
 
+	var result []string
 	//TODO: Note that storage.CheckToken() gets called multiple times, code duplication and its an expensive operation...
 	t, st := storage.CheckToken()
 	if st != storage.Valid {
@@ -20,7 +22,6 @@ var getNotebookOptions = func() []string {
 	if err != nil {
 		panic(err)
 	}
-	var result []string
 
 	for _, n := range notebooks {
 		result = append(result, n.DisplayName)
