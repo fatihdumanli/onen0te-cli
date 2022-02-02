@@ -3,8 +3,10 @@ package oauthv2
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -32,8 +34,50 @@ func (t *OAuthToken) IsExpired() bool {
 	return time.Now().After(t.ExpiresAt)
 }
 
-func RefreshToken(p OAuthParams, refreshToken string) (OAuthToken, error) {
+func RefreshToken(p OAuthParams, r string) (OAuthToken, error) {
 	var newToken OAuthToken
+
+	var data = url.Values{}
+	data.Set("client_id", p.ClientId)
+	data.Set("scope", strings.Join(p.Scope, " "))
+	data.Set("refresh_token", r)
+	data.Set("redirect_uri", p.RedirectUri)
+	data.Set("grant_type", "refresh_token")
+
+	c := http.Client{}
+	req, err := http.NewRequest(http.MethodPost, p.RefreshTokenEndpoint, strings.NewReader(data.Encode()))
+	if err != nil {
+		log.Fatal(err)
+		return newToken, err
+	}
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	res, err := c.Do(req)
+	if err != nil {
+		log.Fatal(err)
+		return newToken, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return newToken, errors.New("Refreshtoken didn't return a 200")
+	}
+
+	bytes, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+		return newToken, err
+	}
+	defer res.Body.Close()
+	err = json.Unmarshal(bytes, &newToken)
+	if err != nil {
+		log.Fatal(err)
+		return newToken, err
+
+	}
+	//set expiredAt proprety so that we can check if the token has expired
+	t := time.Duration(newToken.ExpiresIn)
+	newToken.ExpiresAt = time.Now().Add(time.Second * t)
 
 	return newToken, nil
 }

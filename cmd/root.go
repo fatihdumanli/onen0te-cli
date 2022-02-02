@@ -44,8 +44,12 @@ func runRoot(c *cobra.Command, args []string) {
 	} else if st == storage.Expired {
 		//need to refresh the token
 		newToken, err := oauthv2.RefreshToken(oauthParams, t.RefreshToken)
-		_ = newToken
-		_ = err
+		if err != nil {
+			panic(err)
+		} else {
+			//save the token on local storage
+			err = storage.StoreToken(newToken)
+		}
 	}
 
 	noteContent, err := survey.AskNoteContent(defaultOptions)
