@@ -22,6 +22,8 @@ var rootCmd = &cobra.Command{
 
 type Notebook onenote.Notebook
 type Section onenote.Section
+type NotebookName = onenote.NotebookName
+type SectionName = onenote.SectionName
 
 func runRoot(c *cobra.Command, args []string) {
 	var defaultOptions = config.GetOptions()
@@ -57,6 +59,17 @@ func runRoot(c *cobra.Command, args []string) {
 	section, err := survey.AskSection(n)
 
 	fmt.Fprintf(defaultOptions.Out, "Your note has saved to the notebook %s and the section %s", n.DisplayName, section.Name)
+
+	a, err := survey.AskAlias(NotebookName(n.DisplayName), SectionName(section.Name))
+	if err != nil {
+		panic(err)
+	}
+
+	if a != "" {
+		//TODO: save the alias
+		fmt.Println("we need to save the alias.")
+	}
+
 }
 
 func Execute() {

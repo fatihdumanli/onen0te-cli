@@ -1,6 +1,7 @@
 package onenote
 
 type NotebookName string
+type SectionName string
 
 type Notebook struct {
 	ID          string `json:"id"`

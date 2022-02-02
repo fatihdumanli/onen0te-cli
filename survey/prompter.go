@@ -10,10 +10,12 @@ import (
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 )
 
-//Shortcuts
+//Friendly names
 type AppOptions = config.AppOptions
 type Notebook = onenote.Notebook
 type Section = onenote.Section
+type SectionName = onenote.SectionName
+type NotebookName = onenote.NotebookName
 
 func AskNoteContent(opts AppOptions) (string, error) {
 
@@ -108,6 +110,28 @@ func AskSetupAccount() (bool, error) {
 	if err := s.Ask([]*s.Question{setupQuestion}, &answer); err != nil {
 		return answer, err
 	}
+	return answer, nil
+}
+
+//Promps the user to get confirmation on creating alias to given notebook&section combination.
+//Returns the answer and the error if any
+func AskAlias(n NotebookName, sn SectionName) (string, error) {
+	var answer string
+
+	//TODO colorize namess
+	promtMsg := fmt.Sprintf("Enter an alias for the combination of %s and %s (Press <Enter> to skip.)", n, sn)
+
+	var aliasQuestion = &survey.Question{
+		Name: "salias",
+		Prompt: &survey.Input{
+			Message: promtMsg,
+		},
+	}
+
+	if err := s.Ask([]*s.Question{aliasQuestion}, &answer); err != nil {
+		return "", err
+	}
+
 	return answer, nil
 }
 
