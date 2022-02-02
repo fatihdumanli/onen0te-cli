@@ -3,26 +3,8 @@ package onenote
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
-
-	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 )
-
-func Authorize(opts oauthv2.OAuthParams, w io.Writer) (oauthv2.OAuthToken, error) {
-	token, err := oauthv2.Authorize(opts, w)
-	if err != nil {
-		fmt.Fprintf(w, "An error has occured while authentication %s", err.Error())
-		return token, err
-	}
-
-	if err != nil {
-		log.Fatal(err)
-		return token, err
-	}
-
-	return token, nil
-}
 
 func GetNotebooks() ([]Notebook, error) {
 

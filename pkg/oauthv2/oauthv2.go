@@ -32,7 +32,7 @@ func (t *OAuthToken) IsExpired() bool {
 	return time.Now().After(t.ExpiresAt)
 }
 
-func RefreshToken(t OAuthToken) (OAuthToken, error) {
+func RefreshToken(p OAuthParams, refreshToken string) (OAuthToken, error) {
 	var newToken OAuthToken
 
 	return newToken, nil

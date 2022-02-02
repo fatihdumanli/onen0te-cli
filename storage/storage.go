@@ -23,14 +23,16 @@ const (
 )
 
 //expired, doesnt exist
-func CheckToken() TokenStatus {
+func CheckToken() (oauthv2.OAuthToken, TokenStatus) {
+
+	var token oauthv2.OAuthToken
 
 	db, closer, err := openDb()
 	defer closer()
 
 	//TODO: perhaps a better handling is required.
 	if err != nil {
-		return DoesntExist
+		return token, DoesntExist
 	}
 	var e *nutsdb.Entry
 
@@ -47,24 +49,22 @@ func CheckToken() TokenStatus {
 
 	//TODO: perhaps a better handling is required.
 	if err != nil {
-		return DoesntExist
+		return token, DoesntExist
 	}
-
-	var token oauthv2.OAuthToken
 
 	err = json.Unmarshal(e.Value, &token)
 
 	//TODO: perhaps a better handling is required.
 	if err != nil {
 		log.Fatal(err)
-		return DoesntExist
+		return token, DoesntExist
 	}
 
 	//check if it expired
 	if token.IsExpired() {
-		return Expired
+		return token, Expired
 	} else {
-		return Valid
+		return token, Valid
 	}
 }
 

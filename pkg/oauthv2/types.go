@@ -10,11 +10,12 @@ var FailedToGetToken = errors.New("/token response was not 200")
 
 type AuthorizationCode string
 type OAuthParams struct {
-	ClientId      string
-	RedirectUri   string
-	Scope         []string
-	OAuthEndpoint string
-	State         string
+	ClientId             string
+	RedirectUri          string
+	Scope                []string
+	OAuthEndpoint        string
+	RefreshTokenEndpoint string
+	State                string
 }
 
 type getTokenParams struct {
