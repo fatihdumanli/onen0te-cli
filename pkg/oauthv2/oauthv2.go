@@ -35,8 +35,8 @@ type OAuthToken struct {
 	ExpiresIn    int    `json:"expires_in"`
 }
 
-func Authorize(p OAuthParams) error {
-	authCode, err := getAuthCode(p)
+func Authorize(p OAuthParams, out io.Writer) error {
+	authCode, err := getAuthCode(p, out)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func Authorize(p OAuthParams) error {
 	return nil
 }
 
-func getAuthCode(p OAuthParams) (string, error) {
+func getAuthCode(p OAuthParams, out io.Writer) (string, error) {
 
 	authCodeUrl := fmt.Sprintf("%s/authorize?client_id=%s&response_type=code&redirect_uri=%s&response_mode=query&scope=%s&state=%s", p.OAuthEndpoint, p.ClientId, p.RedirectUri, strings.Join(p.Scope, " "), p.State)
 
@@ -73,7 +73,7 @@ func getAuthCode(p OAuthParams) (string, error) {
 	//open a browser to authenticate the user
 	openWebBrowser(authCodeUrl)
 
-	fmt.Println("Please complete authentication process through your web browser...")
+	fmt.Fprintln(out, "Please complete authentication process through your web browser...")
 	time.Sleep(20 * time.Second)
 
 	if err := srv.Shutdown(context.TODO()); err != nil {

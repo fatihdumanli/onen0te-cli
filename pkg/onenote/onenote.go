@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/fatihdumanli/cnote/config"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 )
 
@@ -17,20 +16,9 @@ type Section struct {
 }
 type NotebookName string
 
-func Authorize(opts config.MicrosoftGraphConfig) {
+func Authorize(opts oauthv2.OAuthParams, output io.Writer) {
 
-	/*
-		Notes.ReadWrite.All,Notes.Read.All,Notes.Read,Notes.Create,Notes.ReadWrite,Notes.ReadWrite.CreatedByApp,Notes.Read,Notes.Create,Notes.ReadWrite,Notes.ReadWrite.CreatedByApp,Notes.Read.All,Notes.ReadWrite.All
-	*/
-
-	var p = oauthv2.OAuthParams{
-		OAuthEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0",
-		RedirectUri:   "http://localhost:5992/oauthv2",
-		Scope:         []string{"offline_access", "Notes.ReadWrite.All", "Notes.Create", "Notes.Read", "Notes.ReadWrite"},
-		ClientId:      opts.ClientId,
-	}
-
-	oauthv2.Authorize(p)
+	oauthv2.Authorize(opts, output)
 	//TODO: store token
 
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/fatihdumanli/cnote/config"
+	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/fatihdumanli/cnote/survey"
 	"github.com/spf13/cobra"
@@ -20,10 +21,9 @@ var rootCmd = &cobra.Command{
 func runRoot(c *cobra.Command, args []string) {
 
 	var defaultOptions = config.GetOptions()
-	_ = defaultOptions
+	var msGraphOptions = config.GetMicrosoftGraphConfig()
 
 	noteContent, err := survey.AskNoteContent(defaultOptions)
-
 	if err != nil {
 		panic(err)
 	}
@@ -31,7 +31,14 @@ func runRoot(c *cobra.Command, args []string) {
 	notebook, err := survey.AskNotebook(defaultOptions)
 	section, err := survey.AskSection(defaultOptions, notebook)
 
-	onenote.Authorize(config.GetMicrosoftGraphConfig())
+	var p = oauthv2.OAuthParams{
+		OAuthEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0",
+		RedirectUri:   "http://localhost:5992/oauthv2",
+		Scope:         []string{"offline_access", "Notes.ReadWrite.All", "Notes.Create", "Notes.Read", "Notes.ReadWrite"},
+		ClientId:      msGraphOptions.ClientId,
+	}
+
+	onenote.Authorize(p, defaultOptions.Out)
 
 	_ = notebook
 	_ = noteContent
