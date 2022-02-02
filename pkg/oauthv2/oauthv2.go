@@ -3,6 +3,7 @@ package oauthv2
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -15,6 +16,10 @@ import (
 	"time"
 )
 
+var CannotGetAuthCode = errors.New("Couldn't get authorization_code")
+var FailedToGetToken = errors.New("/token response was not 200")
+
+type AuthorizationCode string
 type OAuthParams struct {
 	ClientId      string
 	RedirectUri   string
@@ -25,7 +30,7 @@ type OAuthParams struct {
 
 type getTokenParams struct {
 	OAuthParams
-	AuthCode string
+	AuthCode AuthorizationCode
 }
 
 type OAuthToken struct {
@@ -35,10 +40,19 @@ type OAuthToken struct {
 	ExpiresIn    int    `json:"expires_in"`
 }
 
-func Authorize(p OAuthParams, out io.Writer) error {
+//From learning go book
+/*
+Rather than returning a pointer set to nil,
+Use comma ok idiom
+return a boolean and a value type
+*/
+func Authorize(p OAuthParams, out io.Writer) (OAuthToken, error) {
+
+	var token OAuthToken
+
 	authCode, err := getAuthCode(p, out)
 	if err != nil {
-		return err
+		return token, err
 	}
 
 	var getTokenParams = getTokenParams{
@@ -46,23 +60,25 @@ func Authorize(p OAuthParams, out io.Writer) error {
 		AuthCode:    authCode,
 	}
 
-	token, err := getToken(getTokenParams)
-	_ = token
+	token, err = getToken(getTokenParams)
+	if err != nil {
+		return token, err
+	}
 
-	return nil
+	return token, nil
 }
 
-func getAuthCode(p OAuthParams, out io.Writer) (string, error) {
+func getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
 
 	authCodeUrl := fmt.Sprintf("%s/authorize?client_id=%s&response_type=code&redirect_uri=%s&response_mode=query&scope=%s&state=%s", p.OAuthEndpoint, p.ClientId, p.RedirectUri, strings.Join(p.Scope, " "), p.State)
 
-	var authCode string
+	var authCode AuthorizationCode
 
 	//closure
 	//notice that we've passed a closure and we've utilized a local variable, awesome!
 	var fnCallback = func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
-		authCode = values.Get("code")
+		authCode = AuthorizationCode(values.Get("code"))
 		fmt.Fprintln(w, "You can close this window now.")
 	}
 
@@ -82,10 +98,16 @@ func getAuthCode(p OAuthParams, out io.Writer) (string, error) {
 
 	httpServerExitDone.Wait()
 
+	if authCode == "" {
+		return authCode, CannotGetAuthCode
+	}
+
 	return authCode, nil
 }
 
 func getToken(p getTokenParams) (OAuthToken, error) {
+
+	var token OAuthToken
 	tokenPath := fmt.Sprintf("%s/token", p.OAuthEndpoint)
 
 	scope := strings.Join(p.Scope, " ")
@@ -93,7 +115,7 @@ func getToken(p getTokenParams) (OAuthToken, error) {
 	data := url.Values{}
 	data.Set("client_id", p.ClientId)
 	data.Set("scope", scope)
-	data.Set("code", p.AuthCode)
+	data.Set("code", string(p.AuthCode))
 	data.Set("redirect_uri", p.RedirectUri)
 	data.Set("grant_type", "authorization_code")
 
@@ -102,7 +124,15 @@ func getToken(p getTokenParams) (OAuthToken, error) {
 	request, _ := http.NewRequest(http.MethodPost, tokenPath, strings.NewReader(data.Encode()))
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, _ := client.Do(request)
+	resp, err := client.Do(request)
+
+	if err != nil {
+		return token, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return token, FailedToGetToken
+	}
 
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -110,8 +140,10 @@ func getToken(p getTokenParams) (OAuthToken, error) {
 	}
 	defer resp.Body.Close()
 
-	var token OAuthToken
-	json.Unmarshal(bytes, &token)
+	err = json.Unmarshal(bytes, &token)
+	if err != nil {
+		return token, err
+	}
 
 	return token, nil
 }

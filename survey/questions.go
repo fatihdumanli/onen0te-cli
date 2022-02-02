@@ -65,4 +65,11 @@ var sectionQuestion = func(n onenote.NotebookName) *survey.Question {
 
 }
 
+var setupQuestion = &survey.Question{
+	Name: "setup",
+	Prompt: &survey.Confirm{
+		Message: "You haven't setup a Onenote account yet, would you like to setup one now?",
+	},
+}
+
 //add title question

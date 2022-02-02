@@ -4,5 +4,4 @@ import "github.com/fatihdumanli/cnote/cmd"
 
 func main() {
 	cmd.Execute()
-	//onenote.GetNotebooks()
 }

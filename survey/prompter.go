@@ -1,8 +1,6 @@
 package survey
 
 import (
-	"fmt"
-
 	s "github.com/AlecAivazis/survey/v2"
 	"github.com/fatihdumanli/cnote/config"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
@@ -21,7 +19,7 @@ func AskNoteContent(opts AppOptions) (string, error) {
 	return answer, nil
 }
 
-//TODO: we might need to return a AskNotebook struct from here
+//TODO: we might need to return a Notebook struct from here
 func AskNotebook(opts AppOptions) (onenote.NotebookName, error) {
 	var answer string
 
@@ -35,13 +33,20 @@ func AskNotebook(opts AppOptions) (onenote.NotebookName, error) {
 
 func AskSection(opts AppOptions, n onenote.NotebookName) (string, error) {
 
-	fmt.Printf("selected notebook is %s", n)
-
 	var answer string
 	var q = sectionQuestion(n)
 
 	if err := s.Ask([]*s.Question{q}, &answer); err != nil {
 		return "", err
+	}
+
+	return answer, nil
+}
+
+func AskSetupAccount() (bool, error) {
+	var answer bool
+	if err := s.Ask([]*s.Question{setupQuestion}, &answer); err != nil {
+		return answer, err
 	}
 
 	return answer, nil
