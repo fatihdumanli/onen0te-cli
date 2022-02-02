@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/fatihdumanli/cnote/config"
@@ -20,13 +21,11 @@ var rootCmd = &cobra.Command{
 }
 
 func runRoot(c *cobra.Command, args []string) {
-
 	var defaultOptions = config.GetOptions()
 	var msGraphOptions = config.GetMicrosoftGraphConfig()
 
 	//check token here.
 	tokenStatus := storage.CheckToken()
-
 	if tokenStatus == storage.DoesntExist {
 		answer, err := survey.AskSetupAccount()
 		if !answer || err != nil {
@@ -40,10 +39,20 @@ func runRoot(c *cobra.Command, args []string) {
 			ClientId:      msGraphOptions.ClientId,
 		}
 
-		authResult := onenote.Authorize(p, defaultOptions.Out)
-
-		if authResult == onenote.Successful {
+		token, err := onenote.Authorize(p, defaultOptions.Out)
+		if err != nil {
+			log.Fatalf("An error occured while trying to authenticate you. %s", err.Error())
 		}
+
+		//save the token on local storage
+		err = storage.StoreToken(token)
+
+		if err != nil {
+			log.Fatalf("An error occured while trying to save the token. %s", err.Error())
+		}
+
+	} else if tokenStatus == storage.Expired {
+		//need to refresh the token
 	}
 
 	noteContent, err := survey.AskNoteContent(defaultOptions)

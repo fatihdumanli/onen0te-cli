@@ -24,7 +24,48 @@ const (
 
 //expired, doesnt exist
 func CheckToken() TokenStatus {
-	return DoesntExist
+
+	db, closer, err := openDb()
+	defer closer()
+
+	//TODO: perhaps a better handling is required.
+	if err != nil {
+		return DoesntExist
+	}
+	var e *nutsdb.Entry
+
+	fnGet := func(tx *nutsdb.Tx) error {
+		key := []byte(TOKEN_KEY)
+
+		if e, err = tx.Get(BUCKET, key); err != nil {
+			return err
+		}
+
+		return nil
+	}
+	err = db.View(fnGet)
+
+	//TODO: perhaps a better handling is required.
+	if err != nil {
+		return DoesntExist
+	}
+
+	var token oauthv2.OAuthToken
+
+	err = json.Unmarshal(e.Value, &token)
+
+	//TODO: perhaps a better handling is required.
+	if err != nil {
+		log.Fatal(err)
+		return DoesntExist
+	}
+
+	//check if it expired
+	if token.IsExpired() {
+		return Expired
+	} else {
+		return Valid
+	}
 }
 
 func StoreToken(t interface{}) error {
