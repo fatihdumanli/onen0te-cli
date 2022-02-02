@@ -40,7 +40,10 @@ func runRoot(c *cobra.Command, args []string) {
 			ClientId:      msGraphOptions.ClientId,
 		}
 
-		onenote.Authorize(p, defaultOptions.Out)
+		authResult := onenote.Authorize(p, defaultOptions.Out)
+
+		if authResult == onenote.Successful {
+		}
 	}
 
 	noteContent, err := survey.AskNoteContent(defaultOptions)

@@ -3,15 +3,30 @@ package onenote
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	"github.com/fatihdumanli/cnote/storage"
 )
 
-func Authorize(opts oauthv2.OAuthParams, output io.Writer) AuthenticationResult {
-	oauthv2.Authorize(opts, output)
-	//TODO: store token
+func Authorize(opts oauthv2.OAuthParams, w io.Writer) AuthenticationResult {
 
+	token, err := oauthv2.Authorize(opts, w)
+	if err != nil {
+		fmt.Fprintf(w, "An error has occured while authentication %s", err.Error())
+		return Failed
+	}
+
+	//store token on local storage
+	err = storage.StoreToken(token)
+
+	if err != nil {
+		log.Fatal(err)
+		return Failed
+	}
+
+	return Successful
 }
 
 func GetNotebooks() ([]Notebook, error) {

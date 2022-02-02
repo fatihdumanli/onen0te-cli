@@ -1,5 +1,19 @@
 package storage
 
+import (
+	"encoding/json"
+	"errors"
+	"log"
+
+	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	"github.com/xujiajun/nutsdb"
+)
+
+var InvalidTokenType = errors.New("Token type is invalid")
+
+const TOKEN_KEY = "msgraphtoken"
+const BUCKET = "cnote"
+
 type TokenStatus int
 
 const (
@@ -11,4 +25,61 @@ const (
 //expired, doesnt exist
 func CheckToken() TokenStatus {
 	return DoesntExist
+}
+
+func StoreToken(t interface{}) error {
+
+	if _, ok := t.(oauthv2.OAuthToken); !ok {
+		return InvalidTokenType
+	}
+
+	//open nuts db
+	db, closer, err := openDb()
+	defer closer()
+
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	//convert the token into bytes
+	bytes, err := json.Marshal(t)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	fnUpdate := func(tx *nutsdb.Tx) error {
+		key := []byte(TOKEN_KEY)
+		val := bytes
+		if err := tx.Put(BUCKET, key, val, 0); err != nil {
+			log.Fatal(err)
+			return err
+		}
+		return nil
+	}
+
+	//save the token
+	err = db.Update(fnUpdate)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	return nil
+}
+
+//opens the nuts db
+//returns nuts db, closer and an error
+//call closer to clean up the resources.
+func openDb() (*nutsdb.DB, func() error, error) {
+	opts := nutsdb.DefaultOptions
+	opts.Dir = "/tmp/cnotedb"
+	db, err := nutsdb.Open(opts)
+
+	if err != nil {
+		log.Fatal(err)
+		return nil, nil, err
+	}
+	return db, db.Close, nil
 }
