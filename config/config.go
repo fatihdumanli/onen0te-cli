@@ -24,6 +24,7 @@ var config = MicrosoftGraphConfig{
 
 func GetMicrosoftGraphConfig() MicrosoftGraphConfig {
 
+	//NOTE
 	//if we instantiate the config struct here,
 	//that means we're instantiatng a new struct each time this func gets called.
 	//and this is not good.
