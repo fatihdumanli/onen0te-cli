@@ -42,6 +42,8 @@ func GetMicrosoftGraphConfig() MicrosoftGraphConfig {
 	return config
 }
 
+//TODO: Notice that this method gets called everywhere in the app
+//We might need to come up with a DI trick.
 func GetOptions() AppOptions {
 	return AppOptions{
 		In:  os.Stdin,

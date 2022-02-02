@@ -119,7 +119,7 @@ func AskAlias(n NotebookName, sn SectionName) (string, error) {
 	var answer string
 
 	//TODO colorize namess
-	promtMsg := fmt.Sprintf("Enter an alias for the combination of %s and %s (Press <Enter> to skip.)", n, sn)
+	promtMsg := fmt.Sprintf("Enter an alias (case INsensitive) for the combination of %s and %s (Press <Enter> to skip.)", n, sn)
 
 	var aliasQuestion = &survey.Question{
 		Name: "salias",

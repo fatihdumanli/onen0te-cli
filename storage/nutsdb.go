@@ -116,14 +116,19 @@ func SaveAlias(a onenote.AliasName, n onenote.NotebookName, s onenote.SectionNam
 	return nil
 }
 
-func GetAlias(a onenote.AliasName) (onenote.Alias, bool) {
+//NOTE: Currently is a mock
+func GetAlias(a string) (onenote.Alias, bool) {
 	notebookname := "Fatih adlı kişinin Not Defteri"
 	sectionname := "Go"
 
-	return onenote.Alias{
-		Notebook: onenote.NotebookName(notebookname),
-		Section:  onenote.SectionName(sectionname),
-	}, true
+	if a == "go" {
+		return onenote.Alias{
+			Notebook: onenote.NotebookName(notebookname),
+			Section:  onenote.SectionName(sectionname),
+		}, true
+	} else {
+		return onenote.Alias{}, false
+	}
 }
 
 //opens the nuts db

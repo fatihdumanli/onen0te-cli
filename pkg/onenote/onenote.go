@@ -10,6 +10,7 @@ import (
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 )
 
+//TODO: abstract http operations
 func GetNotebooks(token oauthv2.OAuthToken) ([]Notebook, error) {
 	var response struct {
 		Notebooks []Notebook `json:"value"`
@@ -77,13 +78,4 @@ func GetSections(t oauthv2.OAuthToken, n Notebook) ([]Section, error) {
 	}
 
 	return response.Sections, nil
-}
-
-func getDummySections() []Section {
-	return []Section{
-		{"Quick notes"},
-		{"Go"},
-		{"Projects"},
-		{"Todos"},
-	}
 }
