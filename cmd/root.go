@@ -25,6 +25,9 @@ func runRoot(c *cobra.Command, args []string) {
 
 	//check token here.
 	t, st := storage.CheckToken()
+
+	fmt.Fprintf(defaultOptions.Out, "token status is %d", st)
+
 	if st == storage.DoesntExist {
 		answer, err := survey.AskSetupAccount()
 		if !answer || err != nil {

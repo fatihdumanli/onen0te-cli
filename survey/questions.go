@@ -5,18 +5,25 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
+	"github.com/fatihdumanli/cnote/storage"
 )
 
 //TODO: add validations
 var getNotebookOptions = func() []string {
-	notebooks, err := onenote.GetNotebooks()
-	//TODO: handle
+
+	//TODO: Note that storage.CheckToken() gets called multiple times, code duplication and its an expensive operation...
+	t, st := storage.CheckToken()
+	if st != storage.Valid {
+	}
+
+	notebooks, err := onenote.GetNotebooks(t)
 	if err != nil {
+		panic(err)
 	}
 	var result []string
 
 	for _, n := range notebooks {
-		result = append(result, n.Name)
+		result = append(result, n.DisplayName)
 	}
 	return result
 }
@@ -24,8 +31,8 @@ var getNotebookOptions = func() []string {
 var getSectionOptions = func(n onenote.NotebookName) []string {
 	sections, err := onenote.GetSections(n)
 
-	//TODO: handle
 	if err != nil {
+		panic(err)
 	}
 
 	var result []string
