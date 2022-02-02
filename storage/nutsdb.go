@@ -5,8 +5,11 @@ import (
 	"log"
 
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/xujiajun/nutsdb"
 )
+
+const BUCKET = "cnote"
 
 //expired, doesnt exist
 //TODO: is it really the job of storage package to check if the token has expired?
@@ -21,6 +24,7 @@ func CheckToken() (oauthv2.OAuthToken, TokenStatus) {
 	if err != nil {
 		return token, DoesntExist
 	}
+
 	var e *nutsdb.Entry
 
 	fnGet := func(tx *nutsdb.Tx) error {
@@ -97,8 +101,29 @@ func StoreToken(t interface{}) error {
 	return nil
 }
 
-func SaveAlias(a Alias, n NotebookName, s SectionName) error {
+//TODO: Complete
+func SaveAlias(a onenote.AliasName, n onenote.NotebookName, s onenote.SectionName) error {
+
+	db, closer, err := openDb()
+	_ = db
+	defer closer()
+
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
 	return nil
+}
+
+func GetAlias(a onenote.AliasName) (onenote.Alias, bool) {
+	notebookname := "Fatih adlı kişinin Not Defteri"
+	sectionname := "Go"
+
+	return onenote.Alias{
+		Notebook: onenote.NotebookName(notebookname),
+		Section:  onenote.SectionName(sectionname),
+	}, true
 }
 
 //opens the nuts db

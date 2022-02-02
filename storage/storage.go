@@ -10,7 +10,6 @@ import (
 var InvalidTokenType = errors.New("Token type is invalid")
 
 const TOKEN_KEY = "msgraphtoken"
-const BUCKET = "cnote"
 
 type TokenStatus int
 
@@ -20,13 +19,10 @@ const (
 	Valid
 )
 
-//Friendly names
-type Alias = onenote.Alias
-type NotebookName = onenote.NotebookName
-type SectionName = onenote.SectionName
-
+//TODO: we might need to store this type of field in AppOptions
 type Storer interface {
 	CheckToken() (oauthv2.OAuthToken, TokenStatus)
 	StoreToken() error
-	SaveAlias(a Alias, n NotebookName, s SectionName) error
+	SaveAlias(a onenote.AliasName, n onenote.NotebookName, s onenote.SectionName) error
+	GetAlias(a onenote.AliasName) (onenote.Alias, bool)
 }
