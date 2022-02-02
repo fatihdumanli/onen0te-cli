@@ -42,7 +42,6 @@ func runRoot(c *cobra.Command, args []string) {
 	}
 
 	n, err := survey.AskNotebook(notebooks)
-
 	sections, err := onenote.GetSections(t, n)
 	if err != nil {
 		panic(err)

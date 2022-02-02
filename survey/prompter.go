@@ -75,8 +75,9 @@ func AskSection(n Notebook) (Section, error) {
 	var qsection = &survey.Question{
 		Name: "qsection",
 		Prompt: &survey.Select{
-			Message: fmt.Sprintf("Select a section in %s\n", n.DisplayName),
-			Options: sections,
+			Message:  fmt.Sprintf("Select a section in %s\n", n.DisplayName),
+			Options:  sections,
+			PageSize: 100,
 		},
 	}
 
