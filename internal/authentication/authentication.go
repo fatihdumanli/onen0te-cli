@@ -8,17 +8,20 @@ import (
 
 type TokenStatus int
 
-const TOKEN_KEY = "msgraphtoken"
-
-var InvalidTokenType = errors.New("Token type is invalid")
+var (
+	InvalidTokenType  = errors.New("Token type is invalid")
+	TokenStorageError = errors.New("Stored token is corrupted")
+)
 
 const (
 	DoesntExist TokenStatus = iota
 	Expired
 	Valid
+	TOKEN_KEY = "msgraphtoken"
 )
 
 type Authenticator interface {
-	CheckToken() (oauthv2.OAuthToken, TokenStatus)
+	GetToken() (oauthv2.OAuthToken, TokenStatus)
 	StoreToken() error
+	RefreshToken() error
 }
