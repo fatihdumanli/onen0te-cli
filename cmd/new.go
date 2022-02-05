@@ -1,11 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/fatihdumanli/cnote"
-	"github.com/fatihdumanli/cnote/internal/storage"
 	"github.com/spf13/cobra"
 )
 
@@ -27,15 +22,15 @@ var newCmd = &cobra.Command{
 		noteContent := args[0]
 		_ = noteContent
 
-		a, ok := storage.GetAlias(alias)
+		//a, ok := storage.GetAlias(alias)
 
-		var appOptions = cnote.GetOptions()
-		if !ok {
-			fmt.Fprintf(appOptions.Out, "The alias %s couldn't be found.\n", alias)
-			os.Exit(1)
-		}
+		//var appOptions = cnote.GetOptions()
+		//if !ok {
+		//	fmt.Fprintf(appOptions.Out, "The alias %s couldn't be found.\n", alias)
+		//	os.Exit(1)
+		//}
 
-		fmt.Println(a)
+		//fmt.Println(a)
 
 	},
 	Args: cobra.MinimumNArgs(1),

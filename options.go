@@ -13,7 +13,7 @@ var c = config.MicrosoftGraphConfig{
 	RedirectUrl: "http://localhost:5992/oauthv2",
 }
 
-func GetMicrosoftGraphConfig() config.MicrosoftGraphConfig {
+func getMicrosoftGraphConfig() config.MicrosoftGraphConfig {
 
 	//NOTE
 	//if we instantiate the config struct here,
@@ -35,15 +35,9 @@ func GetMicrosoftGraphConfig() config.MicrosoftGraphConfig {
 
 //TODO: Notice that this method gets called everywhere in the app
 //We might need to come up with a DI trick.
-func GetOptions() config.AppOptions {
-	return config.AppOptions{
-		In:  os.Stdin,
-		Out: os.Stdout,
-	}
-}
+func getOptions() config.AppOptions {
+	var msGraphOptions = getMicrosoftGraphConfig()
 
-func GetOAuthParams() oauthv2.OAuthParams {
-	var msGraphOptions = GetMicrosoftGraphConfig()
 	var oauthParams = oauthv2.OAuthParams{
 		OAuthEndpoint:        "https://login.microsoftonline.com/common/oauth2/v2.0",
 		RedirectUri:          "http://localhost:5992/oauthv2",
@@ -51,5 +45,10 @@ func GetOAuthParams() oauthv2.OAuthParams {
 		ClientId:             msGraphOptions.ClientId,
 		RefreshTokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
 	}
-	return oauthParams
+
+	return config.AppOptions{
+		In:          os.Stdin,
+		Out:         os.Stdout,
+		OAuthParams: oauthParams,
+	}
 }

@@ -18,7 +18,7 @@ func (b *Bitcask) Get(key string) (interface{}, error) {
 	var obj interface{}
 	bytes, err := db.Get([]byte(key))
 	if err != nil {
-		return nil, CouldntGetTheKey
+		return nil, KeyNotFound
 	}
 	err = json.Unmarshal(bytes, &obj)
 	if err != nil {
