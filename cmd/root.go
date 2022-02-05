@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/fatihdumanli/cnote"
+	"github.com/fatihdumanli/cnote/internal/authentication"
 	"github.com/fatihdumanli/cnote/internal/storage"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
@@ -28,6 +29,8 @@ type SectionName = onenote.SectionName
 //The function gets executed once the application starts without any commands/arguments.
 func runRoot(c *cobra.Command, args []string) {
 
+	var cn = cnote.Cnote{}
+
 	t, err := getValidAccount()
 	if err != nil {
 		panic(err)
@@ -38,7 +41,7 @@ func runRoot(c *cobra.Command, args []string) {
 		panic(err)
 	}
 
-	notebooks, err := onenote.GetNotebooks(t)
+	notebooks, err := cn.GetNotebooks(t)
 	fmt.Println("Getting your notebooks... This might take a while...")
 
 	if err != nil {
@@ -46,7 +49,7 @@ func runRoot(c *cobra.Command, args []string) {
 	}
 
 	n, err := survey.AskNotebook(notebooks)
-	sections, err := onenote.GetSections(t, n)
+	sections, err := cn.GetSections(t, n)
 	if err != nil {
 		panic(err)
 	}
@@ -87,9 +90,9 @@ func getValidAccount() (oauthv2.OAuthToken, error) {
 	var oauthParams = cnote.GetOAuthParams()
 
 	t, st := storage.CheckToken()
-	if st == storage.DoesntExist {
+	if st == authentication.DoesntExist {
 		setupAccount(oauthParams, defaultOptions.Out)
-	} else if st == storage.Expired {
+	} else if st == authentication.Expired {
 		//Need to refresh the token
 		refreshToken(oauthParams, t)
 	}

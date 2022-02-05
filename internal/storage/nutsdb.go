@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/fatihdumanli/cnote/internal/authentication"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/xujiajun/nutsdb"
@@ -13,7 +14,7 @@ const BUCKET = "cnote"
 
 //expired, doesnt exist
 //TODO: is it really the job of storage package to check if the token has expired?
-func CheckToken() (oauthv2.OAuthToken, TokenStatus) {
+func CheckToken() (oauthv2.OAuthToken, authentication.TokenStatus) {
 
 	var token oauthv2.OAuthToken
 
@@ -22,13 +23,13 @@ func CheckToken() (oauthv2.OAuthToken, TokenStatus) {
 
 	//TODO: perhaps a better handling is required.
 	if err != nil {
-		return token, DoesntExist
+		return token, authentication.DoesntExist
 	}
 
 	var e *nutsdb.Entry
 
 	fnGet := func(tx *nutsdb.Tx) error {
-		key := []byte(TOKEN_KEY)
+		key := []byte(authentication.TOKEN_KEY)
 
 		if e, err = tx.Get(BUCKET, key); err != nil {
 			return err
@@ -40,7 +41,7 @@ func CheckToken() (oauthv2.OAuthToken, TokenStatus) {
 
 	//TODO: perhaps a better handling is required.
 	if err != nil {
-		return token, DoesntExist
+		return token, authentication.DoesntExist
 	}
 
 	err = json.Unmarshal(e.Value, &token)
@@ -48,21 +49,21 @@ func CheckToken() (oauthv2.OAuthToken, TokenStatus) {
 	//TODO: perhaps a better handling is required.
 	if err != nil {
 		log.Fatal(err)
-		return token, DoesntExist
+		return token, authentication.DoesntExist
 	}
 
 	//check if it expired
 	if token.IsExpired() {
-		return token, Expired
+		return token, authentication.Expired
 	} else {
-		return token, Valid
+		return token, authentication.Valid
 	}
 }
 
 func StoreToken(t interface{}) error {
 
 	if _, ok := t.(oauthv2.OAuthToken); !ok {
-		return InvalidTokenType
+		return authentication.InvalidTokenType
 	}
 
 	//open nuts db
@@ -82,7 +83,7 @@ func StoreToken(t interface{}) error {
 	}
 
 	fnUpdate := func(tx *nutsdb.Tx) error {
-		key := []byte(TOKEN_KEY)
+		key := []byte(authentication.TOKEN_KEY)
 		val := bytes
 		if err := tx.Put(BUCKET, key, val, 0); err != nil {
 			log.Fatal(err)

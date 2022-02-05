@@ -52,7 +52,7 @@ func (cnote *Cnote) GetNotebooks(token oauthv2.OAuthToken) ([]onenote.Notebook, 
 	return response.Notebooks, nil
 }
 
-func GetSections(t oauthv2.OAuthToken, n onenote.Notebook) ([]onenote.Section, error) {
+func (cnote *Cnote) GetSections(t oauthv2.OAuthToken, n onenote.Notebook) ([]onenote.Section, error) {
 	var response struct {
 		Sections []onenote.Section `json:"value"`
 	}
