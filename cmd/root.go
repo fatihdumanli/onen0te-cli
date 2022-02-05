@@ -1,11 +1,11 @@
-package cmd
+package main
 
 import (
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/fatihdumanli/cnote/config"
+	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/fatihdumanli/cnote/storage"
@@ -26,7 +26,7 @@ type NotebookName = onenote.NotebookName
 type SectionName = onenote.SectionName
 
 func runRoot(c *cobra.Command, args []string) {
-	var defaultOptions = config.GetOptions()
+	var defaultOptions = cnote.GetOptions()
 
 	t, err := getValidAccount()
 	if err != nil {
@@ -80,7 +80,8 @@ func Execute() {
 }
 
 func getValidAccount() (oauthv2.OAuthToken, error) {
-	var defaultOptions = config.GetOptions()
+	//TODO: I feel like we shouldn't expose GetOptions() out of the cnote packge.
+	var defaultOptions = cnote.GetOptions()
 	var oauthParams = getOAuthParams()
 
 	t, st := storage.CheckToken()
@@ -119,7 +120,7 @@ func getValidAccount() (oauthv2.OAuthToken, error) {
 }
 
 func getOAuthParams() oauthv2.OAuthParams {
-	var msGraphOptions = config.GetMicrosoftGraphConfig()
+	var msGraphOptions = cnote.GetMicrosoftGraphConfig()
 	var oauthParams = oauthv2.OAuthParams{
 		OAuthEndpoint:        "https://login.microsoftonline.com/common/oauth2/v2.0",
 		RedirectUri:          "http://localhost:5992/oauthv2",

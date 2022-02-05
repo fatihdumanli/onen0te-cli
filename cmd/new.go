@@ -1,10 +1,10 @@
-package cmd
+package main
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/fatihdumanli/cnote/config"
+	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/storage"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,7 @@ var newCmd = &cobra.Command{
 
 		a, ok := storage.GetAlias(alias)
 
-		var appOptions = config.GetOptions()
+		var appOptions = cnote.GetOptions()
 		if !ok {
 			fmt.Fprintf(appOptions.Out, "The alias %s couldn't be found.\n", alias)
 			os.Exit(1)

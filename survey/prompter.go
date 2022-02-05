@@ -6,7 +6,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	s "github.com/AlecAivazis/survey/v2"
-	"github.com/fatihdumanli/cnote/config"
+	"github.com/fatihdumanli/cnote/internal/config"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 )
 
@@ -118,8 +118,8 @@ func AskSetupAccount() (bool, error) {
 func AskAlias(n NotebookName, sn SectionName) (string, error) {
 	var answer string
 
-	//TODO colorize namess
-	promtMsg := fmt.Sprintf("Enter an alias (case INsensitive) for the combination of %s and %s (Press <Enter> to skip.)", n, sn)
+	//TODO colorize names
+	promtMsg := fmt.Sprintf("Enter a case INsensitive alias for the combination of %s and %s (Press <Enter> to skip.)", n, sn)
 
 	var aliasQuestion = &survey.Question{
 		Name: "salias",
@@ -135,19 +135,19 @@ func AskAlias(n NotebookName, sn SectionName) (string, error) {
 	return answer, nil
 }
 
-func findSection(arr []Section, f func(x Section) bool) (Section, bool) {
-	for _, s := range arr {
-		if f(s) {
-			return s, true
+func findSection(arr []Section, f func(s Section) bool) (Section, bool) {
+	for _, x := range arr {
+		if f(x) {
+			return x, true
 		}
 	}
 	return Section{}, false
 }
 
-func findNotebook(arr []Notebook, f func(x Notebook) bool) (Notebook, bool) {
-	for _, s := range arr {
-		if f(s) {
-			return s, true
+func findNotebook(arr []Notebook, f func(n Notebook) bool) (Notebook, bool) {
+	for _, x := range arr {
+		if f(x) {
+			return x, true
 		}
 	}
 	return Notebook{}, false
