@@ -7,12 +7,11 @@ import (
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 )
 
-var authtoken oauthv2.OAuthToken
-
 type cnote struct {
 	storage storage.Storer
 	auth    authentication.Authenticator
 	api     onenote.Api
+	token   oauthv2.OAuthToken
 }
 
 var (
@@ -20,8 +19,7 @@ var (
 )
 
 func GetNotebooks() []onenote.Notebook {
-	var token, _ = root.auth.GetToken()
-	var notebooks, err = root.api.GetNotebooks(token)
+	var notebooks, err = root.api.GetNotebooks(root.token)
 	if err != nil {
 		panic(err)
 	}
@@ -29,19 +27,18 @@ func GetNotebooks() []onenote.Notebook {
 }
 
 func GetSections(n onenote.Notebook) []onenote.Section {
-	var token, _ = root.auth.GetToken()
-	var sections, err = root.api.GetSections(token, n)
+	var sections, err = root.api.GetSections(root.token, n)
 	if err != nil {
 		panic(err)
 	}
 	return sections
 }
 
-func (cnote *cnote) SaveAlias(aname, nname, sname string) error {
+func SaveAlias(aname, nname, sname string) error {
 	return nil
 }
 
-func (cnote *cnote) GetAlias(n string) onenote.Alias {
+func GetAlias(n string) onenote.Alias {
 	return onenote.Alias{}
 }
 
@@ -56,5 +53,5 @@ func init() {
 		panic(authentication.TokenStorageError)
 	}
 
-	authtoken = token
+	root.token = token
 }

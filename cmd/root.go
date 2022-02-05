@@ -17,64 +17,46 @@ import (
 
 var rootCmd = &cobra.Command{
 	Long: "Take notes on your Onenote notebooks from terminal",
-	Run:  runRoot,
-	Use:  "cnote [command] [args] [flags]",
+	Run: func(c *cobra.Command, args []string) {
+		os.Exit(startNoteSurvey())
+	},
+	Use: "cnote [command] [args] [flags]",
 }
 
-type Notebook onenote.Notebook
-type Section onenote.Section
-type NotebookName = onenote.NotebookName
-type SectionName = onenote.SectionName
-
 //The function gets executed once the application starts without any commands/arguments.
-func runRoot(c *cobra.Command, args []string) {
+func startNoteSurvey() int {
 
-	//	var cn = cnote.Cnote{}
+	var defaultOptions = cnote.GetOptions()
 
-	//	t, err := getValidAccount()
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//
-	//	_, err = survey.AskNoteContent()
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//
-	//	notebooks, err := cn.GetNotebooks(t)
-	//	fmt.Println("Getting your notebooks... This might take a while...")
-	//
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//
-	//	n, err := survey.AskNotebook(notebooks)
-	//	sections, err := cn.GetSections(t, n)
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//
-	//	//iterating over the sections and adding them to the notebook struct
-	//	for _, s := range sections {
-	//		n.Sections = append(n.Sections, s)
-	//	}
-	//
-	//	section, err := survey.AskSection(n)
-	//
-	//	var defaultOptions = cnote.GetOptions()
-	//	fmt.Fprintf(defaultOptions.Out, "Your note has saved to the notebook %s and the section %s",
-	//		n.DisplayName, section.Name)
-	//
-	//	a, err := survey.AskAlias(NotebookName(n.DisplayName), SectionName(section.Name))
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//
-	//	if a != "" {
-	//		//TODO: save the alias
-	//		fmt.Println("we need to save the alias.")
-	//	}
-	//
+	_, err := survey.AskNoteContent()
+	if err != nil {
+		panic(err)
+	}
+
+	notebooks := cnote.GetNotebooks()
+	fmt.Fprintln(defaultOptions.Out, "Getting your notebooks... This might take a while...")
+
+	n, err := survey.AskNotebook(notebooks)
+	sections := cnote.GetSections(n)
+	if err != nil {
+		panic(err)
+	}
+
+	//TODO: save the note.
+	section, err := survey.AskSection(n, sections)
+	fmt.Fprintf(defaultOptions.Out, "Your note has saved to the notebook %s and the section %s",
+		n.DisplayName, section.Name)
+
+	a, err := survey.AskAlias(onenote.NotebookName(n.DisplayName), onenote.SectionName(section.Name))
+	if err != nil {
+		panic(err)
+	}
+
+	if a != "" {
+		cnote.SaveAlias(a, n.DisplayName, section.Name)
+	}
+
+	return 1
 }
 
 func Execute() {
