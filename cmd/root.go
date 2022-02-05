@@ -27,6 +27,7 @@ type SectionName = onenote.SectionName
 
 //The function gets executed once the application starts without any commands/arguments.
 func runRoot(c *cobra.Command, args []string) {
+
 	t, err := getValidAccount()
 	if err != nil {
 		panic(err)
