@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/fatihdumanli/cnote"
-	"github.com/fatihdumanli/cnote/storage"
+	"github.com/fatihdumanli/cnote/internal/storage"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +15,7 @@ var (
 
 var newCmd = &cobra.Command{
 	Use:     "new",
-	Aliases: []string{"n"},
+	Aliases: []string{"add", "save"},
 	Short:   "Create a new note",
 	Long:    "Create a note on one of your Onenote sections",
 	Run: func(c *cobra.Command, args []string) {

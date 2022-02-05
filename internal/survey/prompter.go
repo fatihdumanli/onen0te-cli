@@ -17,7 +17,7 @@ type Section = onenote.Section
 type SectionName = onenote.SectionName
 type NotebookName = onenote.NotebookName
 
-func AskNoteContent(opts AppOptions) (string, error) {
+func AskNoteContent() (string, error) {
 
 	var noteContentQuestion = &survey.Question{
 		Name: "notecontent",
@@ -34,10 +34,10 @@ func AskNoteContent(opts AppOptions) (string, error) {
 	return answer, nil
 }
 
+//Ask for the notebook to save the note.
 func AskNotebook(nlist []Notebook) (Notebook, error) {
 
 	var notebookOptions []string
-
 	for _, n := range nlist {
 		notebookOptions = append(notebookOptions, n.DisplayName)
 	}
@@ -66,6 +66,7 @@ func AskNotebook(nlist []Notebook) (Notebook, error) {
 
 }
 
+//Ask for the section in which the note(onenote page) will be created.
 func AskSection(n Notebook) (Section, error) {
 	var sections []string
 
@@ -97,6 +98,7 @@ func AskSection(n Notebook) (Section, error) {
 	}
 }
 
+//In case there's no account have been set yet, prompt the user to ask whether create one at that moment.
 func AskSetupAccount() (bool, error) {
 
 	var setupQuestion = &survey.Question{
@@ -135,6 +137,7 @@ func AskAlias(n NotebookName, sn SectionName) (string, error) {
 	return answer, nil
 }
 
+//Iterates over the sections and returns the one satisfies the given condition
 func findSection(arr []Section, f func(s Section) bool) (Section, bool) {
 	for _, x := range arr {
 		if f(x) {
@@ -144,6 +147,7 @@ func findSection(arr []Section, f func(s Section) bool) (Section, bool) {
 	return Section{}, false
 }
 
+//Iterates over the notebooks and returns the one satisfies the given condition
 func findNotebook(arr []Notebook, f func(n Notebook) bool) (Notebook, bool) {
 	for _, x := range arr {
 		if f(x) {

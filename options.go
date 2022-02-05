@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/fatihdumanli/cnote/internal/config"
+	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 )
 
 var c = config.MicrosoftGraphConfig{
@@ -39,4 +40,16 @@ func GetOptions() config.AppOptions {
 		In:  os.Stdin,
 		Out: os.Stdout,
 	}
+}
+
+func GetOAuthParams() oauthv2.OAuthParams {
+	var msGraphOptions = GetMicrosoftGraphConfig()
+	var oauthParams = oauthv2.OAuthParams{
+		OAuthEndpoint:        "https://login.microsoftonline.com/common/oauth2/v2.0",
+		RedirectUri:          "http://localhost:5992/oauthv2",
+		Scope:                []string{"offline_access", "Notes.ReadWrite.All", "Notes.Create", "Notes.Read", "Notes.ReadWrite"},
+		ClientId:             msGraphOptions.ClientId,
+		RefreshTokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+	}
+	return oauthParams
 }

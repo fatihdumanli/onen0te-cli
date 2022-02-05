@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 
 	"github.com/fatihdumanli/cnote"
+	"github.com/fatihdumanli/cnote/internal/storage"
+	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
-	"github.com/fatihdumanli/cnote/storage"
-	"github.com/fatihdumanli/cnote/survey"
 	"github.com/spf13/cobra"
 )
 
@@ -25,15 +26,14 @@ type Section onenote.Section
 type NotebookName = onenote.NotebookName
 type SectionName = onenote.SectionName
 
+//The function gets executed once the application starts without any commands/arguments.
 func runRoot(c *cobra.Command, args []string) {
-	var defaultOptions = cnote.GetOptions()
-
 	t, err := getValidAccount()
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = survey.AskNoteContent(defaultOptions)
+	_, err = survey.AskNoteContent()
 	if err != nil {
 		panic(err)
 	}
@@ -58,7 +58,9 @@ func runRoot(c *cobra.Command, args []string) {
 
 	section, err := survey.AskSection(n)
 
-	fmt.Fprintf(defaultOptions.Out, "Your note has saved to the notebook %s and the section %s", n.DisplayName, section.Name)
+	var defaultOptions = cnote.GetOptions()
+	fmt.Fprintf(defaultOptions.Out, "Your note has saved to the notebook %s and the section %s",
+		n.DisplayName, section.Name)
 
 	a, err := survey.AskAlias(NotebookName(n.DisplayName), SectionName(section.Name))
 	if err != nil {
@@ -82,51 +84,53 @@ func Execute() {
 func getValidAccount() (oauthv2.OAuthToken, error) {
 	//TODO: I feel like we shouldn't expose GetOptions() out of the cnote packge.
 	var defaultOptions = cnote.GetOptions()
-	var oauthParams = getOAuthParams()
+	var oauthParams = cnote.GetOAuthParams()
 
 	t, st := storage.CheckToken()
 	if st == storage.DoesntExist {
-		answer, err := survey.AskSetupAccount()
-		if !answer || err != nil {
-			os.Exit(1)
-		}
-
-		token, err := oauthv2.Authorize(oauthParams, defaultOptions.Out)
-		if err != nil {
-			log.Fatalf("An error occured while trying to authenticate you. %s", err.Error())
-		}
-
-		//save the token on local storage
-		err = storage.StoreToken(token)
-		if err != nil {
-			log.Fatalf("An error occured while trying to save the token. %s", err.Error())
-		}
+		setupAccount(oauthParams, defaultOptions.Out)
 	} else if st == storage.Expired {
-		//need to refresh the token
-		newToken, err := oauthv2.RefreshToken(oauthParams, t.RefreshToken)
-		if err != nil {
-			panic(err)
-		} else {
-			//save the token on local storage
-			err = storage.StoreToken(newToken)
-			if err != nil {
-				return t, nil
-			}
-		}
+		//Need to refresh the token
+		refreshToken(oauthParams, t)
 	}
 
 	return t, nil
 
 }
 
-func getOAuthParams() oauthv2.OAuthParams {
-	var msGraphOptions = cnote.GetMicrosoftGraphConfig()
-	var oauthParams = oauthv2.OAuthParams{
-		OAuthEndpoint:        "https://login.microsoftonline.com/common/oauth2/v2.0",
-		RedirectUri:          "http://localhost:5992/oauthv2",
-		Scope:                []string{"offline_access", "Notes.ReadWrite.All", "Notes.Create", "Notes.Read", "Notes.ReadWrite"},
-		ClientId:             msGraphOptions.ClientId,
-		RefreshTokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+//Refresh the token and save the new one on local storage.
+func refreshToken(oauthParams oauthv2.OAuthParams, t oauthv2.OAuthToken) (oauthv2.OAuthToken, error) {
+
+	newToken, err := oauthv2.RefreshToken(oauthParams, t.RefreshToken)
+	if err != nil {
+		panic(err)
+	} else {
+		//Save the token on local storage
+		err = storage.StoreToken(newToken)
+		if err != nil {
+			return t, nil
+		}
 	}
-	return oauthParams
+	return newToken, nil
+}
+
+//Setup a onenote account for the very first time.
+func setupAccount(oauthParams oauthv2.OAuthParams, out io.Writer) {
+	answer, err := survey.AskSetupAccount()
+	if !answer || err != nil {
+		os.Exit(1)
+	}
+
+	//If the user confirms to setup an account now we trigger the authentication process.
+	token, err := oauthv2.Authorize(oauthParams, out)
+	if err != nil {
+		log.Fatalf("An error occured while trying to authenticate you. %s", err.Error())
+	}
+
+	//Save the token on local storage
+	err = storage.StoreToken(token)
+	if err != nil {
+		log.Fatalf("An error occured while trying to save the token. %s", err.Error())
+	}
+
 }
