@@ -29,7 +29,7 @@ type Authenticator interface {
 	RefreshToken() error
 }
 
-func AuthenticateUser(opts config.AppOptions, storer storage.Storer) error {
+func AuthenticateUser(opts config.AppOptions, storer storage.Storer) (oauthv2.OAuthToken, error) {
 
 	//If the user confirms to setup an account now we trigger the authentication process.
 	t, err := oauthv2.Authorize(opts.OAuthParams, opts.Out)
@@ -41,13 +41,13 @@ func AuthenticateUser(opts config.AppOptions, storer storage.Storer) error {
 	err = storer.Set(TOKEN_KEY, t)
 	if err != nil {
 		log.Fatalf("An error occured while trying to save the token. %s", err.Error())
-		return storage.CouldntSaveTheKey
+		return t, storage.CouldntSaveTheKey
 	}
 
-	return nil
+	return t, nil
 }
 
-func RefreshToken(opts config.AppOptions, token oauthv2.OAuthToken, storer storage.Storer) {
+func RefreshToken(opts config.AppOptions, token oauthv2.OAuthToken, storer storage.Storer) (oauthv2.OAuthToken, error) {
 	newToken, err := oauthv2.RefreshToken(opts.OAuthParams, token.RefreshToken)
 	if err != nil {
 		panic(err)
@@ -58,4 +58,5 @@ func RefreshToken(opts config.AppOptions, token oauthv2.OAuthToken, storer stora
 		panic(err)
 	}
 
+	return newToken, nil
 }

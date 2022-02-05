@@ -1,6 +1,7 @@
 package cnote
 
 import (
+	"log"
 	"os"
 
 	"github.com/fatihdumanli/cnote/internal/authentication"
@@ -61,11 +62,17 @@ func checkTokenPresented() {
 			os.Exit(1)
 		}
 
-		authentication.AuthenticateUser(opts, root.storage)
+		token, _ := authentication.AuthenticateUser(opts, root.storage)
+		root.token = &token
 	} else {
 		//Check if the token has expired
 		if root.token.IsExpired() {
-			authentication.RefreshToken(opts, *root.token, root.storage)
+			token, err := authentication.RefreshToken(opts, *root.token, root.storage)
+			if err != nil {
+				log.Fatal("An error has occured while trying to refresh OAuth token")
+				panic(err)
+			}
+			root.token = &token
 		}
 	}
 
@@ -73,16 +80,14 @@ func checkTokenPresented() {
 
 //Grab the token from the local storage upon startup
 func init() {
+
 	api := onenote.NewApi()
 	bitcask := &storage.Bitcask{}
 	root = cnote{api: api, storage: bitcask}
+	root.token = &oauthv2.OAuthToken{}
 
-	t, err := root.storage.Get(authentication.TOKEN_KEY)
-	if err == nil {
-		token, ok := t.(oauthv2.OAuthToken)
-		if !ok {
-			panic(authentication.TokenStorageError)
-		}
-		root.token = &token
+	err := root.storage.Get(authentication.TOKEN_KEY, root.token)
+	if err != nil {
+		panic(err)
 	}
 }

@@ -2,32 +2,38 @@ package storage
 
 import (
 	"encoding/json"
+	"log"
 
 	"git.mills.io/prologic/bitcask"
 )
 
 type Bitcask struct{}
 
-func (b *Bitcask) Get(key string) (interface{}, error) {
+//Get the value of the given key.
+func (b *Bitcask) Get(key string, obj interface{}) error {
+	//TODO: return an error if the obj is not a ptr type
 	var db, closer, err = openBitcaskDb()
 	defer closer()
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	var obj interface{}
 	bytes, err := db.Get([]byte(key))
+
 	if err != nil {
-		return nil, KeyNotFound
-	}
-	err = json.Unmarshal(bytes, &obj)
-	if err != nil {
-		return nil, CouldntUnmarshalTheKey
+		return KeyNotFound
 	}
 
-	return obj, nil
+	err = json.Unmarshal(bytes, obj)
+	if err != nil {
+		log.Fatal(err)
+		return CouldntUnmarshalTheKey
+	}
+
+	return nil
 }
 
+//Save a key-value pair to the local storage
 func (b *Bitcask) Set(key string, val interface{}) error {
 
 	var db, closer, err = openBitcaskDb()
@@ -37,11 +43,23 @@ func (b *Bitcask) Set(key string, val interface{}) error {
 	}
 
 	bytes, err := json.Marshal(val)
-	err = db.Put([]byte(key), bytes)
+
+	err = db.Put([]byte(key), []byte(string(bytes)))
 	if err != nil {
 		return CouldntSaveTheKey
 	}
 	return nil
+}
+
+//Remove the given key
+func (b *Bitcask) Remove(key string) error {
+	var db, closer, err = openBitcaskDb()
+	defer closer()
+	if err != nil {
+		return err
+	}
+	err = db.Delete([]byte(key))
+	return err
 }
 
 func openBitcaskDb() (*bitcask.Bitcask, func() error, error) {

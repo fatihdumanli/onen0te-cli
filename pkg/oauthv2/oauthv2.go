@@ -137,7 +137,7 @@ func getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
 	openWebBrowser(authCodeUrl)
 
 	fmt.Fprintln(out, "Please complete authentication process through your web browser...")
-	time.Sleep(20 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	if err := srv.Shutdown(context.TODO()); err != nil {
 		panic(err)

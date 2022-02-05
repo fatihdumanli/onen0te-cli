@@ -21,6 +21,7 @@ var rootCmd = &cobra.Command{
 	Use: "cnote [command] [args] [flags]",
 }
 
+//TODO: return different integers
 //The function gets executed once the application starts without any commands/arguments.
 func startNoteSurvey() int {
 
