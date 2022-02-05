@@ -29,52 +29,52 @@ type SectionName = onenote.SectionName
 //The function gets executed once the application starts without any commands/arguments.
 func runRoot(c *cobra.Command, args []string) {
 
-	var cn = cnote.Cnote{}
+	//	var cn = cnote.Cnote{}
 
-	t, err := getValidAccount()
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = survey.AskNoteContent()
-	if err != nil {
-		panic(err)
-	}
-
-	notebooks, err := cn.GetNotebooks(t)
-	fmt.Println("Getting your notebooks... This might take a while...")
-
-	if err != nil {
-		panic(err)
-	}
-
-	n, err := survey.AskNotebook(notebooks)
-	sections, err := cn.GetSections(t, n)
-	if err != nil {
-		panic(err)
-	}
-
-	//iterating over the sections and adding them to the notebook struct
-	for _, s := range sections {
-		n.Sections = append(n.Sections, s)
-	}
-
-	section, err := survey.AskSection(n)
-
-	var defaultOptions = cnote.GetOptions()
-	fmt.Fprintf(defaultOptions.Out, "Your note has saved to the notebook %s and the section %s",
-		n.DisplayName, section.Name)
-
-	a, err := survey.AskAlias(NotebookName(n.DisplayName), SectionName(section.Name))
-	if err != nil {
-		panic(err)
-	}
-
-	if a != "" {
-		//TODO: save the alias
-		fmt.Println("we need to save the alias.")
-	}
-
+	//	t, err := getValidAccount()
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//
+	//	_, err = survey.AskNoteContent()
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//
+	//	notebooks, err := cn.GetNotebooks(t)
+	//	fmt.Println("Getting your notebooks... This might take a while...")
+	//
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//
+	//	n, err := survey.AskNotebook(notebooks)
+	//	sections, err := cn.GetSections(t, n)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//
+	//	//iterating over the sections and adding them to the notebook struct
+	//	for _, s := range sections {
+	//		n.Sections = append(n.Sections, s)
+	//	}
+	//
+	//	section, err := survey.AskSection(n)
+	//
+	//	var defaultOptions = cnote.GetOptions()
+	//	fmt.Fprintf(defaultOptions.Out, "Your note has saved to the notebook %s and the section %s",
+	//		n.DisplayName, section.Name)
+	//
+	//	a, err := survey.AskAlias(NotebookName(n.DisplayName), SectionName(section.Name))
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//
+	//	if a != "" {
+	//		//TODO: save the alias
+	//		fmt.Println("we need to save the alias.")
+	//	}
+	//
 }
 
 func Execute() {
