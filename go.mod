@@ -3,6 +3,7 @@ module github.com/fatihdumanli/cnote
 go 1.16
 
 require (
+	git.mills.io/prologic/bitcask v1.0.2 // indirect
 	github.com/AlecAivazis/survey/v2 v2.3.2 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/cheggaaa/pb v1.0.29 // indirect

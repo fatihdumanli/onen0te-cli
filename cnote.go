@@ -15,7 +15,7 @@ type cnote struct {
 }
 
 var (
-	root = cnote{api: onenote.NewApi()}
+	root cnote
 )
 
 func GetNotebooks() []onenote.Notebook {
@@ -44,6 +44,10 @@ func GetAlias(n string) onenote.Alias {
 
 //Grab the token from the local storage upon startup
 func init() {
+	api := onenote.NewApi()
+	bitcask := &storage.Bitcask{}
+	root = cnote{api: api, storage: bitcask}
+
 	t, err := root.storage.Get(authentication.TOKEN_KEY)
 	if err != nil {
 		//Token is not found on the storage.
