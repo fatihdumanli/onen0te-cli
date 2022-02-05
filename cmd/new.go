@@ -19,7 +19,6 @@ var newCmd = &cobra.Command{
 	Short:   "Create a new note",
 	Long:    "Create a note on one of your Onenote sections",
 	Run: func(c *cobra.Command, args []string) {
-
 		if len(args) != 1 {
 			c.Usage()
 			return

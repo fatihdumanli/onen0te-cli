@@ -15,10 +15,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Long:                  "Take notes on your Onenote notebooks from terminal",
-	Run:                   runRoot,
-	Use:                   "cnote [command] [args] [flags]",
-	DisableFlagsInUseLine: true,
+	Long: "Take notes on your Onenote notebooks from terminal",
+	Run:  runRoot,
+	Use:  "cnote [command] [args] [flags]",
 }
 
 type Notebook onenote.Notebook
