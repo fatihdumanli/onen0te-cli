@@ -3,6 +3,7 @@ package cnote
 import (
 	"os"
 
+	"github.com/fatihdumanli/cnote/internal/authentication"
 	"github.com/fatihdumanli/cnote/internal/config"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 )
@@ -13,6 +14,10 @@ var c = config.MicrosoftGraphConfig{
 	RedirectUrl: "http://localhost:5992/oauthv2",
 }
 
+//TODO: Define a standard for colors here.
+//For aliases: CyanBg-RedFg
+//For sections: Red
+//...
 func getMicrosoftGraphConfig() config.MicrosoftGraphConfig {
 
 	//NOTE
@@ -47,8 +52,9 @@ func getOptions() config.AppOptions {
 	}
 
 	return config.AppOptions{
-		In:          os.Stdin,
-		Out:         os.Stdout,
-		OAuthParams: oauthParams,
+		In:           os.Stdin,
+		Out:          os.Stdout,
+		OAuthParams:  oauthParams,
+		ReservedKeys: []string{authentication.TOKEN_KEY},
 	}
 }

@@ -23,6 +23,7 @@ type Section struct {
 
 //Represents a section alias
 type Alias struct {
+	Short    string       `json:"a"`
 	Notebook NotebookName `json:"n"`
 	Section  SectionName  `json:"s"`
 }

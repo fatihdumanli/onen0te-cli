@@ -48,6 +48,7 @@ func GetSections(n onenote.Notebook) []onenote.Section {
 //Save the alias for a onenote section to use it later for quick save
 func SaveAlias(aname, nname, sname string) error {
 	err := root.storage.Set(aname, onenote.Alias{
+		Short:    aname,
 		Notebook: onenote.NotebookName(nname),
 		Section:  onenote.SectionName(sname),
 	})
@@ -78,6 +79,35 @@ func SaveNotePage(npage onenote.NotePage) error {
 		return err
 	}
 	return nil
+}
+
+func GetAliases() *[]onenote.Alias {
+
+	var result []onenote.Alias
+	keys, err := root.storage.GetKeys()
+
+	var opts = getOptions()
+	var hashset = make(map[string]bool, 0)
+	for _, rk := range opts.ReservedKeys {
+		hashset[rk] = true
+	}
+
+	if err != nil {
+		log.Fatalf("An error has occured while trying to get the alias data %s", err.Error())
+		return nil
+	}
+
+	for _, k := range *keys {
+		if hashset[k] {
+			continue
+		}
+
+		var a onenote.Alias
+		root.storage.Get(k, &a)
+		result = append(result, a)
+	}
+
+	return &result
 }
 
 //This function gets called prior to each API operation to make sure that we're not going to deal with any stale token.

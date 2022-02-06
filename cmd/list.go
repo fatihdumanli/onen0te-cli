@@ -1,12 +1,42 @@
 package main
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+	"os"
 
-var listCmd = &cobra.Command{}
+	"github.com/fatihdumanli/cnote"
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
+)
 
-//TODO:
-//-list aliases
-//-new alias
+var listCmd = &cobra.Command{
+	Use:   "list",
+	Short: "display alias list",
+	Run: func(c *cobra.Command, args []string) {
+		os.Exit(displayAliasList())
+	},
+}
+
+func displayAliasList() int {
+	var aliasList = cnote.GetAliases()
+
+	if aliasList == nil {
+		fmt.Println(pterm.Red("Your alias data couldn't be loaded."))
+		return 1
+	}
+
+	if len(*aliasList) == 0 {
+		fmt.Println(pterm.Yellow("You haven't added any alias yet."))
+		return 2
+	}
+
+	for _, a := range *aliasList {
+		fmt.Printf("-%s=%s (%s)\n", pterm.Cyan(a.Short), a.Section, a.Notebook)
+	}
+
+	return 0
+}
+
 func init() {
 	rootCmd.AddCommand(listCmd)
 }

@@ -38,14 +38,14 @@ func startNoteSurvey() int {
 	n, err := survey.AskNotebook(notebooks)
 	if err != nil {
 		log.Fatalf("An error has occured while starting notebook survey: %s", err.Error())
-		return -1
+		return 1
 	}
 
 	sections := cnote.GetSections(n)
 	section, err := survey.AskSection(n, sections)
 	if err != nil {
 		log.Fatalf("An error has occured while starting section survey: %s", err.Error())
-		return -1
+		return 1
 	}
 
 	//Saving the note to the section
@@ -55,7 +55,7 @@ func startNoteSurvey() int {
 	})
 	if err != nil {
 		log.Fatalf("An error has occured while trying to save your note. %s", err.Error())
-		return -1
+		return 1
 	}
 
 	//The note has been saved
@@ -64,20 +64,19 @@ func startNoteSurvey() int {
 	a, err := survey.AskAlias(onenote.NotebookName(n.DisplayName), onenote.SectionName(section.Name))
 	if err != nil {
 		log.Fatalf("An error has occured while trying to start alias survey. %s", err.Error())
-		return -1
+		return 1
 	}
 
 	if a != "" {
 		err := cnote.SaveAlias(a, n.DisplayName, section.Name)
 		if err == nil {
 			fmt.Println(pterm.Green(fmt.Sprintf("✅ Alias '%s' has been saved. (%s)", a, section.Name)))
-			return 1
 		} else {
-			return -1
+			return 2
 		}
 	}
 
-	return 1
+	return 0
 }
 
 func Execute() {
