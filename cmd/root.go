@@ -68,7 +68,13 @@ func startNoteSurvey() int {
 	}
 
 	if a != "" {
-		cnote.SaveAlias(a, n.DisplayName, section.Name)
+		err := cnote.SaveAlias(a, n.DisplayName, section.Name)
+		if err == nil {
+			fmt.Println(pterm.Green(fmt.Sprintf("✅ Alias '%s' has been saved. (%s)", a, section.Name)))
+			return 1
+		} else {
+			return -1
+		}
 	}
 
 	return 1

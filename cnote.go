@@ -1,6 +1,7 @@
 package cnote
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -45,11 +46,29 @@ func GetSections(n onenote.Notebook) []onenote.Section {
 }
 
 func SaveAlias(aname, nname, sname string) error {
+
+	err := root.storage.Set(aname, onenote.Alias{
+		Notebook: onenote.NotebookName(nname),
+		Section:  onenote.SectionName(sname),
+	})
+
+	if err != nil {
+		log.Fatalf("An error has occured while saving the alias to the local storage %s", err.Error())
+		return err
+	}
+
 	return nil
 }
 
-func GetAlias(n string) onenote.Alias {
-	return onenote.Alias{}
+func GetAlias(n string) *onenote.Alias {
+	var alias onenote.Alias
+	err := root.storage.Get(n, &alias)
+	if err != nil {
+		log.Fatalf("An error has occured while trying to get the alias data %s", err.Error())
+		return nil
+	}
+
+	return &alias
 }
 
 func SaveNotePage(npage onenote.NotePage) error {
@@ -94,6 +113,10 @@ func init() {
 	bitcask := &storage.Bitcask{}
 	root = cnote{api: api, storage: bitcask}
 	root.token = &oauthv2.OAuthToken{}
+
+	keys, _ := root.storage.GetKeys()
+	fmt.Println(*keys)
+
 	//root.storage.Remove(authentication.TOKEN_KEY)
 	err := root.storage.Get(authentication.TOKEN_KEY, root.token)
 	if err != nil {

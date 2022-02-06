@@ -62,6 +62,24 @@ func (b *Bitcask) Remove(key string) error {
 	return err
 }
 
+func (b *Bitcask) GetKeys() (*[]string, error) {
+	var db, closer, err = openBitcaskDb()
+	var keys []string
+
+	defer closer()
+	if err != nil {
+		return nil, err
+	}
+
+	var keysChan = db.Keys()
+	for i := 0; i < db.Len(); i++ {
+		key := <-keysChan
+		keys = append(keys, string(key))
+	}
+
+	return &keys, nil
+}
+
 func openBitcaskDb() (*bitcask.Bitcask, func() error, error) {
 	db, err := bitcask.Open("/tmp/cnote")
 	if err != nil {

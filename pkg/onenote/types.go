@@ -4,6 +4,10 @@ type NotebookName string
 type SectionName string
 type AliasName string
 
+const (
+	AliasesKey = "aliases"
+)
+
 //Represents a onenote notebook
 type Notebook struct {
 	ID          string `json:"id"`
