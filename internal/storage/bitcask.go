@@ -58,6 +58,12 @@ func (b *Bitcask) Remove(key string) error {
 	if err != nil {
 		return err
 	}
+
+	//If the key has not found
+	if !db.Has([]byte(key)) {
+		return KeyNotFound
+	}
+
 	err = db.Delete([]byte(key))
 	return err
 }

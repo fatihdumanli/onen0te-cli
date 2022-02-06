@@ -21,9 +21,11 @@ var rootCmd = &cobra.Command{
 	Run: func(c *cobra.Command, args []string) {
 		os.Exit(startNoteSurvey())
 	},
-	Use: "cnote [command] [args] [flags]",
+	Use:                   "cnote",
+	DisableFlagsInUseLine: true,
 }
 
+//TODO: Embedding long error messages makes the code hard to read.
 //The function gets executed once the application starts without any commands/arguments.
 func startNoteSurvey() int {
 

@@ -45,32 +45,6 @@ func GetSections(n onenote.Notebook) []onenote.Section {
 	return sections
 }
 
-//Save the alias for a onenote section to use it later for quick save
-func SaveAlias(aname, nname, sname string) error {
-	err := root.storage.Set(aname, onenote.Alias{
-		Short:    aname,
-		Notebook: onenote.NotebookName(nname),
-		Section:  onenote.SectionName(sname),
-	})
-	if err != nil {
-		log.Fatalf("An error has occured while saving the alias to the local storage %s", err.Error())
-		return err
-	}
-	return nil
-}
-
-//Get the details of given alias
-func GetAlias(n string) *onenote.Alias {
-	var alias onenote.Alias
-	err := root.storage.Get(n, &alias)
-	if err != nil {
-		log.Fatalf("An error has occured while trying to get the alias data %s", err.Error())
-		return nil
-	}
-
-	return &alias
-}
-
 //Save a note page using Onenote API
 func SaveNotePage(npage onenote.NotePage) error {
 	checkTokenPresented()
@@ -108,6 +82,42 @@ func GetAliases() *[]onenote.Alias {
 	}
 
 	return &result
+}
+
+//Save the alias for a onenote section to use it later for quick save
+func SaveAlias(aname, nname, sname string) error {
+	err := root.storage.Set(aname, onenote.Alias{
+		Short:    aname,
+		Notebook: onenote.NotebookName(nname),
+		Section:  onenote.SectionName(sname),
+	})
+	if err != nil {
+		log.Fatalf("An error has occured while saving the alias to the local storage %s", err.Error())
+		return err
+	}
+	return nil
+}
+
+//Get the details of given alias
+func GetAlias(n string) *onenote.Alias {
+	var alias onenote.Alias
+	err := root.storage.Get(n, &alias)
+	if err != nil {
+		log.Fatalf("An error has occured while trying to get the alias data %s", err.Error())
+		return nil
+	}
+
+	return &alias
+}
+
+//Removes an alias
+func RemoveAlias(a string) error {
+	err := root.storage.Remove(a)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //This function gets called prior to each API operation to make sure that we're not going to deal with any stale token.
