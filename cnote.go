@@ -1,7 +1,6 @@
 package cnote
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -25,9 +24,9 @@ var (
 	root cnote
 )
 
+//Get the list of notebooks belonging to the user logged in
 func GetNotebooks() []onenote.Notebook {
 	checkTokenPresented()
-
 	var notebooks, err = root.api.GetNotebooks(*root.token)
 	if err != nil {
 		panic(err)
@@ -35,6 +34,7 @@ func GetNotebooks() []onenote.Notebook {
 	return notebooks
 }
 
+//Get the list of notebooks belonging to the user logged in
 func GetSections(n onenote.Notebook) []onenote.Section {
 	checkTokenPresented()
 
@@ -45,21 +45,20 @@ func GetSections(n onenote.Notebook) []onenote.Section {
 	return sections
 }
 
+//Save the alias for a onenote section to use it later for quick save
 func SaveAlias(aname, nname, sname string) error {
-
 	err := root.storage.Set(aname, onenote.Alias{
 		Notebook: onenote.NotebookName(nname),
 		Section:  onenote.SectionName(sname),
 	})
-
 	if err != nil {
 		log.Fatalf("An error has occured while saving the alias to the local storage %s", err.Error())
 		return err
 	}
-
 	return nil
 }
 
+//Get the details of given alias
 func GetAlias(n string) *onenote.Alias {
 	var alias onenote.Alias
 	err := root.storage.Get(n, &alias)
@@ -71,6 +70,7 @@ func GetAlias(n string) *onenote.Alias {
 	return &alias
 }
 
+//Save a note page using Onenote API
 func SaveNotePage(npage onenote.NotePage) error {
 	checkTokenPresented()
 	err := root.api.SaveNote(*root.token, npage)
@@ -80,6 +80,10 @@ func SaveNotePage(npage onenote.NotePage) error {
 	return nil
 }
 
+//This function gets called prior to each API operation to make sure that we're not going to deal with any stale token.
+//Check if the OAuth token has presented on the local storage.
+//Prompt the user if token doesn't exist on the local storage
+//Refresh it if the token has expired
 func checkTokenPresented() {
 	var opts = getOptions()
 
@@ -114,10 +118,6 @@ func init() {
 	root = cnote{api: api, storage: bitcask}
 	root.token = &oauthv2.OAuthToken{}
 
-	keys, _ := root.storage.GetKeys()
-	fmt.Println(*keys)
-
-	//root.storage.Remove(authentication.TOKEN_KEY)
 	err := root.storage.Get(authentication.TOKEN_KEY, root.token)
 	if err != nil {
 		root.token = nil
