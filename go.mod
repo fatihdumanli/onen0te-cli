@@ -9,6 +9,7 @@ require (
 	github.com/cheggaaa/pb v1.0.29 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
+	github.com/pterm/pterm v0.12.36 // indirect
 	github.com/spf13/cobra v1.3.0 // indirect
 	github.com/xujiajun/nutsdb v0.6.0 // indirect
 	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect

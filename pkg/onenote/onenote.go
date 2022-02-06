@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 )
@@ -13,12 +15,14 @@ import (
 type Api struct {
 	GetNotebooks func(token oauthv2.OAuthToken) ([]Notebook, error)
 	GetSections  func(token oauthv2.OAuthToken, n Notebook) ([]Section, error)
+	SaveNote     func(token oauthv2.OAuthToken, n NotePage) error
 }
 
 func NewApi() Api {
 	return Api{
 		GetNotebooks: getNotebooks,
 		GetSections:  getSections,
+		SaveNote:     saveNote,
 	}
 }
 
@@ -90,4 +94,41 @@ func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, error) {
 	}
 
 	return response.Sections, nil
+}
+
+func saveNote(t oauthv2.OAuthToken, n NotePage) error {
+	c := http.Client{}
+
+	var body = `<html>
+<head>
+<title>` + "Page title" + `</title>
+</head>
+<body>
+<p>` + n.Content + `</p>
+</bod>
+</html>`
+
+	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/onenote/sections/%s/pages", n.SectionId)
+	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.AccessToken))
+	req.Header.Add("Content-Type", "application/xhtml+xml")
+
+	res, err := c.Do(req)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	if res.StatusCode != http.StatusCreated {
+		resBody := res.Body
+		bodyStr, _ := io.ReadAll(resBody)
+		log.Fatal(string(bodyStr))
+		return errors.New("Couldn't save the note.")
+	}
+
+	return nil
 }

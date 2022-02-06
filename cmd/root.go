@@ -5,10 +5,12 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -22,37 +24,47 @@ var rootCmd = &cobra.Command{
 	Use: "cnote [command] [args] [flags]",
 }
 
-//TODO: return different integers
 //The function gets executed once the application starts without any commands/arguments.
 func startNoteSurvey() int {
 
-	_, err := survey.AskNoteContent()
+	noteContent, err := survey.AskNoteContent()
 	if err != nil {
 		panic(err)
 	}
 
 	notebooks := cnote.GetNotebooks()
-	fmt.Fprintln(out, "Getting your notebooks... This might take a while...")
+	fmt.Println("Getting your notebooks... This might take a while...")
 
 	n, err := survey.AskNotebook(notebooks)
-	sections := cnote.GetSections(n)
 	if err != nil {
-		panic(err)
+		log.Fatalf("An error has occured while starting notebook survey: %s", err.Error())
+		return -1
 	}
 
+	sections := cnote.GetSections(n)
 	section, err := survey.AskSection(n, sections)
 	if err != nil {
 		log.Fatalf("An error has occured while starting section survey: %s", err.Error())
 		return -1
 	}
 
-	//TODO: save the note.
-	fmt.Fprintf(out, "Your note has saved to the notebook %s and the section %s",
-		n.DisplayName, section.Name)
+	//Saving the note to the section
+	err = cnote.SaveNotePage(onenote.NotePage{
+		SectionId: section.ID,
+		Content:   noteContent,
+	})
+	if err != nil {
+		log.Fatalf("An error has occured while trying to save your note. %s", err.Error())
+		return -1
+	}
+
+	//The note has been saved
+	fmt.Println(pterm.Green(fmt.Sprintf("✅ Your note has saved to the section %s (%s)", section.Name, time.Now())))
 
 	a, err := survey.AskAlias(onenote.NotebookName(n.DisplayName), onenote.SectionName(section.Name))
 	if err != nil {
-		panic(err)
+		log.Fatalf("An error has occured while trying to start alias survey. %s", err.Error())
+		return -1
 	}
 
 	if a != "" {
@@ -63,11 +75,9 @@ func startNoteSurvey() int {
 }
 
 func Execute() {
-	//TODO: figure out how to deal with output
 	out = os.Stdout
-
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stdout, err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
 

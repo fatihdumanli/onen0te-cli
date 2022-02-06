@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	alias string
+	alias    string
+	template string
 )
 
 var newCmd = &cobra.Command{
@@ -38,5 +39,6 @@ var newCmd = &cobra.Command{
 
 func init() {
 	newCmd.PersistentFlags().StringVarP(&alias, "alias", "a", "", "alias for the target onenote section")
+	newCmd.PersistentFlags().StringVarP(&template, "template", "t", "vanilla", "template for the note page that will be saved")
 	rootCmd.AddCommand(newCmd)
 }

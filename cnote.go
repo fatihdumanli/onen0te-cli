@@ -52,6 +52,15 @@ func GetAlias(n string) onenote.Alias {
 	return onenote.Alias{}
 }
 
+func SaveNotePage(npage onenote.NotePage) error {
+	checkTokenPresented()
+	err := root.api.SaveNote(*root.token, npage)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func checkTokenPresented() {
 	var opts = getOptions()
 
