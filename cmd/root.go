@@ -25,7 +25,6 @@ var rootCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-//TODO: Embedding long error messages makes the code hard to read.
 //The function gets executed once the application starts without any commands/arguments.
 func startNoteSurvey() int {
 
@@ -35,20 +34,12 @@ func startNoteSurvey() int {
 	}
 
 	notebooks := cnote.GetNotebooks()
-	fmt.Println("Getting your notebooks... This might take a while...")
-
+	fmt.Println("Getting your notebooks...")
 	n, err := survey.AskNotebook(notebooks)
-	if err != nil {
-		log.Fatalf("An error has occured while starting notebook survey: %s", err.Error())
-		return 1
-	}
 
+	fmt.Println("Getting sections...")
 	sections := cnote.GetSections(n)
 	section, err := survey.AskSection(n, sections)
-	if err != nil {
-		log.Fatalf("An error has occured while starting section survey: %s", err.Error())
-		return 1
-	}
 
 	//Saving the note to the section
 	err = cnote.SaveNotePage(onenote.NotePage{
@@ -56,21 +47,16 @@ func startNoteSurvey() int {
 		Content:   noteContent,
 	})
 	if err != nil {
-		log.Fatalf("An error has occured while trying to save your note. %s", err.Error())
+		log.Fatal("couldn't save the note.")
 		return 1
 	}
 
 	//The note has been saved
 	fmt.Println(pterm.Green(fmt.Sprintf("✅ Your note has saved to the section %s (%s)", section.Name, time.Now())))
-
 	a, err := survey.AskAlias(onenote.NotebookName(n.DisplayName), onenote.SectionName(section.Name))
-	if err != nil {
-		log.Fatalf("An error has occured while trying to start alias survey. %s", err.Error())
-		return 1
-	}
 
 	if a != "" {
-		err := cnote.SaveAlias(a, n.DisplayName, section.Name)
+		err := cnote.SaveAlias(a, n, section)
 		if err == nil {
 			fmt.Println(pterm.Green(fmt.Sprintf("✅ Alias '%s' has been saved. (%s)", a, section.Name)))
 		} else {

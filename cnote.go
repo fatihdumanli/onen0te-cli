@@ -85,12 +85,11 @@ func GetAliases() *[]onenote.Alias {
 }
 
 //Save the alias for a onenote section to use it later for quick save
-func SaveAlias(aname, nname, sname string) error {
-	err := root.storage.Set(aname, onenote.Alias{
-		Short:    aname,
-		Notebook: onenote.NotebookName(nname),
-		Section:  onenote.SectionName(sname),
-	})
+func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) error {
+	err := root.storage.Set(name, onenote.Alias{
+		Short:    name,
+		Notebook: notebook,
+		Section:  section})
 	if err != nil {
 		log.Fatalf("An error has occured while saving the alias to the local storage %s", err.Error())
 		return err
