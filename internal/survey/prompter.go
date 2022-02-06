@@ -68,7 +68,12 @@ func AskNotebook(nlist []Notebook) (Notebook, error) {
 
 //Ask for the section in which the note(onenote page) will be created.
 func AskSection(n Notebook, slist []Section) (Section, error) {
+
 	var sections []string
+	for _, s := range slist {
+		sections = append(sections, s.Name)
+	}
+
 	var qsection = &survey.Question{
 		Name: "qsection",
 		Prompt: &survey.Select{

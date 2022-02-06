@@ -85,9 +85,9 @@ func init() {
 	bitcask := &storage.Bitcask{}
 	root = cnote{api: api, storage: bitcask}
 	root.token = &oauthv2.OAuthToken{}
-
+	//root.storage.Remove(authentication.TOKEN_KEY)
 	err := root.storage.Get(authentication.TOKEN_KEY, root.token)
 	if err != nil {
-		panic(err)
+		root.token = nil
 	}
 }

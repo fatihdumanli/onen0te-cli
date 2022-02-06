@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/fatihdumanli/cnote"
@@ -39,8 +40,13 @@ func startNoteSurvey() int {
 		panic(err)
 	}
 
-	//TODO: save the note.
 	section, err := survey.AskSection(n, sections)
+	if err != nil {
+		log.Fatalf("An error has occured while starting section survey: %s", err.Error())
+		return -1
+	}
+
+	//TODO: save the note.
 	fmt.Fprintf(out, "Your note has saved to the notebook %s and the section %s",
 		n.DisplayName, section.Name)
 
