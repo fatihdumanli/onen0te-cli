@@ -120,6 +120,7 @@ func getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
 	authCodeUrl := fmt.Sprintf("%s/authorize?client_id=%s&response_type=code&redirect_uri=%s&response_mode=query&scope=%s&state=%s", p.OAuthEndpoint, p.ClientId, p.RedirectUri, strings.Join(p.Scope, " "), p.State)
 
 	var authCode AuthorizationCode
+	var srv *http.Server
 
 	//closure
 	//notice that we've passed a closure and we've utilized a local variable, awesome!
@@ -127,22 +128,21 @@ func getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
 		values := r.URL.Query()
 		authCode = AuthorizationCode(values.Get("code"))
 		fmt.Fprintln(w, "You can close this window now.")
+		time.Sleep(1 * time.Second)
+		if err := srv.Shutdown(context.TODO()); err != nil {
+			panic(err)
+		}
 	}
 
 	httpServerExitDone := &sync.WaitGroup{}
 	httpServerExitDone.Add(1)
-	srv := startOauthHttpServer(httpServerExitDone, ":5992", "/oauthv2", fnCallback)
+
+	srv = startOauthHttpServer(httpServerExitDone, ":5992", "/oauthv2", fnCallback)
 
 	//open a browser to authenticate the user
 	openWebBrowser(authCodeUrl)
 
 	fmt.Fprintln(out, "Please complete authentication process through your web browser...")
-	time.Sleep(10 * time.Second)
-
-	if err := srv.Shutdown(context.TODO()); err != nil {
-		panic(err)
-	}
-
 	httpServerExitDone.Wait()
 
 	if authCode == "" {
