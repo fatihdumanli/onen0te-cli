@@ -78,7 +78,7 @@ func saveNote(c *cobra.Command, args []string) int {
 		section = a.Section
 	}
 
-	err := cnote.SaveNotePage(onenote.NotePage{
+	link, err := cnote.SaveNotePage(onenote.NotePage{
 		SectionId: section.ID,
 		Title:     title,
 		Content:   *noteContent,
@@ -89,6 +89,7 @@ func saveNote(c *cobra.Command, args []string) int {
 	}
 
 	fmt.Printf(" ✅ Your note has been saved. (%s)\n", section.Name)
+	fmt.Printf("%s\n", link)
 	return 0
 }
 

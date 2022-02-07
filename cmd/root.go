@@ -42,7 +42,7 @@ func startNoteSurvey() int {
 	section, err := survey.AskSection(n, sections)
 
 	//Saving the note to the section
-	err = cnote.SaveNotePage(onenote.NotePage{
+	link, err := cnote.SaveNotePage(onenote.NotePage{
 		SectionId: section.ID,
 		Content:   noteContent,
 	})
@@ -53,6 +53,7 @@ func startNoteSurvey() int {
 
 	//The note has been saved
 	fmt.Println(pterm.Green(fmt.Sprintf("✅ Your note has saved to the section %s (%s)", section.Name, time.Now())))
+	fmt.Println(pterm.Green(fmt.Sprintf("%s", link)))
 	a, err := survey.AskAlias(onenote.NotebookName(n.DisplayName), onenote.SectionName(section.Name))
 
 	if a != "" {

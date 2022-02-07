@@ -15,7 +15,8 @@ import (
 type Api struct {
 	GetNotebooks func(token oauthv2.OAuthToken) ([]Notebook, error)
 	GetSections  func(token oauthv2.OAuthToken, n Notebook) ([]Section, error)
-	SaveNote     func(token oauthv2.OAuthToken, n NotePage) error
+	//Saves the note and returns the link to the newly created note.
+	SaveNote func(token oauthv2.OAuthToken, n NotePage) (string, error)
 }
 
 func NewApi() Api {
@@ -96,7 +97,7 @@ func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, error) {
 	return response.Sections, nil
 }
 
-func saveNote(t oauthv2.OAuthToken, n NotePage) error {
+func saveNote(t oauthv2.OAuthToken, n NotePage) (string, error) {
 	c := http.Client{}
 
 	var body = `<html>
@@ -112,7 +113,7 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) error {
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return "", err
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.AccessToken))
 	req.Header.Add("Content-Type", "application/xhtml+xml")
@@ -120,15 +121,25 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) error {
 	res, err := c.Do(req)
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return "", err
 	}
 
+	resBody := res.Body
+	bytes, _ := io.ReadAll(resBody)
 	if res.StatusCode != http.StatusCreated {
-		resBody := res.Body
-		bodyStr, _ := io.ReadAll(resBody)
-		log.Fatal(string(bodyStr))
-		return errors.New("Couldn't save the note.")
+		log.Fatal(string(bytes))
+		return "", errors.New("Couldn't save the note.")
 	}
 
-	return nil
+	var response struct {
+		Links struct {
+			OneNoteWebUrl struct {
+				Href string `json:"href"`
+			} `json:"oneNoteWebUrl"`
+		} `json:"links"`
+	}
+
+	json.Unmarshal(bytes, &response)
+
+	return response.Links.OneNoteWebUrl.Href, nil
 }

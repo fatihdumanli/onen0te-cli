@@ -46,13 +46,14 @@ func GetSections(n onenote.Notebook) []onenote.Section {
 }
 
 //Save a note page using Onenote API
-func SaveNotePage(npage onenote.NotePage) error {
+//Returns the link to the page.
+func SaveNotePage(npage onenote.NotePage) (string, error) {
 	checkTokenPresented()
-	err := root.api.SaveNote(*root.token, npage)
+	link, err := root.api.SaveNote(*root.token, npage)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return link, nil
 }
 
 func GetAliases() *[]onenote.Alias {
