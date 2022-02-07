@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/fatihdumanli/cnote"
+	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
@@ -21,18 +22,23 @@ func displayAliasList() int {
 	var aliasList = cnote.GetAliases()
 
 	if aliasList == nil {
-		fmt.Println(pterm.Red("Your alias data couldn't be loaded."))
+		fmt.Println(style.Error("Your alias data couldn't be loaded."))
 		return 1
 	}
 
 	if len(*aliasList) == 0 {
-		fmt.Println(pterm.Yellow("You haven't added any alias yet."))
+		fmt.Println(style.Error("You haven't added any alias yet."))
 		return 2
 	}
 
+	var tableData [][]string
+	tableData = append(tableData, []string{"Alias", "Section", "Notebook"})
+
 	for _, a := range *aliasList {
-		fmt.Printf("-%s=%s (%s)\n", pterm.Cyan(a.Short), a.Section.Name, a.Notebook.DisplayName)
+		tableData = append(tableData, []string{a.Short, a.Section.Name, a.Notebook.DisplayName})
 	}
+
+	pterm.DefaultTable.WithHasHeader().WithData(tableData).Render()
 
 	return 0
 }

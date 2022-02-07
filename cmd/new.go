@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal"
+	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/spf13/cobra"
@@ -88,7 +89,8 @@ func saveNote(c *cobra.Command, args []string) int {
 		return 5
 	}
 
-	fmt.Printf(" ✅ Your note has been saved. (%s)\n", section.Name)
+	var msg = fmt.Sprintf("Your note has been saved. (%s)\n", style.Section(section.Name))
+	fmt.Println(style.Success(msg))
 	fmt.Printf("%s\n", link)
 	return 0
 }

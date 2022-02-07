@@ -7,7 +7,7 @@ import (
 
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal/storage"
-	"github.com/pterm/pterm"
+	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/spf13/cobra"
 )
 
@@ -31,15 +31,16 @@ func removeAlias(c *cobra.Command, args []string) int {
 	err := cnote.RemoveAlias(args[0])
 	if err != nil {
 		if errors.Is(err, storage.KeyNotFound) {
-			//TODO: Do not forget to use standardized color for aliases.
-			fmt.Printf(" ❌ The alias %s has not found.\n", pterm.Blue(args[0]))
+			var msg = fmt.Sprintf("The alias %s has not found.\n", style.Alias(args[0]))
+			fmt.Println(style.Error(msg))
 			return 2
 		}
 
 		return 3
 	}
 
-	fmt.Printf(" ✅The alias %s has been deleted\n", pterm.Blue(args[0]))
+	var msg = fmt.Sprintf("The alias %s has been deleted.\n", style.Alias(args[0]))
+	fmt.Println(style.Success(msg))
 	return 0
 }
 

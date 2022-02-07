@@ -7,8 +7,8 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	s "github.com/AlecAivazis/survey/v2"
 	"github.com/fatihdumanli/cnote/internal/config"
+	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
-	"github.com/pterm/pterm"
 )
 
 //Friendly names
@@ -121,7 +121,7 @@ func AskSetupAccount() (bool, error) {
 func AskAlias(n NotebookName, sn SectionName) (string, error) {
 	var answer string
 
-	promtMsg := fmt.Sprintf("Enter an alias for %s sn (Press <Enter> to skip.)", pterm.BgLightCyan.Sprint(sn))
+	promtMsg := fmt.Sprintf("Enter an alias for %s (Press <Enter> to skip.)", style.Section(string(sn)))
 
 	var aliasQuestion = &survey.Question{
 		Name: "salias",

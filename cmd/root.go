@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/fatihdumanli/cnote"
+	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -52,14 +52,17 @@ func startNoteSurvey() int {
 	}
 
 	//The note has been saved
-	fmt.Println(pterm.Green(fmt.Sprintf("✅ Your note has saved to the section %s (%s)", section.Name, time.Now())))
-	fmt.Println(pterm.Green(fmt.Sprintf("%s", link)))
+	var msg = fmt.Sprintf("Your note has saved to the section %s (%s)", style.Section(section.Name), time.Now())
+	fmt.Println(style.Success(msg))
+
+	fmt.Println(fmt.Sprintf("%s", link))
 	a, err := survey.AskAlias(onenote.NotebookName(n.DisplayName), onenote.SectionName(section.Name))
 
 	if a != "" {
 		err := cnote.SaveAlias(a, n, section)
 		if err == nil {
-			fmt.Println(pterm.Green(fmt.Sprintf("✅ Alias '%s' has been saved. (%s)", a, section.Name)))
+			var msg = fmt.Sprintf("Alias '%s' has been saved. (%s)", style.Alias(a), style.Section(section.Name))
+			fmt.Println(style.Success(msg))
 		} else {
 			return 2
 		}
