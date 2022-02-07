@@ -101,7 +101,7 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) error {
 
 	var body = `<html>
 <head>
-<title>` + "Page title" + `</title>
+<title>` + n.Title + `</title>
 </head>
 <body>
 <p>` + n.Content + `</p>
