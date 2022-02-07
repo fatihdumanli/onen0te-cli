@@ -8,6 +8,7 @@ import (
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -29,12 +30,16 @@ func startNoteSurvey() int {
 		panic(err)
 	}
 
+	notebookSpinner, _ := pterm.DefaultSpinner.Start("Getting your notebooks...")
 	notebooks := cnote.GetNotebooks()
-	fmt.Println("Getting your notebooks...")
+	//TODO: What if it fails, consider use retry.
+	notebookSpinner.Success()
 	n, err := survey.AskNotebook(notebooks)
 
-	fmt.Println("Getting sections...")
+	sectionsSpinner, _ := pterm.DefaultSpinner.Start("Getting sections...")
 	sections := cnote.GetSections(n)
+	//TODO: What if it fails, consider use retry.
+	sectionsSpinner.Success()
 	section, err := survey.AskSection(n, sections)
 
 	//Saving the note to the section
