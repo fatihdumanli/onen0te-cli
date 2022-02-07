@@ -31,7 +31,7 @@ func displayAliasList() int {
 	}
 
 	for _, a := range *aliasList {
-		fmt.Printf("-%s=%s (%s)\n", pterm.Cyan(a.Short), a.Section, a.Notebook)
+		fmt.Printf("-%s=%s (%s)\n", pterm.Cyan(a.Short), a.Section.Name, a.Notebook.DisplayName)
 	}
 
 	return 0
