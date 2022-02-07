@@ -46,23 +46,36 @@ func startNoteSurvey() int {
 		SectionId: section.ID,
 		Content:   noteContent,
 	})
+	//TODO: We might turn this responsibility over to cnote package. (Printing the outcome)
+	//Sİnce we're creating aliases, notes and doing pretty much the same thing everywhere
+	//It doesn't add up to write the same code again and again.
 	if err != nil {
 		log.Fatal("couldn't save the note.")
 		return 1
 	}
 
 	//The note has been saved
-	var msg = fmt.Sprintf("Your note has saved to the section %s (%s)", style.Section(section.Name), time.Now())
+	var msg = fmt.Sprintf("Your note has saved to the section %s (%s)\n\n", style.Section(section.Name), time.Now())
+	//TODO: We might turn this responsibility over to cnote package. (Printing the outcome)
+	//Sİnce we're creating aliases, notes and doing pretty much the same thing everywhere
+	//It doesn't add up to write the same code again and again.
 	fmt.Println(style.Success(msg))
 
-	fmt.Println(fmt.Sprintf("%s", link))
+	fmt.Println(fmt.Sprintf("%s\n", link))
 	a, err := survey.AskAlias(onenote.NotebookName(n.DisplayName), onenote.SectionName(section.Name))
 
 	if a != "" {
 		err := cnote.SaveAlias(a, n, section)
 		if err == nil {
-			var msg = fmt.Sprintf("Alias '%s' has been saved. (%s)", style.Alias(a), style.Section(section.Name))
+			//TODO: We might turn this responsibility over to cnote package. (Printing the outcome)
+			//Sİnce we're creating aliases, notes and doing pretty much the same thing everywhere
+			//It doesn't add up to write the same code again and again.
+			var msg = fmt.Sprintf("Alias '%s' has been saved. (%s)\n", style.Alias(a), style.Section(section.Name))
 			fmt.Println(style.Success(msg))
+			var infoMsg = "Now you can quickly add notes with the following command:\n\n"
+			fmt.Println(style.Info(infoMsg))
+			fmt.Println(fmt.Sprintf("$ cnote new <path-to-input> -a %s", a))
+
 		} else {
 			return 2
 		}

@@ -18,3 +18,7 @@ var Alias Style = func(s string) string {
 var Error Style = func(s string) string {
 	return pterm.Error.Sprintf("&s", s)
 }
+
+var Info Style = func(s string) string {
+	return pterm.Info.Sprintf("%s", s)
+}

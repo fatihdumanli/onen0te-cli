@@ -90,6 +90,9 @@ func saveNote(c *cobra.Command, args []string) int {
 	}
 
 	var msg = fmt.Sprintf("Your note has been saved. (%s)\n", style.Section(section.Name))
+	//TODO: We might turn this responsibility over to cnote package. (Printing the outcome)
+	//Sİnce we're creating aliases, notes and doing pretty much the same thing everywhere
+	//It doesn't add up to write the same code again and again.
 	fmt.Println(style.Success(msg))
 	fmt.Printf("%s\n", link)
 	return 0
