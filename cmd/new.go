@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/fatihdumanli/cnote"
+	"github.com/fatihdumanli/cnote/internal"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/spf13/cobra"
@@ -32,22 +33,36 @@ var newCmd = &cobra.Command{
 
 func saveNote(c *cobra.Command, args []string) int {
 
+	var noteContent *string
+
 	if len(args) != 1 && !inline {
 		c.Usage()
 		return 1
 	}
 
 	//Input validations
-	if inline {
-		if inlineContent == "" {
-			log.Fatal("text flag cannot be empty")
-			return 2
-		}
-	} else {
-		//it cannot be empty
-		var inputPath = args[0]
-		_ = inputPath
+	if inline && inlineContent == "" {
+		log.Fatal("content flag cannot be empty")
+		return 2
+	}
 
+	if !inline {
+		//Load the content from the file
+		var inputPath = args[0]
+		if !internal.Exists(inputPath) {
+			log.Fatalf(" ❌ the file %s not found.", inputPath)
+			return 3
+		}
+
+		var fileContent, ok = internal.ReadFile(inputPath)
+		if !ok {
+			log.Fatalf("😣 couldn't read the file %s", inputPath)
+			return 4
+		}
+
+		noteContent = &fileContent
+	} else {
+		noteContent = &inlineContent
 	}
 
 	var section onenote.Section
@@ -63,26 +78,17 @@ func saveNote(c *cobra.Command, args []string) int {
 		section = a.Section
 	}
 
-	if inline {
-
-		err := cnote.SaveNotePage(onenote.NotePage{
-			SectionId: section.ID,
-			Title:     title,
-			Content:   inlineContent,
-		})
-
-		if err != nil {
-			log.Fatal("couldn't save the note.")
-			return 3
-		}
-
-		fmt.Printf(" ✅ Your note has been saved. (%s)\n", section.Name)
-	} else {
-
-		//TODO: we should read from the file
-
+	err := cnote.SaveNotePage(onenote.NotePage{
+		SectionId: section.ID,
+		Title:     title,
+		Content:   *noteContent,
+	})
+	if err != nil {
+		log.Fatal("couldn't save the note.")
+		return 5
 	}
 
+	fmt.Printf(" ✅ Your note has been saved. (%s)\n", section.Name)
 	return 0
 }
 
