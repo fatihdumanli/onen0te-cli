@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal/style"
@@ -20,6 +21,10 @@ var listCmd = &cobra.Command{
 
 func displayAliasList() int {
 	var aliasList = cnote.GetAliases()
+
+	sort.Slice(*aliasList, func(i, j int) bool {
+		return (*aliasList)[i].Short < (*aliasList)[j].Short
+	})
 
 	if aliasList == nil {
 		fmt.Println(style.Error("Your alias data couldn't be loaded."))
