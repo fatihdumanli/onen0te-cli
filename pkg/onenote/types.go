@@ -30,7 +30,7 @@ type Alias struct {
 
 //Represents a note page
 type NotePage struct {
-	SectionId string
-	Title     string
-	Content   string
+	Section Section
+	Title   string
+	Content string
 }

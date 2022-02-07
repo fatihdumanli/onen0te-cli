@@ -1,13 +1,9 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"os"
 
 	"github.com/fatihdumanli/cnote"
-	"github.com/fatihdumanli/cnote/internal/storage"
-	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/spf13/cobra"
 )
 
@@ -30,17 +26,9 @@ func removeAlias(c *cobra.Command, args []string) int {
 
 	err := cnote.RemoveAlias(args[0])
 	if err != nil {
-		if errors.Is(err, storage.KeyNotFound) {
-			var msg = fmt.Sprintf("The alias %s has not found.\n", style.Alias(args[0]))
-			fmt.Println(style.Error(msg))
-			return 2
-		}
-
-		return 3
+		return 2
 	}
 
-	var msg = fmt.Sprintf("The alias %s has been deleted.\n", style.Alias(args[0]))
-	fmt.Println(style.Success(msg))
 	return 0
 }
 

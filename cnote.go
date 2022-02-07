@@ -1,11 +1,14 @@
 package cnote
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/fatihdumanli/cnote/internal/authentication"
 	"github.com/fatihdumanli/cnote/internal/storage"
+	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
@@ -51,8 +54,15 @@ func SaveNotePage(npage onenote.NotePage) (string, error) {
 	checkTokenPresented()
 	link, err := root.api.SaveNote(*root.token, npage)
 	if err != nil {
+		log.Fatal("couldn't save the note.")
 		return "", err
 	}
+
+	//The note has been saved
+	var msg = fmt.Sprintf("Your note has saved to the section %s (%s)\n\n", style.Section(npage.Section.Name), time.Now())
+	fmt.Println(style.Success(msg))
+	fmt.Println(fmt.Sprintf("%s\n", link))
+
 	return link, nil
 }
 
@@ -95,6 +105,12 @@ func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) 
 		log.Fatalf("An error has occured while saving the alias to the local storage %s", err.Error())
 		return err
 	}
+
+	var msg = fmt.Sprintf("Alias '%s' has been saved. (%s)\n", style.Alias(name), style.Section(section.Name))
+	fmt.Println(style.Success(msg))
+	var infoMsg = "Now you can quickly add notes with the following command:\n\n"
+	fmt.Println(style.Info(infoMsg))
+	fmt.Println(fmt.Sprintf("$ cnote new <path-to-input> -a %s", name))
 	return nil
 }
 
@@ -114,9 +130,13 @@ func GetAlias(n string) *onenote.Alias {
 func RemoveAlias(a string) error {
 	err := root.storage.Remove(a)
 	if err != nil {
+		var msg = fmt.Sprintf("The alias %s has not found.\n", style.Alias(a))
+		fmt.Println(style.Error(msg))
 		return err
 	}
 
+	var msg = fmt.Sprintf("The alias %s has been deleted.\n", style.Alias(a))
+	fmt.Println(style.Success(msg))
 	return nil
 }
 

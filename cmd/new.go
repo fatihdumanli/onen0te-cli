@@ -1,13 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal"
-	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/spf13/cobra"
@@ -79,22 +77,15 @@ func saveNote(c *cobra.Command, args []string) int {
 		section = a.Section
 	}
 
-	link, err := cnote.SaveNotePage(onenote.NotePage{
-		SectionId: section.ID,
-		Title:     title,
-		Content:   *noteContent,
+	_, err := cnote.SaveNotePage(onenote.NotePage{
+		Section: section,
+		Title:   title,
+		Content: *noteContent,
 	})
 	if err != nil {
-		log.Fatal("couldn't save the note.")
 		return 5
 	}
 
-	var msg = fmt.Sprintf("Your note has been saved. (%s)\n", style.Section(section.Name))
-	//TODO: We might turn this responsibility over to cnote package. (Printing the outcome)
-	//Sİnce we're creating aliases, notes and doing pretty much the same thing everywhere
-	//It doesn't add up to write the same code again and again.
-	fmt.Println(style.Success(msg))
-	fmt.Printf("%s\n", link)
 	return 0
 }
 

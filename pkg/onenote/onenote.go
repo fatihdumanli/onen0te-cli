@@ -109,7 +109,7 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) (string, error) {
 </bod>
 </html>`
 
-	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/onenote/sections/%s/pages", n.SectionId)
+	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/onenote/sections/%s/pages", n.Section.ID)
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
 	if err != nil {
 		log.Fatal(err)
