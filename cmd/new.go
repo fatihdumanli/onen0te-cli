@@ -67,10 +67,10 @@ func saveNote(c *cobra.Command, args []string) int {
 	var section onenote.Section
 
 	if alias == "" {
-		var notebooks = cnote.GetNotebooks()
+		var notebooks, _ = cnote.GetNotebooks()
 		n, _ := survey.AskNotebook(notebooks)
 
-		var sections = cnote.GetSections(n)
+		var sections, _ = cnote.GetSections(n)
 		section, _ = survey.AskSection(n, sections)
 	} else {
 		var a = cnote.GetAlias(alias)

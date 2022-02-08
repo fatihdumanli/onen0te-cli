@@ -8,7 +8,6 @@ import (
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -26,20 +25,24 @@ var rootCmd = &cobra.Command{
 //The function gets executed once the application starts without any commands/arguments.
 func startNoteSurvey() int {
 	noteContent, err := survey.AskNoteContent()
+	//TODO: consider creating constsns for error codes.
 	if err != nil {
-		panic(err)
+		return 1
 	}
 
-	notebookSpinner, _ := pterm.DefaultSpinner.Start("Getting your notebooks...")
-	notebooks := cnote.GetNotebooks()
-	//TODO: What if it fails, consider use retry.
-	notebookSpinner.Success()
-	n, err := survey.AskNotebook(notebooks)
+	notebooks, ok := cnote.GetNotebooks()
+	if !ok {
+		return 2
+	}
 
-	sectionsSpinner, _ := pterm.DefaultSpinner.Start("Getting sections...")
-	sections := cnote.GetSections(n)
-	//TODO: What if it fails, consider use retry.
-	sectionsSpinner.Success()
+	n, err := survey.AskNotebook(notebooks)
+	if err != nil {
+		return 1
+	}
+	sections, ok := cnote.GetSections(n)
+	if !ok {
+		return 3
+	}
 	section, err := survey.AskSection(n, sections)
 
 	//Saving the note to the section

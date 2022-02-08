@@ -12,6 +12,7 @@ import (
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
+	"github.com/pterm/pterm"
 )
 
 type cnote struct {
@@ -28,24 +29,34 @@ var (
 )
 
 //Get the list of notebooks belonging to the user logged in
-func GetNotebooks() []onenote.Notebook {
+func GetNotebooks() ([]onenote.Notebook, bool) {
 	checkTokenPresented()
+
+	notebookSpinner, _ := pterm.DefaultSpinner.Start("Getting your notebooks...")
 	var notebooks, err = root.api.GetNotebooks(*root.token)
 	if err != nil {
-		panic(err)
+		notebookSpinner.Fail(err.Error())
+		return notebooks, false
 	}
-	return notebooks
+	//TODO: What if it fails, consider use retry.
+	notebookSpinner.Success()
+
+	return notebooks, true
 }
 
 //Get the list of notebooks belonging to the user logged in
-func GetSections(n onenote.Notebook) []onenote.Section {
+func GetSections(n onenote.Notebook) ([]onenote.Section, bool) {
 	checkTokenPresented()
 
+	sectionsSpinner, _ := pterm.DefaultSpinner.Start("Getting sections...")
 	var sections, err = root.api.GetSections(*root.token, n)
 	if err != nil {
-		panic(err)
+		sectionsSpinner.Fail(err.Error())
+		return sections, false
 	}
-	return sections
+	//TODO: What if it fails, consider use retry.
+	sectionsSpinner.Success()
+	return sections, true
 }
 
 //Save a note page using Onenote API
