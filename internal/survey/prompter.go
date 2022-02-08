@@ -36,6 +36,7 @@ func AskNoteContent() (string, error) {
 }
 
 //Ask for the notebook to save the note.
+//TODO: Add error handling and output if an error occured.
 func AskNotebook(nlist []Notebook) (Notebook, error) {
 
 	var notebookOptions []string

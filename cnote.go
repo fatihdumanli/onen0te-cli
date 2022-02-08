@@ -61,7 +61,10 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, bool) {
 
 //Save a note page using Onenote API
 //Returns the link to the page.
+//TODO: Get parameters to get to know how the user created the note
+//And display tips like 'You could've created this note with the allias.'
 func SaveNotePage(npage onenote.NotePage) (string, error) {
+
 	checkTokenPresented()
 	link, err := root.api.SaveNote(*root.token, npage)
 	if err != nil {
