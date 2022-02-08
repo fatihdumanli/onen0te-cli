@@ -49,5 +49,5 @@ func displayAliasList() int {
 }
 
 func init() {
-	rootCmd.AddCommand(listCmd)
+	cmdAlias.AddCommand(listCmd)
 }

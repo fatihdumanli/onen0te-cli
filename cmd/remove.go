@@ -33,5 +33,5 @@ func removeAlias(c *cobra.Command, args []string) int {
 }
 
 func init() {
-	rootCmd.AddCommand(removeCmd)
+	cmdAlias.AddCommand(removeCmd)
 }

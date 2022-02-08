@@ -144,12 +144,12 @@ func GetAlias(n string) *onenote.Alias {
 func RemoveAlias(a string) error {
 	err := root.storage.Remove(a)
 	if err != nil {
-		var msg = fmt.Sprintf("The alias %s has not found.\n", style.Alias(a))
+		var msg = fmt.Sprintf("The alias %s has not found.\n", a)
 		fmt.Println(style.Error(msg))
 		return err
 	}
 
-	var msg = fmt.Sprintf("The alias %s has been deleted.\n", style.Alias(a))
+	var msg = fmt.Sprintf("The alias %s has been deleted.\n", a)
 	fmt.Println(style.Success(msg))
 	return nil
 }
