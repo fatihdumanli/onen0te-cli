@@ -73,8 +73,8 @@ func SaveNotePage(npage onenote.NotePage) (string, error) {
 	}
 
 	//The note has been saved
-	var msg = fmt.Sprintf("Your note has saved to the section %s (%s)\n\n", style.Section(npage.Section.Name), time.Now())
-	fmt.Println(style.Success(msg))
+	var msg = fmt.Sprintf("Your note has been saved to the section %s", style.Section(npage.Section.Name))
+	fmt.Printf("%s (%s)\n", style.Success(msg), time.Now().Format(time.RFC3339))
 	fmt.Println(fmt.Sprintf("%s\n", link))
 
 	return link, nil
@@ -120,11 +120,11 @@ func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) 
 		return err
 	}
 
-	var msg = fmt.Sprintf("Alias '%s' has been saved. (%s)\n", style.Alias(name), style.Section(section.Name))
+	var msg = fmt.Sprintf("Alias '%s' has been saved.\n", style.Section(name))
 	fmt.Println(style.Success(msg))
-	var infoMsg = "Now you can quickly add notes with the following command:\n\n"
+	var infoMsg = "Now you can quickly add notes with the following command:"
 	fmt.Println(style.Info(infoMsg))
-	fmt.Println(fmt.Sprintf("$ cnote new <path-to-input> -a %s", name))
+	fmt.Println(fmt.Sprintf("$ cnote new <path-to-input> -a %s\n", name))
 	return nil
 }
 
