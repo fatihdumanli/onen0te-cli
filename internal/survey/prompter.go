@@ -112,9 +112,16 @@ func AskAlias(n NotebookName, sn SectionName) (string, error) {
 	return askSinglelineFreeText(promtMsg)
 }
 
-//Ask title for the note.
-func AskTitle() (string, error) {
+//Asks title if the user is about to create an untitled note with the command
+//"cnote new <input-file>" (without the -title flag.)
+func AskForgottenTitle() (string, error) {
 	var msg = "Did you forget to pass the title flag? Set it now: (Press <Enter> to skip.)"
+	return askSinglelineFreeText(msg)
+}
+
+//Ask title when creating the note without any flags.
+func AskTitle() (string, error) {
+	var msg = "Enter title: (Press <Enter> to skip.)"
 	return askSinglelineFreeText(msg)
 }
 

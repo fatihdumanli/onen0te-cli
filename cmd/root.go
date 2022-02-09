@@ -45,10 +45,16 @@ func startNoteSurvey() int {
 	}
 	section, err := survey.AskSection(n, sections)
 
+	title, err := survey.AskTitle()
+	if err != nil {
+		return 4
+	}
+
 	//Saving the note to the section
 	_, err = cnote.SaveNotePage(onenote.NotePage{
 		Section: section,
 		Content: noteContent,
+		Title:   title,
 	})
 	if err != nil {
 		return 1
