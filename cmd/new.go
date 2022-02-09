@@ -64,6 +64,12 @@ func saveNote(c *cobra.Command, args []string) int {
 		noteContent = &inlineContent
 	}
 
+	//Get confirmation on adding a note without a title.
+	if title == "" {
+		var tAnswer, _ = survey.AskTitle()
+		title = tAnswer
+	}
+
 	var section onenote.Section
 
 	if alias == "" {

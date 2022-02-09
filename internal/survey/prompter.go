@@ -102,39 +102,49 @@ func AskSection(n Notebook, slist []Section) (Section, error) {
 
 //In case there's no account have been set yet, prompt the user to ask whether create one at that moment.
 func AskSetupAccount() (bool, error) {
-
-	var setupQuestion = &survey.Question{
-		Name: "setup",
-		Prompt: &survey.Confirm{
-			Message: "You haven't setup a Onenote account yet, would you like to setup one now?",
-		},
-	}
-
-	var answer bool
-	if err := s.Ask([]*s.Question{setupQuestion}, &answer); err != nil {
-		return answer, err
-	}
-	return answer, nil
+	return askConfirmation("You haven't setup a Onenote account yet, would you like to setup one now?")
 }
 
 //Promps the user to get confirmation on creating alias to given notebook&section combination.
 //Returns the answer and the error if any
 func AskAlias(n NotebookName, sn SectionName) (string, error) {
-	var answer string
-
 	promtMsg := fmt.Sprintf("Enter an alias for %s (Press <Enter> to skip.)", style.Section(string(sn)))
+	return askSinglelineFreeText(promtMsg)
+}
 
-	var aliasQuestion = &survey.Question{
-		Name: "salias",
-		Prompt: &survey.Input{
-			Message: promtMsg,
+//Ask title for the note.
+func AskTitle() (string, error) {
+	var msg = "Did you forget to pass the title flag? Set it now: (Press <Enter> to skip.)"
+	return askSinglelineFreeText(msg)
+}
+
+//Prepares a confirmation msg (y/N)
+func askConfirmation(msg string) (bool, error) {
+	var q = &survey.Question{
+		Name: "q",
+		Prompt: &survey.Confirm{
+			Message: msg,
 		},
 	}
+	var answer bool
+	if err := s.Ask([]*s.Question{q}, &answer); err != nil {
+		return answer, err
+	}
+	return answer, nil
+}
 
-	if err := s.Ask([]*s.Question{aliasQuestion}, &answer); err != nil {
+//Prepares a question that can be answered with a free text.
+func askSinglelineFreeText(msg string) (string, error) {
+	var answer string
+	var q = &survey.Question{
+		Name: "qtitle",
+		Prompt: &survey.Input{
+			Message: msg,
+		},
+	}
+	if err := s.Ask([]*s.Question{q}, &answer); err != nil {
 		return "", err
 	}
-
 	return answer, nil
 }
 
