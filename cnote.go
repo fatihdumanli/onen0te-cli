@@ -76,10 +76,11 @@ func SaveNotePage(npage onenote.NotePage) (string, error) {
 	fmt.Printf("%s (%s)\n", style.Success(msg), time.Now().Format(time.RFC3339))
 	fmt.Println(fmt.Sprintf("%s\n", link))
 
-	askAlias(npage.Section)
-
-	//TODO: Print only if the alias didn't get created in this session.
-	printAliasInstruction(npage.Section.Name)
+	ok := askAlias(npage.Section)
+	//Print only if the alias didn't get created in this session.
+	if !ok {
+		printAliasInstruction(npage.Section.Name)
+	}
 
 	return link, nil
 }
@@ -189,8 +190,17 @@ func checkTokenPresented() {
 }
 
 //Ask alias to make it easy to create a note within the section
-func askAlias(s onenote.Section) {
-	//TODO: Ask only if there's no such an alias.
+//Returns TRUE if the user has craeted an alias through this function
+//If the user has just created the alias, we're not going to display alias instructions.
+func askAlias(s onenote.Section) bool {
+	allAliases := GetAliases()
+	//Exit the funciton if there's already an alias for the section.
+	for _, a := range *allAliases {
+		if a.Section.ID == s.ID {
+			return false
+		}
+	}
+
 	a, _ := survey.AskAlias(onenote.NotebookName(s.Notebook.DisplayName), onenote.SectionName(s.Name))
 	if a != "" {
 		//User answered with an alias
@@ -198,7 +208,10 @@ func askAlias(s onenote.Section) {
 		if err != nil {
 			log.Fatal(style.Error("Couldn't save the alias."))
 		}
+		return true
 	}
+
+	return false
 }
 
 //This function prints some alias instructions if the note has been created without using an alias
@@ -216,7 +229,6 @@ func printAliasInstruction(section string) {
 
 //Grab the token from the local storage upon startup
 func init() {
-
 	api := onenote.NewApi()
 	bitcask := &storage.Bitcask{}
 	root = cnote{api: api, storage: bitcask}
