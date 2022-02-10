@@ -51,22 +51,9 @@ func startNoteSurvey() int {
 	}
 
 	//Saving the note to the section
-	_, err = cnote.SaveNotePage(onenote.NotePage{
-		Section: section,
-		Content: noteContent,
-		Title:   title,
-	})
+	_, err = cnote.SaveNotePage(*onenote.NewNotePage(section, title, noteContent))
 	if err != nil {
 		return 1
-	}
-
-	a, err := survey.AskAlias(onenote.NotebookName(n.DisplayName), onenote.SectionName(section.Name))
-	if a != "" {
-		//User answered with an alias
-		err := cnote.SaveAlias(a, n, section)
-		if err != nil {
-			return 2
-		}
 	}
 
 	return 0

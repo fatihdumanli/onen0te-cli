@@ -83,11 +83,7 @@ func saveNote(c *cobra.Command, args []string) int {
 		section = a.Section
 	}
 
-	_, err := cnote.SaveNotePage(onenote.NotePage{
-		Section: section,
-		Title:   title,
-		Content: *noteContent,
-	})
+	_, err := cnote.SaveNotePage(*onenote.NewNotePage(section, title, *noteContent))
 	if err != nil {
 		return 5
 	}

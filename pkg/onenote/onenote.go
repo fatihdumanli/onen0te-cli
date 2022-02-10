@@ -67,6 +67,12 @@ func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, error) {
 		Sections []Section `json:"value"`
 	}
 
+	//Ditch the nil pointer.
+	//TODO: We need to find out how to set section.Notebook
+	for _, s := range response.Sections {
+		s.Notebook = &Notebook{}
+	}
+
 	c := http.Client{}
 	req, err := http.NewRequest(http.MethodGet, n.SectionsUrl, nil)
 	if err != nil {
@@ -92,6 +98,11 @@ func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, error) {
 	err = json.Unmarshal(bytes, &response)
 	if err != nil {
 		return response.Sections, err
+	}
+
+	//Set notebook ptr of each section in the response
+	for _, s := range response.Sections {
+		s.Notebook = &n
 	}
 
 	return response.Sections, nil

@@ -76,7 +76,9 @@ func SaveNotePage(npage onenote.NotePage) (string, error) {
 	fmt.Printf("%s (%s)\n", style.Success(msg), time.Now().Format(time.RFC3339))
 	fmt.Println(fmt.Sprintf("%s\n", link))
 
+	askAlias(npage.Section)
 	printAliasInstruction(npage.Section.Name)
+
 	return link, nil
 }
 
@@ -110,7 +112,7 @@ func GetAliases() *[]onenote.Alias {
 }
 
 //Save the alias for a onenote section to use it later for quick save
-func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) error {
+func saveAlias(name string, notebook onenote.Notebook, section onenote.Section) error {
 	err := root.storage.Set(name, onenote.Alias{
 		Short:    name,
 		Notebook: notebook,
@@ -182,6 +184,18 @@ func checkTokenPresented() {
 		}
 	}
 
+}
+
+//Ask alias to make it easy to create a note within the section
+func askAlias(s onenote.Section) {
+	a, _ := survey.AskAlias(onenote.NotebookName(s.Notebook.DisplayName), onenote.SectionName(s.Name))
+	if a != "" {
+		//User answered with an alias
+		err := saveAlias(a, *s.Notebook, s)
+		if err != nil {
+			log.Fatal(style.Error("Couldn't save the alias."))
+		}
+	}
 }
 
 //This function prints some alias instructions if the note has been created without using an alias
