@@ -20,5 +20,10 @@ var Error Style = func(s string) string {
 }
 
 var Info Style = func(s string) string {
+
+	pterm.Info.Scope = pterm.Scope{
+		Style: pterm.NewStyle(pterm.FgDefault),
+	}
+
 	return pterm.Info.Sprintf("%s", s)
 }

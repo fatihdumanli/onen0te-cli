@@ -64,19 +64,19 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, bool) {
 //TODO: Get parameters to get to know how the user created the note
 //And display tips like 'You could've created this note with the allias.'
 func SaveNotePage(npage onenote.NotePage) (string, error) {
-
 	checkTokenPresented()
+
 	link, err := root.api.SaveNote(*root.token, npage)
 	if err != nil {
 		log.Fatal("couldn't save the note.")
 		return "", err
 	}
-
 	//The note has been saved
 	var msg = fmt.Sprintf("Your note has been saved to the section %s", style.Section(npage.Section.Name))
 	fmt.Printf("%s (%s)\n", style.Success(msg), time.Now().Format(time.RFC3339))
 	fmt.Println(fmt.Sprintf("%s\n", link))
 
+	printAliasInstruction(npage.Section.Name)
 	return link, nil
 }
 
@@ -182,6 +182,19 @@ func checkTokenPresented() {
 		}
 	}
 
+}
+
+//This function prints some alias instructions if the note has been created without using an alias
+//Despite that the section the note was created in has an alias.
+func printAliasInstruction(section string) {
+	var allAliases = GetAliases()
+	for _, a := range *allAliases {
+		if a.Section.Name == section {
+			var msg = fmt.Sprintf("Existing alias for the section %s", style.Section(section))
+			fmt.Println(style.Info(msg))
+			fmt.Printf("$ cnote new <input-file-path> -a %s will do the trick.\n", a.Short)
+		}
+	}
 }
 
 //Grab the token from the local storage upon startup
