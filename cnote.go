@@ -77,6 +77,8 @@ func SaveNotePage(npage onenote.NotePage) (string, error) {
 	fmt.Println(fmt.Sprintf("%s\n", link))
 
 	askAlias(npage.Section)
+
+	//TODO: Print only if the alias didn't get created in this session.
 	printAliasInstruction(npage.Section.Name)
 
 	return link, nil
@@ -188,6 +190,7 @@ func checkTokenPresented() {
 
 //Ask alias to make it easy to create a note within the section
 func askAlias(s onenote.Section) {
+	//TODO: Ask only if there's no such an alias.
 	a, _ := survey.AskAlias(onenote.NotebookName(s.Notebook.DisplayName), onenote.SectionName(s.Name))
 	if a != "" {
 		//User answered with an alias
