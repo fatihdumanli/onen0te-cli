@@ -71,10 +71,14 @@ func SaveNotePage(npage onenote.NotePage) (string, error) {
 		log.Fatal("couldn't save the note.")
 		return "", err
 	}
-	//The note has been saved
-	var msg = fmt.Sprintf("Your note has been saved to the section %s", style.Section(npage.Section.Name))
-	fmt.Printf("%s (%s)\n", style.Success(msg), time.Now().Format(time.RFC3339))
-	fmt.Println(fmt.Sprintf("%s\n", link))
+
+	var data = make([][]string, 2)
+	data[0] = []string{"Status", "Notebook", "Section", "Title", "Note Size", "Elapsed", "Link", "SavedAt"}
+	data[1] = []string{style.Success("OK"), npage.Section.Notebook.DisplayName, npage.Section.Name, npage.Title, "10 kB", "90 ms", "link FIXME", time.Now().Format(time.RFC3339)}
+	pterm.DefaultTable.WithHasHeader().WithData(data).Render()
+
+	fmt.Println()
+	fmt.Println()
 
 	ok := askAlias(npage.Section)
 	//Print only if the alias didn't get created in this session.
@@ -225,6 +229,7 @@ func printAliasInstruction(section string) {
 			fmt.Printf("$ cnote new <input-file-path> -a %s will do the trick.\n", a.Short)
 		}
 	}
+	fmt.Println()
 }
 
 //Grab the token from the local storage upon startup
