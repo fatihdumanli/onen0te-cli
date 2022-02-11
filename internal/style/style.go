@@ -20,10 +20,17 @@ var Error Style = func(s string) string {
 }
 
 var Info Style = func(s string) string {
-
 	pterm.Info.Scope = pterm.Scope{
 		Style: pterm.NewStyle(pterm.FgDefault),
 	}
-
 	return pterm.Info.Sprintf("%s", s)
+}
+
+var Reminder Style = func(s string) string {
+	pterm.Info.Prefix = pterm.Prefix{
+		Text:  "💡 REMINDER",
+		Style: pterm.NewStyle(pterm.BgYellow, pterm.FgBlack),
+	}
+
+	return pterm.Info.Sprintf(pterm.NewRGB(255, 217, 30).Sprintf(s))
 }

@@ -51,7 +51,7 @@ func startNoteSurvey() int {
 	}
 
 	//Saving the note to the section
-	_, err = cnote.SaveNotePage(*onenote.NewNotePage(section, title, noteContent))
+	_, err = cnote.SaveNotePage(*onenote.NewNotePage(section, title, noteContent), false)
 	if err != nil {
 		return 1
 	}

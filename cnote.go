@@ -61,9 +61,7 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, bool) {
 
 //Save a note page using Onenote API
 //Returns the link to the page.
-//TODO: Get parameters to get to know how the user created the note
-//And display tips like 'You could've created this note with the allias.'
-func SaveNotePage(npage onenote.NotePage) (string, error) {
+func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	checkTokenPresented()
 
 	link, err := root.api.SaveNote(*root.token, npage)
@@ -76,14 +74,12 @@ func SaveNotePage(npage onenote.NotePage) (string, error) {
 	data[0] = []string{"Status", "Notebook", "Section", "Title", "Note Size", "Elapsed", "Link", "SavedAt"}
 	data[1] = []string{style.Success("OK"), npage.Section.Notebook.DisplayName, npage.Section.Name, npage.Title, "10 kB", "90 ms", "link FIXME", time.Now().Format(time.RFC3339)}
 	pterm.DefaultTable.WithHasHeader().WithData(data).Render()
-
-	fmt.Println()
-	fmt.Println()
+	fmt.Print("\n\n")
 
 	ok := askAlias(npage.Section)
 	//Print only if the alias didn't get created in this session.
-	if !ok {
-		printAliasInstruction(npage.Section.Name)
+	if !ok && remindAlias {
+		printAliasReminder(npage.Section.Name)
 	}
 
 	return link, nil
@@ -220,12 +216,12 @@ func askAlias(s onenote.Section) bool {
 
 //This function prints some alias instructions if the note has been created without using an alias
 //Despite that the section the note was created in has an alias.
-func printAliasInstruction(section string) {
+func printAliasReminder(section string) {
 	var allAliases = GetAliases()
 	for _, a := range *allAliases {
 		if a.Section.Name == section {
-			var msg = fmt.Sprintf("Existing alias for the section %s", style.Section(section))
-			fmt.Println(style.Info(msg))
+			var msg = fmt.Sprintf("Existing alias for the section '%s' is '%s'", section, a.Short)
+			fmt.Println(style.Reminder(msg))
 			fmt.Printf("$ cnote new <input-file-path> -a %s will do the trick.\n", a.Short)
 		}
 	}

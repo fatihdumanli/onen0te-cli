@@ -83,7 +83,8 @@ func saveNote(c *cobra.Command, args []string) int {
 		section = a.Section
 	}
 
-	_, err := cnote.SaveNotePage(*onenote.NewNotePage(section, title, *noteContent))
+	//Save the note. Show alias instructions only if the user could've used an alias for the section.
+	_, err := cnote.SaveNotePage(*onenote.NewNotePage(section, title, *noteContent), alias == "")
 	if err != nil {
 		return 5
 	}
