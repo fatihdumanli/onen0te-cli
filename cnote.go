@@ -1,6 +1,7 @@
 package cnote
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -23,6 +24,10 @@ type cnote struct {
 	//So we're using a ptr type rather than value type
 	token *oauthv2.OAuthToken
 }
+
+var (
+	AliasAlreadyExists = errors.New("alias already exists")
+)
 
 var (
 	root cnote
@@ -116,6 +121,13 @@ func GetAliases() *[]onenote.Alias {
 
 //Save the alias for a onenote section to use it later for quick save
 func saveAlias(name string, notebook onenote.Notebook, section onenote.Section) error {
+
+	var isExist = GetAlias(name)
+	if isExist != nil {
+		fmt.Println(style.Error(fmt.Sprintf("the alias %s already being used to identify the section %s", name, isExist.Section.Name)))
+		return AliasAlreadyExists
+	}
+
 	err := root.storage.Set(name, onenote.Alias{
 		Short:    name,
 		Notebook: notebook,
@@ -125,7 +137,7 @@ func saveAlias(name string, notebook onenote.Notebook, section onenote.Section) 
 		return err
 	}
 
-	var msg = fmt.Sprintf("Alias '%s' has been saved.\n", style.Section(name))
+	var msg = fmt.Sprintf("Alias '%s' has been saved.\n", name)
 	fmt.Println(style.Success(msg))
 	var infoMsg = "Now you can quickly add notes with the following command:"
 	fmt.Println(style.Info(infoMsg))
@@ -134,14 +146,13 @@ func saveAlias(name string, notebook onenote.Notebook, section onenote.Section) 
 }
 
 //Get the details of given alias
+//Returns nil if the alias does not found
 func GetAlias(n string) *onenote.Alias {
 	var alias onenote.Alias
 	err := root.storage.Get(n, &alias)
 	if err != nil {
-		log.Fatalf("An error has occured while trying to get the alias data %s", err.Error())
 		return nil
 	}
-
 	return &alias
 }
 
@@ -191,7 +202,7 @@ func checkTokenPresented() {
 
 //Ask alias to make it easy to create a note within the section
 //Returns TRUE if the user has craeted an alias through this function
-//If the user has just created the alias, we're not going to display alias instructions.
+//If the user has just created the alias, we're not going to display alias reminder.
 func askAlias(s onenote.Section) bool {
 	allAliases := GetAliases()
 	//Exit the funciton if there's already an alias for the section.
@@ -201,14 +212,24 @@ func askAlias(s onenote.Section) bool {
 		}
 	}
 
-	a, _ := survey.AskAlias(onenote.NotebookName(s.Notebook.DisplayName), onenote.SectionName(s.Name))
-	if a != "" {
-		//User answered with an alias
-		err := saveAlias(a, *s.Notebook, s)
-		if err != nil {
-			log.Fatal(style.Error("Couldn't save the alias."))
+	for {
+		a, _ := survey.AskAlias(onenote.NotebookName(s.Notebook.DisplayName), onenote.SectionName(s.Name))
+		if a != "" {
+			//User answered with an alias
+			err := saveAlias(a, *s.Notebook, s)
+			if err != nil {
+				//if alias already exists
+				if err == AliasAlreadyExists {
+					continue
+				}
+
+				log.Fatal(style.Error("Couldn't save the alias."))
+				return false
+			}
+			return true
+		} else {
+			break
 		}
-		return true
 	}
 
 	return false
