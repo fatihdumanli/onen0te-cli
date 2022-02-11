@@ -30,8 +30,8 @@ func startNoteSurvey() int {
 		return 1
 	}
 
-	notebooks, ok := cnote.GetNotebooks()
-	if !ok {
+	notebooks, err := cnote.GetNotebooks()
+	if err != nil {
 		return 2
 	}
 
@@ -39,8 +39,8 @@ func startNoteSurvey() int {
 	if err != nil {
 		return 1
 	}
-	sections, ok := cnote.GetSections(n)
-	if !ok {
+	sections, err := cnote.GetSections(n)
+	if err != nil {
 		return 3
 	}
 	section, err := survey.AskSection(n, sections)

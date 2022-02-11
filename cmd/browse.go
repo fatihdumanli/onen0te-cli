@@ -17,15 +17,14 @@ var browseCmd = &cobra.Command{
 }
 
 func browse() int {
-	var ok bool
-	notebooks, ok := cnote.GetNotebooks()
-	if !ok {
+	notebooks, err := cnote.GetNotebooks()
+	if err != nil {
 		return 1
 	}
 
 	n, err := survey.AskNotebook(notebooks)
-	sections, ok := cnote.GetSections(n)
-	if !ok {
+	sections, err := cnote.GetSections(n)
+	if err != nil {
 		return 1
 	}
 	if err != nil {

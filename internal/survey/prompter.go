@@ -3,11 +3,11 @@ package survey
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/AlecAivazis/survey/v2"
 	s "github.com/AlecAivazis/survey/v2"
 	"github.com/fatihdumanli/cnote/internal/config"
-	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 )
 
@@ -107,9 +107,28 @@ func AskSetupAccount() (bool, error) {
 
 //Promps the user to get confirmation on creating alias to given notebook&section combination.
 //Returns the answer and the error if any
-func AskAlias(n NotebookName, sn SectionName) (string, error) {
-	promtMsg := fmt.Sprintf("Enter an alias for %s (Press <Enter> to skip.)", style.Section(string(sn)))
-	return askSinglelineFreeText(promtMsg)
+//Ask alias to make it easy to create a note within the section
+func AskAlias(section onenote.Section, aliaslist *[]onenote.Alias) (string, error) {
+	promtMsg := fmt.Sprintf("Enter an alias for %s (Press <Enter> to skip.)", section.Name)
+	//Ask for an alias as long as there's already an existing one
+outer:
+	for {
+		a, err := askSinglelineFreeText(promtMsg)
+		if err != nil {
+			log.Fatal(err)
+			return "", err
+		}
+
+		fmt.Println("checking if tthere's an already an alias", a)
+		for _, alias := range *aliaslist {
+			//There's already an alias with the same name
+			if alias.Short == a {
+				continue outer
+			}
+		}
+		return a, nil
+	}
+
 }
 
 //Asks title if the user is about to create an untitled note with the command

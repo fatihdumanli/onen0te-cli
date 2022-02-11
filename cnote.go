@@ -34,34 +34,34 @@ var (
 )
 
 //Get the list of notebooks belonging to the user logged in
-func GetNotebooks() ([]onenote.Notebook, bool) {
+func GetNotebooks() ([]onenote.Notebook, error) {
 	checkTokenPresented()
 
 	notebookSpinner, _ := pterm.DefaultSpinner.Start("Getting your notebooks...")
 	var notebooks, err = root.api.GetNotebooks(*root.token)
 	if err != nil {
 		notebookSpinner.Fail(err.Error())
-		return notebooks, false
+		return notebooks, err
 	}
 	//TODO: What if it fails, consider use retry.
 	notebookSpinner.Success()
 
-	return notebooks, true
+	return notebooks, err
 }
 
 //Get the list of notebooks belonging to the user logged in
-func GetSections(n onenote.Notebook) ([]onenote.Section, bool) {
+func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
 	checkTokenPresented()
 
 	sectionsSpinner, _ := pterm.DefaultSpinner.Start("Getting sections...")
 	var sections, err = root.api.GetSections(*root.token, n)
 	if err != nil {
 		sectionsSpinner.Fail(err.Error())
-		return sections, false
+		return sections, err
 	}
 	//TODO: What if it fails, consider use retry.
 	sectionsSpinner.Success()
-	return sections, true
+	return sections, err
 }
 
 //Save a note page using Onenote API
@@ -81,9 +81,21 @@ func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	pterm.DefaultTable.WithHasHeader().WithData(data).Render()
 	fmt.Print("\n\n")
 
-	ok := askAlias(npage.Section)
+	answer, err := survey.AskAlias(npage.Section, GetAliases())
+	if err != nil {
+		log.Fatal(err)
+		return "", err
+	}
+	if answer != "" {
+		err := SaveAlias(answer, *npage.Section.Notebook, npage.Section)
+		if err != nil {
+			log.Fatal(err)
+			return "", err
+		}
+	}
+
 	//Print only if the alias didn't get created in this session.
-	if !ok && remindAlias {
+	if answer == "" && remindAlias {
 		printAliasReminder(npage.Section.Name)
 	}
 
@@ -120,7 +132,7 @@ func GetAliases() *[]onenote.Alias {
 }
 
 //Save the alias for a onenote section to use it later for quick save
-func saveAlias(name string, notebook onenote.Notebook, section onenote.Section) error {
+func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) error {
 
 	var isExist = GetAlias(name)
 	if isExist != nil {
@@ -198,41 +210,6 @@ func checkTokenPresented() {
 		}
 	}
 
-}
-
-//Ask alias to make it easy to create a note within the section
-//Returns TRUE if the user has craeted an alias through this function
-//If the user has just created the alias, we're not going to display alias reminder.
-func askAlias(s onenote.Section) bool {
-	allAliases := GetAliases()
-	//Exit the funciton if there's already an alias for the section.
-	for _, a := range *allAliases {
-		if a.Section.ID == s.ID {
-			return false
-		}
-	}
-
-	for {
-		a, _ := survey.AskAlias(onenote.NotebookName(s.Notebook.DisplayName), onenote.SectionName(s.Name))
-		if a != "" {
-			//User answered with an alias
-			err := saveAlias(a, *s.Notebook, s)
-			if err != nil {
-				//if alias already exists
-				if err == AliasAlreadyExists {
-					continue
-				}
-
-				log.Fatal(style.Error("Couldn't save the alias."))
-				return false
-			}
-			return true
-		} else {
-			break
-		}
-	}
-
-	return false
 }
 
 //This function prints some alias instructions if the note has been created without using an alias

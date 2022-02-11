@@ -34,3 +34,7 @@ var Reminder Style = func(s string) string {
 
 	return pterm.Info.Sprintf(pterm.NewRGB(255, 217, 30).Sprintf(s))
 }
+
+var Warning Style = func(s string) string {
+	return pterm.Warning.Sprintf("%s", s)
+}

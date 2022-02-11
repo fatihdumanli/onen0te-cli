@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"sort"
 
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal/style"
+	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +25,73 @@ var listCmd = &cobra.Command{
 	Run: func(c *cobra.Command, args []string) {
 		os.Exit(displayAliasList())
 	},
+}
+
+var newAliasCmd = &cobra.Command{
+	Use:   "new",
+	Short: "create a new alias.",
+	Run: func(c *cobra.Command, args []string) {
+		os.Exit(newAlias())
+	},
+}
+
+var removeCmd = &cobra.Command{
+	Use:     "remove <alias>",
+	Aliases: []string{"delete"},
+	Short:   "remove an alias",
+	Args:    cobra.ExactArgs(1),
+	Run: func(c *cobra.Command, args []string) {
+		os.Exit(removeAlias(c, args))
+	},
+	DisableFlagsInUseLine: true,
+}
+
+func newAlias() int {
+	var notebooks, err = cnote.GetNotebooks()
+	if err != nil {
+		return 1
+	}
+
+	n, err := survey.AskNotebook(notebooks)
+	if err != nil {
+		return 2
+	}
+
+	sections, err := cnote.GetSections(n)
+	if err != nil {
+		return 3
+	}
+
+	s, err := survey.AskSection(n, sections)
+	if err != nil {
+		return 4
+	}
+	var aliasList = cnote.GetAliases()
+
+	//Check if there's already an alias for the section.
+	for _, a := range *aliasList {
+		if a.Section.ID == s.ID {
+			var warningMsg = fmt.Sprintf("There's already an alias for the section %s. Run cnote alias list to see the whole list.", s.Name)
+			fmt.Println(style.Warning(warningMsg))
+			return 7
+		}
+	}
+
+	answer, err := survey.AskAlias(s, aliasList)
+	if err != nil {
+		log.Fatal(err)
+		return 5
+	}
+	if answer == "" {
+		fmt.Println("answer is empty.")
+		return 0
+	}
+
+	err = cnote.SaveAlias(answer, n, s)
+	if err == nil {
+		return 0
+	}
+	return 6
 }
 
 func displayAliasList() int {
@@ -54,17 +123,6 @@ func displayAliasList() int {
 	return 0
 }
 
-var removeCmd = &cobra.Command{
-	Use:     "remove <alias>",
-	Aliases: []string{"delete"},
-	Short:   "remove an alias",
-	Args:    cobra.ExactArgs(1),
-	Run: func(c *cobra.Command, args []string) {
-		os.Exit(removeAlias(c, args))
-	},
-	DisableFlagsInUseLine: true,
-}
-
 func removeAlias(c *cobra.Command, args []string) int {
 	if len(args) != 1 {
 		c.Usage()
@@ -80,6 +138,7 @@ func removeAlias(c *cobra.Command, args []string) int {
 }
 
 func init() {
+	cmdAlias.AddCommand(newAliasCmd)
 	cmdAlias.AddCommand(listCmd)
 	cmdAlias.AddCommand(removeCmd)
 	rootCmd.AddCommand(cmdAlias)
