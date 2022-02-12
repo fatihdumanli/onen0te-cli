@@ -38,7 +38,7 @@ func GetNotebooks() ([]onenote.Notebook, error) {
 	checkTokenPresented()
 
 	notebookSpinner, _ := pterm.DefaultSpinner.Start("Getting your notebooks...")
-	var notebooks, err = root.api.GetNotebooks(*root.token)
+	var notebooks, _, err = root.api.GetNotebooks(*root.token)
 	if err != nil {
 		notebookSpinner.Fail(err.Error())
 		return notebooks, err
@@ -55,7 +55,7 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
 
 	//TODO: We could wrap the code which the spinner would run while it's being executed
 	sectionsSpinner, _ := pterm.DefaultSpinner.Start("Getting sections...")
-	var sections, err = root.api.GetSections(*root.token, n)
+	var sections, _, err = root.api.GetSections(*root.token, n)
 	if err != nil {
 		sectionsSpinner.Fail(err.Error())
 		return sections, err
@@ -70,7 +70,7 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
 func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	checkTokenPresented()
 
-	link, err := root.api.SaveNote(*root.token, npage)
+	link, _, err := root.api.SaveNote(*root.token, npage)
 	if err != nil {
 		log.Fatal("couldn't save the note.")
 		return "", err

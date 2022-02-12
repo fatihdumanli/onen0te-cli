@@ -2,23 +2,23 @@ package onenote
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"log"
+	"io/ioutil"
 	"net/http"
 	"strings"
+
+	errors "github.com/pkg/errors"
 
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 )
 
-var retryableStatusCodes = []int{503, 504}
-
+type HttpStatusCode int
 type Api struct {
-	GetNotebooks func(token oauthv2.OAuthToken) ([]Notebook, error)
-	GetSections  func(token oauthv2.OAuthToken, n Notebook) ([]Section, error)
+	GetNotebooks func(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode, error)
+	GetSections  func(token oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, error)
 	//Saves the note and returns the link to the newly created note.
-	SaveNote func(token oauthv2.OAuthToken, n NotePage) (string, error)
+	SaveNote func(token oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error)
 }
 
 func NewApi() Api {
@@ -29,9 +29,7 @@ func NewApi() Api {
 	}
 }
 
-func getNotebooks(token oauthv2.OAuthToken) ([]Notebook, error) {
-
-	//	return nil, errors.New("couldn't get notebooks")
+func getNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode, error) {
 
 	var response struct {
 		Notebooks []Notebook `json:"value"`
@@ -39,74 +37,70 @@ func getNotebooks(token oauthv2.OAuthToken) ([]Notebook, error) {
 
 	client := http.Client{}
 	request, err := http.NewRequest(http.MethodGet, "https://graph.microsoft.com/v1.0/me/onenote/notebooks", nil)
+	if err != nil {
+		return nil, 000, errors.Wrap(err, "couldn't initialize the request while getting notebooks")
+	}
 
 	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token.AccessToken))
+
 	resp, err := client.Do(request)
-
 	if err != nil {
-		panic(err)
+		return nil, 000, errors.Wrap(err, "couldn't make the request while getting notebooks")
 	}
 
+	var statusCode HttpStatusCode = HttpStatusCode(resp.StatusCode)
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, statusCode, errors.Wrap(err, "couldn't read the response while getting notebooks")
+	}
 	if resp.StatusCode != http.StatusOK {
-		errStr := fmt.Sprintf("An error has occured while fetching your notebooks...")
-		return response.Notebooks, errors.New(errStr)
+		return nil, statusCode, fmt.Errorf("couldn't get the notebooks: %s", string(respBody))
 	}
 
-	bytes, err := io.ReadAll(resp.Body)
-
+	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		return response.Notebooks, err
+		return nil, statusCode, errors.Wrap(err, "couldn't deserialize response data while getting the notebooks")
 	}
 
-	err = json.Unmarshal(bytes, &response)
-	if err != nil {
-		return response.Notebooks, err
-	}
-
-	return response.Notebooks, nil
+	return response.Notebooks, statusCode, nil
 }
 
-func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, error) {
+func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, error) {
 	var response struct {
 		Sections []Section `json:"value"`
 	}
-
 	c := http.Client{}
 	req, err := http.NewRequest(http.MethodGet, n.SectionsUrl, nil)
 	if err != nil {
-		return response.Sections, err
+		return nil, 000, errors.Wrap(err, "couldn't initialize the request")
 	}
-
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.AccessToken))
 	res, err := c.Do(req)
 	if err != nil {
-		return response.Sections, err
+		return nil, 000, errors.Wrap(err, "couldn't make the request")
 	}
-
-	if res.StatusCode != http.StatusOK {
-		errStr := fmt.Sprintf("An error has occured while fetching sections..")
-		return response.Sections, errors.New(errStr)
-	}
-
+	var statusCode HttpStatusCode = HttpStatusCode(res.StatusCode)
 	bytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		return response.Sections, err
+		return nil, statusCode, errors.Wrap(err, "couldn't read the response")
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, statusCode, fmt.Errorf("couldn't load the sections: %s", string(bytes))
 	}
 
 	err = json.Unmarshal(bytes, &response)
 	if err != nil {
-		return response.Sections, err
+		return nil, statusCode, errors.Wrap(err, "couldn't deserialize the response data")
 	}
-
 	//Set notebook ptr of each section in the response
 	for i := 0; i < len(response.Sections); i++ {
 		response.Sections[i].Notebook = &n
 	}
 
-	return response.Sections, nil
+	return response.Sections, statusCode, nil
 }
 
-func saveNote(t oauthv2.OAuthToken, n NotePage) (string, error) {
+func saveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error) {
 	c := http.Client{}
 
 	var body = `<html>
@@ -121,23 +115,23 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) (string, error) {
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/onenote/sections/%s/pages", n.Section.ID)
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
 	if err != nil {
-		log.Fatal(err)
-		return "", err
+		return "", 000, errors.Wrap(err, "couldn't initialize the request")
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.AccessToken))
 	req.Header.Add("Content-Type", "application/xhtml+xml")
 
 	res, err := c.Do(req)
 	if err != nil {
-		log.Fatal(err)
-		return "", err
+		return "", 000, errors.Wrap(err, "couldn't make the request")
 	}
 
-	resBody := res.Body
-	bytes, _ := io.ReadAll(resBody)
+	var statusCode HttpStatusCode = HttpStatusCode(res.StatusCode)
+	bytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", statusCode, errors.Wrap(err, "couldn't read the response")
+	}
 	if res.StatusCode != http.StatusCreated {
-		log.Fatal(string(bytes))
-		return "", errors.New("Couldn't save the note.")
+		return "", statusCode, fmt.Errorf("couldn't save the note: %s", string(bytes))
 	}
 
 	var response struct {
@@ -148,16 +142,18 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) (string, error) {
 		} `json:"links"`
 	}
 
-	json.Unmarshal(bytes, &response)
+	err = json.Unmarshal(bytes, &response)
+	if err != nil {
+		return "", statusCode, errors.Wrap(err, "couldn't deserialize the response data")
+	}
 
-	return response.Links.OneNoteWebUrl.Href, nil
+	return response.Links.OneNoteWebUrl.Href, statusCode, nil
 }
 
-func shouldRetry(statusCode int) bool {
-	for _, sc := range retryableStatusCodes {
-		if sc == statusCode {
-			return true
-		}
+func readResBody(r io.Reader) *string {
+	var bytes, err = ioutil.ReadAll(r)
+	if err != nil {
 	}
-	return false
+	var strBody = string(bytes)
+	return &strBody
 }
