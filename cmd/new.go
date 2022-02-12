@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal"
+	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/spf13/cobra"
@@ -80,6 +82,13 @@ func saveNote(c *cobra.Command, args []string) int {
 		section, _ = survey.AskSection(n, sections)
 	} else {
 		var a = cnote.GetAlias(alias)
+
+		if a == nil {
+			var errMsg = fmt.Sprintf("the alias %s does not exist", alias)
+			fmt.Println(style.Error(errMsg))
+			return 2
+		}
+
 		section = a.Section
 	}
 

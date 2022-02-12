@@ -12,6 +12,8 @@ import (
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
 )
 
+var retryableStatusCodes = []int{503, 504}
+
 type Api struct {
 	GetNotebooks func(token oauthv2.OAuthToken) ([]Notebook, error)
 	GetSections  func(token oauthv2.OAuthToken, n Notebook) ([]Section, error)
@@ -28,6 +30,8 @@ func NewApi() Api {
 }
 
 func getNotebooks(token oauthv2.OAuthToken) ([]Notebook, error) {
+
+	//	return nil, errors.New("couldn't get notebooks")
 
 	var response struct {
 		Notebooks []Notebook `json:"value"`
@@ -147,4 +151,13 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) (string, error) {
 	json.Unmarshal(bytes, &response)
 
 	return response.Links.OneNoteWebUrl.Href, nil
+}
+
+func shouldRetry(statusCode int) bool {
+	for _, sc := range retryableStatusCodes {
+		if sc == statusCode {
+			return true
+		}
+	}
+	return false
 }

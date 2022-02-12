@@ -5,7 +5,7 @@ import "github.com/pterm/pterm"
 type Style func(s string) string
 
 var Success Style = func(s string) string {
-	return pterm.Success.Sprintf("%s", s)
+	return pterm.Success.Sprintf("%s", pterm.FgDefault.Sprintf(s))
 }
 var Section Style = func(s string) string {
 	return pterm.FgMagenta.Sprintf("%s", s)
@@ -16,7 +16,7 @@ var Alias Style = func(s string) string {
 }
 
 var Error Style = func(s string) string {
-	return pterm.Error.Sprintf("%s", s)
+	return pterm.Error.Sprintf("%s", pterm.FgDefault.Sprintf(s))
 }
 
 var Info Style = func(s string) string {

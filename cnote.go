@@ -44,7 +44,7 @@ func GetNotebooks() ([]onenote.Notebook, error) {
 		return notebooks, err
 	}
 	//TODO: What if it fails, consider use retry.
-	notebookSpinner.Success()
+	notebookSpinner.Success(pterm.FgDefault.Sprint("DONE"))
 
 	return notebooks, err
 }
@@ -53,6 +53,7 @@ func GetNotebooks() ([]onenote.Notebook, error) {
 func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
 	checkTokenPresented()
 
+	//TODO: We could wrap the code which the spinner would run while it's being executed
 	sectionsSpinner, _ := pterm.DefaultSpinner.Start("Getting sections...")
 	var sections, err = root.api.GetSections(*root.token, n)
 	if err != nil {
@@ -60,7 +61,7 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
 		return sections, err
 	}
 	//TODO: What if it fails, consider use retry.
-	sectionsSpinner.Success()
+	sectionsSpinner.Success(pterm.FgDefault.Sprint("DONE"))
 	return sections, err
 }
 
@@ -81,6 +82,7 @@ func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	pterm.DefaultTable.WithHasHeader().WithData(data).Render()
 	fmt.Print("\n\n")
 
+	//FIXME: We shouldn't ask for alias if there's already one for the section. This is a bug now.
 	answer, err := survey.AskAlias(npage.Section, GetAliases())
 	if err != nil {
 		log.Fatal(err)
@@ -149,7 +151,7 @@ func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) 
 		return err
 	}
 
-	var msg = fmt.Sprintf("Alias '%s' has been saved.\n", name)
+	var msg = fmt.Sprintf("Alias '%s' has been saved.", name)
 	fmt.Println(style.Success(msg))
 	var infoMsg = "Now you can quickly add notes with the following command:"
 	fmt.Println(style.Info(infoMsg))

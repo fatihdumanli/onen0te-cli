@@ -8,6 +8,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	s "github.com/AlecAivazis/survey/v2"
 	"github.com/fatihdumanli/cnote/internal/config"
+	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 )
 
@@ -119,10 +120,11 @@ outer:
 			return "", err
 		}
 
-		fmt.Println("checking if tthere's an already an alias", a)
 		for _, alias := range *aliaslist {
 			//There's already an alias with the same name
 			if alias.Short == a {
+				var errorMsg = fmt.Sprintf("%s being used for another section", a)
+				fmt.Println(style.Error(errorMsg))
 				continue outer
 			}
 		}
