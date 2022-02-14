@@ -190,7 +190,8 @@ func GetAlias(n string) (*onenote.Alias, error) {
 	var alias onenote.Alias
 	err := root.storage.Get(n, &alias)
 	if err != nil {
-		return nil, errors.Wrap(err, "couldn't get the alias")
+		//TODO: Check if the error is KeyNotFound.
+		return nil, nil
 	}
 	return &alias, nil
 }

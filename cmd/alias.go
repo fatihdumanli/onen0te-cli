@@ -34,8 +34,7 @@ var newAliasCmd = &cobra.Command{
 	Use:   "new",
 	Short: "create a new alias.",
 	RunE: func(c *cobra.Command, args []string) error {
-		var code, err = newAlias()
-		os.Exit(code)
+		var _, err = newAlias()
 		return err
 	},
 }
@@ -54,26 +53,26 @@ var removeCmd = &cobra.Command{
 func newAlias() (int, error) {
 	var notebooks, err = cnote.GetNotebooks()
 	if err != nil {
-		return 1, errors.Wrap(err, "getNotebooks operation has failed")
+		return 1, errors.Wrap(err, "getNotebooks operation has failed\n")
 	}
 
 	n, err := survey.AskNotebook(notebooks)
 	if err != nil {
-		return 2, errors.Wrap(err, "askNotebook operation has failed")
+		return 2, errors.Wrap(err, "askNotebook operation has failed\n")
 	}
 
 	sections, err := cnote.GetSections(n)
 	if err != nil {
-		return 3, errors.Wrap(err, "getSections operation has failed")
+		return 3, errors.Wrap(err, "getSections operation has failed\n")
 	}
 
 	s, err := survey.AskSection(n, sections)
 	if err != nil {
-		return 4, errors.Wrap(err, "askSection operation has failed")
+		return 4, errors.Wrap(err, "askSection operation has failed\n")
 	}
 	aliasList, err := cnote.GetAliases()
 	if err != nil {
-		return 1, errors.Wrap(err, "getAliases operation has failed")
+		return 1, errors.Wrap(err, "getAliases operation has failed\n")
 	}
 
 	//Check if there's already an alias for the section.
@@ -81,13 +80,13 @@ func newAlias() (int, error) {
 		if a.Section.ID == s.ID {
 			var warningMsg = fmt.Sprintf("There's already an alias for the section %s. Run cnote alias list to see the whole list.", s.Name)
 			fmt.Println(style.Warning(warningMsg))
-			return 7, fmt.Errorf("another alias for the section already exists")
+			return 7, fmt.Errorf("another alias for the section already exists\n")
 		}
 	}
 
 	answer, err := survey.AskAlias(s, aliasList)
 	if err != nil {
-		return 5, errors.Wrap(err, "askAlias operation has failed")
+		return 5, errors.Wrap(err, "askAlias operation has failed\n")
 	}
 	if answer == "" {
 		return 0, nil
@@ -97,13 +96,13 @@ func newAlias() (int, error) {
 	if err == nil {
 		return 0, nil
 	}
-	return 6, errors.Wrap(err, "saveAlias operation has failed")
+	return 6, errors.Wrap(err, "saveAlias operation has failed\n")
 }
 
 func displayAliasList() (int, error) {
 	var aliasList, err = cnote.GetAliases()
 	if err != nil {
-		return 1, errors.Wrap(err, "getAliases operation has failed")
+		return 1, errors.Wrap(err, "getAliases operation has failed\n")
 	}
 
 	sort.Slice(*aliasList, func(i, j int) bool {
@@ -112,7 +111,7 @@ func displayAliasList() (int, error) {
 
 	if aliasList == nil {
 		fmt.Println(style.Error("Your alias data couldn't be loaded."))
-		return 1, errors.Wrap(err, "getAliases operation has failed")
+		return 1, errors.Wrap(err, "getAliases operation has failed\n")
 	}
 
 	if len(*aliasList) == 0 {
