@@ -1,11 +1,12 @@
 package cnote
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
 	"time"
+
+	errors "github.com/pkg/errors"
 
 	"github.com/fatihdumanli/cnote/internal/authentication"
 	"github.com/fatihdumanli/cnote/internal/storage"
@@ -24,10 +25,6 @@ type cnote struct {
 	//So we're using a ptr type rather than value type
 	token *oauthv2.OAuthToken
 }
-
-var (
-	AliasAlreadyExists = errors.New("alias already exists")
-)
 
 var (
 	root cnote
@@ -53,11 +50,11 @@ func GetNotebooks() ([]onenote.Notebook, error) {
 			//TODO: implement retry.
 		}
 		notebookSpinner.Fail(err.Error())
-		return notebooks, err
+		return notebooks, errors.Wrap(err, "couldn't get the notebooks")
 	}
-	//TODO: What if it fails, consider use retry.
+
 	notebookSpinner.Success(pterm.FgDefault.Sprint("DONE"))
-	return notebooks, err
+	return notebooks, nil
 }
 
 //Get the list of notebooks belonging to the user logged in
@@ -73,11 +70,11 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
 		if shouldRetry(statusCode) {
 		}
 		sectionsSpinner.Fail(err.Error())
-		return sections, err
+		return sections, errors.Wrap(err, "couldn't get the sections")
 	}
 
 	sectionsSpinner.Success(pterm.FgDefault.Sprint("DONE"))
-	return sections, err
+	return sections, nil
 }
 
 //Save a note page using Onenote API
@@ -90,7 +87,7 @@ func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 		if shouldRetry(statusCode) {
 			//TODO: implement retry
 		}
-		return "", err
+		return "", errors.Wrap(err, "couldn't save the note page")
 	}
 
 	var data = make([][]string, 2)
@@ -100,15 +97,18 @@ func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	fmt.Print("\n\n")
 
 	//FIXME: We shouldn't ask for alias if there's already one for the section. This is a bug now.
-	answer, err := survey.AskAlias(npage.Section, GetAliases())
+	aliases, err := GetAliases()
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "couldN't get the alias list")
+	}
+	answer, err := survey.AskAlias(npage.Section, aliases)
+	if err != nil {
+		return "", errors.Wrap(err, "couldn't ask the alias")
 	}
 	if answer != "" {
 		err := SaveAlias(answer, *npage.Section.Notebook, npage.Section)
 		if err != nil {
-			log.Fatal(err)
-			return "", err
+			return "", errors.Wrap(err, "couldn't save the alias")
 		}
 	}
 
@@ -120,10 +120,13 @@ func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	return link, nil
 }
 
-func GetAliases() *[]onenote.Alias {
+func GetAliases() (*[]onenote.Alias, error) {
 
 	var result []onenote.Alias
 	keys, err := root.storage.GetKeys()
+	if err != nil {
+		return nil, errors.Wrap(err, "couldn't get the aliases")
+	}
 
 	var opts = getOptions()
 	var hashset = make(map[string]bool, 0)
@@ -132,8 +135,7 @@ func GetAliases() *[]onenote.Alias {
 	}
 
 	if err != nil {
-		log.Fatalf("An error has occured while trying to get the alias data %s", err.Error())
-		return nil
+		return nil, errors.Wrap(err, "couldn't get the alias data")
 	}
 
 	for _, k := range *keys {
@@ -146,25 +148,28 @@ func GetAliases() *[]onenote.Alias {
 		result = append(result, a)
 	}
 
-	return &result
+	return &result, nil
 }
 
 //Save the alias for a onenote section to use it later for quick save
 func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) error {
 
-	var isExist = GetAlias(name)
-	if isExist != nil {
-		fmt.Println(style.Error(fmt.Sprintf("the alias %s already being used to identify the section %s", name, isExist.Section.Name)))
-		return AliasAlreadyExists
+	var isExist, err = GetAlias(name)
+	if err != nil {
+		return errors.Wrap(err, "couldn't check the alias if it already exists")
 	}
 
-	err := root.storage.Set(name, onenote.Alias{
+	if isExist != nil {
+		fmt.Println(style.Error(fmt.Sprintf("the alias %s already being used to identify the section %s", name, isExist.Section.Name)))
+		return fmt.Errorf("the alias %s already exist", name)
+	}
+
+	err = root.storage.Set(name, onenote.Alias{
 		Short:    name,
 		Notebook: notebook,
 		Section:  section})
 	if err != nil {
-		log.Fatalf("An error has occured while saving the alias to the local storage %s", err.Error())
-		return err
+		return errors.Wrap(err, fmt.Sprintf("couldn't save the alias %s to the local storage", name))
 	}
 
 	var msg = fmt.Sprintf("Alias '%s' has been saved.", name)
@@ -177,13 +182,13 @@ func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) 
 
 //Get the details of given alias
 //Returns nil if the alias does not found
-func GetAlias(n string) *onenote.Alias {
+func GetAlias(n string) (*onenote.Alias, error) {
 	var alias onenote.Alias
 	err := root.storage.Get(n, &alias)
 	if err != nil {
-		return nil
+		return nil, errors.Wrap(err, "couldn't get the alias")
 	}
-	return &alias
+	return &alias, nil
 }
 
 //Removes an alias
@@ -192,7 +197,7 @@ func RemoveAlias(a string) error {
 	if err != nil {
 		var msg = fmt.Sprintf("The alias %s has not found.\n", a)
 		fmt.Println(style.Error(msg))
-		return err
+		return errors.Wrap(err, "couldn't remove the alias")
 	}
 
 	var msg = fmt.Sprintf("The alias %s has been deleted.\n", a)
@@ -214,15 +219,19 @@ func checkTokenPresented() {
 			os.Exit(1)
 		}
 
-		token, _ := authentication.AuthenticateUser(opts, root.storage)
+		token, err := authentication.AuthenticateUser(opts, root.storage)
+		if err != nil {
+			var errWrapped = errors.Wrap(err, "couldn't check the token if it's presented")
+			log.Fatal(errWrapped)
+		}
 		root.token = &token
 	} else {
 		//Check if the token has expired
 		if root.token.IsExpired() {
 			token, err := authentication.RefreshToken(opts, *root.token, root.storage)
 			if err != nil {
-				log.Fatal("An error has occured while trying to refresh OAuth token")
-				panic(err)
+				var errWrapped = errors.Wrap(err, "couldn't check the token if it's presented")
+				log.Fatal(errWrapped)
 			}
 			root.token = &token
 		}
@@ -233,7 +242,7 @@ func checkTokenPresented() {
 //This function prints some alias instructions if the note has been created without using an alias
 //Despite that the section the note was created in has an alias.
 func printAliasReminder(section string) {
-	var allAliases = GetAliases()
+	var allAliases, _ = GetAliases() //we can ignore the err here
 	for _, a := range *allAliases {
 		if a.Section.Name == section {
 			var msg = fmt.Sprintf("Existing alias for the section '%s' is '%s'", section, a.Short)
@@ -253,6 +262,7 @@ func init() {
 
 	err := root.storage.Get(authentication.TOKEN_KEY, root.token)
 	if err != nil {
+		//token does not exist on the local storage
 		root.token = nil
 	}
 }

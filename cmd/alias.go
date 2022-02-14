@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"sort"
+
+	errors "github.com/pkg/errors"
 
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal/style"
@@ -22,16 +23,20 @@ var cmdAlias = &cobra.Command{
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "display alias list",
-	Run: func(c *cobra.Command, args []string) {
-		os.Exit(displayAliasList())
+	RunE: func(c *cobra.Command, args []string) error {
+		var code, err = displayAliasList()
+		os.Exit(code)
+		return err
 	},
 }
 
 var newAliasCmd = &cobra.Command{
 	Use:   "new",
 	Short: "create a new alias.",
-	Run: func(c *cobra.Command, args []string) {
-		os.Exit(newAlias())
+	RunE: func(c *cobra.Command, args []string) error {
+		var code, err = newAlias()
+		os.Exit(code)
+		return err
 	},
 }
 
@@ -46,56 +51,60 @@ var removeCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-func newAlias() int {
+func newAlias() (int, error) {
 	var notebooks, err = cnote.GetNotebooks()
 	if err != nil {
-		return 1
+		return 1, errors.Wrap(err, "getNotebooks operation has failed")
 	}
 
 	n, err := survey.AskNotebook(notebooks)
 	if err != nil {
-		return 2
+		return 2, errors.Wrap(err, "askNotebook operation has failed")
 	}
 
 	sections, err := cnote.GetSections(n)
 	if err != nil {
-		return 3
+		return 3, errors.Wrap(err, "getSections operation has failed")
 	}
 
 	s, err := survey.AskSection(n, sections)
 	if err != nil {
-		return 4
+		return 4, errors.Wrap(err, "askSection operation has failed")
 	}
-	var aliasList = cnote.GetAliases()
+	aliasList, err := cnote.GetAliases()
+	if err != nil {
+		return 1, errors.Wrap(err, "getAliases operation has failed")
+	}
 
 	//Check if there's already an alias for the section.
 	for _, a := range *aliasList {
 		if a.Section.ID == s.ID {
 			var warningMsg = fmt.Sprintf("There's already an alias for the section %s. Run cnote alias list to see the whole list.", s.Name)
 			fmt.Println(style.Warning(warningMsg))
-			return 7
+			return 7, fmt.Errorf("another alias for the section already exists")
 		}
 	}
 
 	answer, err := survey.AskAlias(s, aliasList)
 	if err != nil {
-		log.Fatal(err)
-		return 5
+		return 5, errors.Wrap(err, "askAlias operation has failed")
 	}
 	if answer == "" {
-		fmt.Println("answer is empty.")
-		return 0
+		return 0, nil
 	}
 
 	err = cnote.SaveAlias(answer, n, s)
 	if err == nil {
-		return 0
+		return 0, nil
 	}
-	return 6
+	return 6, errors.Wrap(err, "saveAlias operation has failed")
 }
 
-func displayAliasList() int {
-	var aliasList = cnote.GetAliases()
+func displayAliasList() (int, error) {
+	var aliasList, err = cnote.GetAliases()
+	if err != nil {
+		return 1, errors.Wrap(err, "getAliases operation has failed")
+	}
 
 	sort.Slice(*aliasList, func(i, j int) bool {
 		return (*aliasList)[i].Short < (*aliasList)[j].Short
@@ -103,12 +112,12 @@ func displayAliasList() int {
 
 	if aliasList == nil {
 		fmt.Println(style.Error("Your alias data couldn't be loaded."))
-		return 1
+		return 1, errors.Wrap(err, "getAliases operation has failed")
 	}
 
 	if len(*aliasList) == 0 {
 		fmt.Println(style.Error("You haven't added any alias yet."))
-		return 2
+		return 2, nil
 	}
 
 	var tableData [][]string
@@ -120,7 +129,7 @@ func displayAliasList() int {
 
 	pterm.DefaultTable.WithHasHeader().WithData(tableData).Render()
 
-	return 0
+	return 0, nil
 }
 
 func removeAlias(c *cobra.Command, args []string) int {

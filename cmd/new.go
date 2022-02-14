@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
+
+	errors "github.com/pkg/errors"
 
 	"github.com/fatihdumanli/cnote"
 	"github.com/fatihdumanli/cnote/internal"
@@ -26,39 +27,37 @@ var newCmd = &cobra.Command{
 	Aliases: []string{"add", "save"},
 	Short:   "Create a new note",
 	Long:    "Create a note on one of your Onenote sections",
-	Run: func(c *cobra.Command, args []string) {
-		os.Exit(saveNote(c, args))
-
+	RunE: func(c *cobra.Command, args []string) error {
+		var code, err = saveNote(c, args)
+		os.Exit(code)
+		return err
 	},
 }
 
-func saveNote(c *cobra.Command, args []string) int {
+func saveNote(c *cobra.Command, args []string) (int, error) {
 
 	var noteContent *string
 
 	if len(args) != 1 && !inline {
 		c.Usage()
-		return 1
+		return 1, fmt.Errorf("inline note requires exactly one argument")
 	}
 
 	//Input validations
 	if inline && inlineContent == "" {
-		log.Fatal("content flag cannot be empty")
-		return 2
+		return 2, fmt.Errorf("content flag cannot be empty")
 	}
 
 	if !inline {
 		//Load the content from the file
 		var inputPath = args[0]
 		if !internal.Exists(inputPath) {
-			log.Fatalf(" ❌ the file %s not found.", inputPath)
-			return 3
+			return 3, fmt.Errorf("the file %s not found", inputPath)
 		}
 
 		var fileContent, ok = internal.ReadFile(inputPath)
 		if !ok {
-			log.Fatalf("😣 couldn't read the file %s", inputPath)
-			return 4
+			return 4, fmt.Errorf("couldn't read the file %s", inputPath)
 		}
 
 		noteContent = &fileContent
@@ -68,25 +67,44 @@ func saveNote(c *cobra.Command, args []string) int {
 
 	//Get confirmation on adding a note without a title.
 	if title == "" {
-		var tAnswer, _ = survey.AskTitle()
+		var tAnswer, err = survey.AskTitle()
+		if err != nil {
+			return 3, errors.Wrap(err, "askTitle operation has failed")
+		}
 		title = tAnswer
 	}
 
 	var section onenote.Section
 
 	if alias == "" {
-		var notebooks, _ = cnote.GetNotebooks()
-		n, _ := survey.AskNotebook(notebooks)
+		var notebooks, err = cnote.GetNotebooks()
+		if err != nil {
+			return 1, errors.Wrap(err, "getNotebooks operation has failed")
+		}
+		n, err := survey.AskNotebook(notebooks)
+		if err != nil {
+			return 1, errors.Wrap(err, "askNotebook operation has failed")
+		}
 
-		var sections, _ = cnote.GetSections(n)
-		section, _ = survey.AskSection(n, sections)
+		sections, err := cnote.GetSections(n)
+		if err != nil {
+			return 1, errors.Wrap(err, "getSections operation has failed")
+		}
+		section, err = survey.AskSection(n, sections)
+		if err != nil {
+			return 1, errors.Wrap(err, "askSection operation has failed")
+		}
+
 	} else {
-		var a = cnote.GetAlias(alias)
+		var a, err = cnote.GetAlias(alias)
+		if err != nil {
+			return 1, errors.Wrap(err, "alias data couldn't be loaded")
+		}
 
 		if a == nil {
 			var errMsg = fmt.Sprintf("the alias %s does not exist", alias)
 			fmt.Println(style.Error(errMsg))
-			return 2
+			return 1, fmt.Errorf(errMsg)
 		}
 
 		section = a.Section
@@ -95,10 +113,10 @@ func saveNote(c *cobra.Command, args []string) int {
 	//Save the note. Show alias instructions only if the user could've used an alias for the section.
 	_, err := cnote.SaveNotePage(*onenote.NewNotePage(section, title, *noteContent), alias == "")
 	if err != nil {
-		return 5
+		return 1, errors.Wrap(err, "saveNotePage operation has failed")
 	}
 
-	return 0
+	return 0, nil
 }
 
 func init() {
