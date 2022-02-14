@@ -2,9 +2,10 @@ package storage
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 
 	"git.mills.io/prologic/bitcask"
+	errors "github.com/pkg/errors"
 )
 
 type Bitcask struct{}
@@ -15,19 +16,17 @@ func (b *Bitcask) Get(key string, obj interface{}) error {
 	var db, closer, err = openBitcaskDb()
 	defer closer()
 	if err != nil {
-		return nil
+		return errors.Wrap(err, "couldn't open bitcask db")
 	}
 
 	bytes, err := db.Get([]byte(key))
-
 	if err != nil {
-		return KeyNotFound
+		return errors.Wrap(err, "couldn't get the key")
 	}
 
 	err = json.Unmarshal(bytes, obj)
 	if err != nil {
-		log.Fatal(err)
-		return CouldntUnmarshalTheKey
+		return errors.Wrap(err, "couldn't unmarshal the value")
 	}
 
 	return nil
@@ -39,14 +38,17 @@ func (b *Bitcask) Set(key string, val interface{}) error {
 	var db, closer, err = openBitcaskDb()
 	defer closer()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't open bitcask db")
 	}
 
 	bytes, err := json.Marshal(val)
+	if err != nil {
+		return errors.Wrap(err, "couldn't serialize the data")
+	}
 
 	err = db.Put([]byte(key), []byte(string(bytes)))
 	if err != nil {
-		return CouldntSaveTheKey
+		return errors.Wrap(err, "couldn't save the data")
 	}
 	return nil
 }
@@ -56,25 +58,27 @@ func (b *Bitcask) Remove(key string) error {
 	var db, closer, err = openBitcaskDb()
 	defer closer()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't open bitcask db")
 	}
 
 	//If the key has not found
 	if !db.Has([]byte(key)) {
-		return KeyNotFound
+		return fmt.Errorf("the key %s does not exist", key)
 	}
 
 	err = db.Delete([]byte(key))
+	if err != nil {
+		return errors.Wrap(err, "couldn't delete the key")
+	}
 	return err
 }
 
 func (b *Bitcask) GetKeys() (*[]string, error) {
 	var db, closer, err = openBitcaskDb()
 	var keys []string
-
 	defer closer()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "couldn't open bitcask db")
 	}
 
 	var keysChan = db.Keys()
@@ -89,7 +93,7 @@ func (b *Bitcask) GetKeys() (*[]string, error) {
 func openBitcaskDb() (*bitcask.Bitcask, func() error, error) {
 	db, err := bitcask.Open("/tmp/cnote")
 	if err != nil {
-		return nil, nil, CannotOpenDatabase
+		return nil, nil, errors.Wrap(err, "couldn't open bitcask db")
 	}
 	return db, db.Close, nil
 }

@@ -33,25 +33,21 @@ func startNoteSurvey() (int, error) {
 
 	notebooks, err := cnote.GetNotebooks()
 	if err != nil {
-		log.Fatal(err)
 		return 2, err
 	}
 
 	n, err := survey.AskNotebook(notebooks)
 	if err != nil {
-		log.Fatal(err)
 		return 1, err
 	}
 	sections, err := cnote.GetSections(n)
 	if err != nil {
-		log.Fatal(err)
 		return 3, err
 	}
 	section, err := survey.AskSection(n, sections)
 
 	title, err := survey.AskTitle()
 	if err != nil {
-		log.Fatal(err)
 		return 4, err
 	}
 

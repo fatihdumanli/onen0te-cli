@@ -1,9 +1,9 @@
 package survey
 
 import (
-	"errors"
 	"fmt"
-	"log"
+
+	errors "github.com/pkg/errors"
 
 	"github.com/AlecAivazis/survey/v2"
 	s "github.com/AlecAivazis/survey/v2"
@@ -20,7 +20,6 @@ type SectionName = onenote.SectionName
 type NotebookName = onenote.NotebookName
 
 func AskNoteContent() (string, error) {
-
 	var noteContentQuestion = &survey.Question{
 		Name: "notecontent",
 		Prompt: &survey.Multiline{
@@ -31,7 +30,7 @@ func AskNoteContent() (string, error) {
 
 	var answer string
 	if err := s.Ask([]*s.Question{noteContentQuestion}, &answer); err != nil {
-		return "", err
+		return "", errors.Wrap(err, "error while starting note content survey")
 	}
 	return answer, nil
 }
@@ -56,15 +55,16 @@ func AskNotebook(nlist []Notebook) (Notebook, error) {
 
 	var answer string
 	if err := s.Ask([]*s.Question{notebooksQuestion}, &answer); err != nil {
-		panic(err)
+		return Notebook{}, errors.Wrap(err, "couldn't get notebook answer")
 	}
 
 	if n, ok := findNotebook(nlist, func(nx Notebook) bool {
 		return nx.DisplayName == answer
 	}); ok {
+		//if notebook exist
 		return n, nil
 	} else {
-		return n, errors.New("An error has occured")
+		return n, fmt.Errorf("the notebook %s does not exist", answer)
 	}
 
 }
@@ -89,15 +89,17 @@ func AskSection(n Notebook, slist []Section) (Section, error) {
 
 	var answer string
 	if err := s.Ask([]*s.Question{qsection}, &answer); err != nil {
-		return slist[0], err
+		return slist[0], errors.Wrap(err, "couldn't start section survey")
 	}
 
 	if s, ok := findSection(slist, func(x Section) bool {
 		return x.Name == answer
 	}); ok {
+		//section is found
 		return s, nil
 	} else {
-		return s, errors.New("An error has occured")
+		//section does not exist
+		return s, fmt.Errorf("section %s could not be found", answer)
 	}
 }
 
@@ -111,13 +113,13 @@ func AskSetupAccount() (bool, error) {
 //Ask alias to make it easy to create a note within the section
 func AskAlias(section onenote.Section, aliaslist *[]onenote.Alias) (string, error) {
 	promtMsg := fmt.Sprintf("Enter an alias for %s (Press <Enter> to skip.)", section.Name)
-	//Ask for an alias as long as there's already an existing one
+
 outer:
+	//Prompt the user again if the alias already exist
 	for {
 		a, err := askSinglelineFreeText(promtMsg)
 		if err != nil {
-			log.Fatal(err)
-			return "", err
+			return "", errors.Wrap(err, "couldn't ask alias")
 		}
 
 		for _, alias := range *aliaslist {
@@ -156,7 +158,7 @@ func askConfirmation(msg string) (bool, error) {
 	}
 	var answer bool
 	if err := s.Ask([]*s.Question{q}, &answer); err != nil {
-		return answer, err
+		return answer, errors.Wrap(err, "couldn't ask confirmation question")
 	}
 	return answer, nil
 }
@@ -171,7 +173,7 @@ func askSinglelineFreeText(msg string) (string, error) {
 		},
 	}
 	if err := s.Ask([]*s.Question{q}, &answer); err != nil {
-		return "", err
+		return "", errors.Wrap(err, "couldn't ask single line text question")
 	}
 	return answer, nil
 }
