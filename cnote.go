@@ -96,19 +96,23 @@ func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	pterm.DefaultTable.WithHasHeader().WithData(data).Render()
 	fmt.Print("\n\n")
 
-	//FIXME: We shouldn't ask for alias if there's already one for the section. This is a bug now.
 	aliases, err := GetAliases()
 	if err != nil {
-		return "", errors.Wrap(err, "couldN't get the alias list")
+		return "", errors.Wrap(err, "couldn't get the alias list")
 	}
-	answer, err := survey.AskAlias(npage.Section, aliases)
-	if err != nil {
-		return "", errors.Wrap(err, "couldn't ask the alias")
-	}
-	if answer != "" {
-		err := SaveAlias(answer, *npage.Section.Notebook, npage.Section)
+
+	var answer string
+
+	if !hasAlias(npage.Section, aliases) {
+		answer, err := survey.AskAlias(npage.Section, aliases)
 		if err != nil {
-			return "", errors.Wrap(err, "couldn't save the alias")
+			return "", errors.Wrap(err, "couldn't ask the alias")
+		}
+		if answer != "" {
+			err := SaveAlias(answer, *npage.Section.Notebook, npage.Section)
+			if err != nil {
+				return "", errors.Wrap(err, "couldn't save the alias")
+			}
 		}
 	}
 
@@ -203,6 +207,15 @@ func RemoveAlias(a string) error {
 	var msg = fmt.Sprintf("The alias %s has been deleted.\n", a)
 	fmt.Println(style.Success(msg))
 	return nil
+}
+
+func hasAlias(section onenote.Section, aliasList *[]onenote.Alias) bool {
+	for _, a := range *aliasList {
+		if a.Section.ID == section.ID {
+			return true
+		}
+	}
+	return false
 }
 
 //This function gets called prior to each API operation to make sure that we're not going to deal with any stale token.
