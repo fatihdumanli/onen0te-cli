@@ -33,19 +33,28 @@ var (
 	root cnote
 )
 
+var shouldRetry = func(statusCode onenote.HttpStatusCode) bool {
+	var hashset map[int]bool
+	hashset = make(map[int]bool, 0)
+	hashset[503] = true
+	hashset[504] = true
+	return hashset[int(statusCode)]
+}
+
 //Get the list of notebooks belonging to the user logged in
 func GetNotebooks() ([]onenote.Notebook, error) {
-	checkTokenPresented()
-
 	notebookSpinner, _ := pterm.DefaultSpinner.Start("Getting your notebooks...")
-	var notebooks, _, err = root.api.GetNotebooks(*root.token)
+	var notebooks, statusCode, err = root.api.GetNotebooks(*root.token)
+
 	if err != nil {
+		if shouldRetry(statusCode) {
+			//TODO: implement retry.
+		}
 		notebookSpinner.Fail(err.Error())
 		return notebooks, err
 	}
 	//TODO: What if it fails, consider use retry.
 	notebookSpinner.Success(pterm.FgDefault.Sprint("DONE"))
-
 	return notebooks, err
 }
 
@@ -55,12 +64,16 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
 
 	//TODO: We could wrap the code which the spinner would run while it's being executed
 	sectionsSpinner, _ := pterm.DefaultSpinner.Start("Getting sections...")
-	var sections, _, err = root.api.GetSections(*root.token, n)
+	var sections, statusCode, err = root.api.GetSections(*root.token, n)
+
 	if err != nil {
+		//TODO: implement retry
+		if shouldRetry(statusCode) {
+		}
 		sectionsSpinner.Fail(err.Error())
 		return sections, err
 	}
-	//TODO: What if it fails, consider use retry.
+
 	sectionsSpinner.Success(pterm.FgDefault.Sprint("DONE"))
 	return sections, err
 }
@@ -70,9 +83,11 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
 func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	checkTokenPresented()
 
-	link, _, err := root.api.SaveNote(*root.token, npage)
+	link, statusCode, err := root.api.SaveNote(*root.token, npage)
 	if err != nil {
-		log.Fatal("couldn't save the note.")
+		if shouldRetry(statusCode) {
+			//TODO: implement retry
+		}
 		return "", err
 	}
 
@@ -85,7 +100,6 @@ func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	//FIXME: We shouldn't ask for alias if there's already one for the section. This is a bug now.
 	answer, err := survey.AskAlias(npage.Section, GetAliases())
 	if err != nil {
-		log.Fatal(err)
 		return "", err
 	}
 	if answer != "" {
