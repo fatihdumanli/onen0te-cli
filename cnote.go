@@ -43,6 +43,8 @@ var shouldRetry = func(statusCode onenote.HttpStatusCode) bool {
 
 //Get the list of notebooks belonging to the user logged in
 func GetNotebooks() ([]onenote.Notebook, error) {
+	checkTokenPresented()
+
 	notebookSpinner, _ := pterm.DefaultSpinner.Start("Getting your notebooks...")
 	var notebooks, statusCode, err = root.api.GetNotebooks(*root.token)
 

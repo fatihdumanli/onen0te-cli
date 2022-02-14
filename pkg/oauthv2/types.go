@@ -1,12 +1,8 @@
 package oauthv2
 
 import (
-	"errors"
 	"time"
 )
-
-var CannotGetAuthCode = errors.New("Couldn't get authorization_code")
-var FailedToGetToken = errors.New("/token response was not 200")
 
 type AuthorizationCode string
 type OAuthParams struct {

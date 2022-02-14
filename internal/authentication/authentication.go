@@ -1,12 +1,10 @@
 package authentication
 
 import (
-	"errors"
-	"log"
-
 	"github.com/fatihdumanli/cnote/internal/config"
 	"github.com/fatihdumanli/cnote/internal/storage"
 	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	errors "github.com/pkg/errors"
 )
 
 type TokenStatus int
@@ -32,16 +30,15 @@ type Authenticator interface {
 func AuthenticateUser(opts config.AppOptions, storer storage.Storer) (oauthv2.OAuthToken, error) {
 
 	//If the user confirms to setup an account now we trigger the authentication process.
-	t, err := oauthv2.Authorize(opts.OAuthParams, opts.Out)
+	t, err := oauthv2.Authenticate(opts.OAuthParams, opts.Out)
 	if err != nil {
-		log.Fatalf("An error occured while trying to authenticate you. %s", err.Error())
+		return oauthv2.OAuthToken{}, errors.Wrap(err, "couldn't authenticate the user")
 	}
 
 	//Save the token on local storage
 	err = storer.Set(TOKEN_KEY, t)
 	if err != nil {
-		log.Fatalf("An error occured while trying to save the token. %s", err.Error())
-		return t, storage.CouldntSaveTheKey
+		return t, errors.Wrap(err, "couldn't save the token")
 	}
 
 	return t, nil

@@ -3,7 +3,6 @@ package oauthv2
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,6 +14,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	errors "github.com/pkg/errors"
 )
 
 /*
@@ -47,33 +48,29 @@ func RefreshToken(p OAuthParams, r string) (OAuthToken, error) {
 	c := http.Client{}
 	req, err := http.NewRequest(http.MethodPost, p.RefreshTokenEndpoint, strings.NewReader(data.Encode()))
 	if err != nil {
-		log.Fatal(err)
-		return newToken, err
+		return newToken, errors.Wrap(err, "couldn't initialize the request when refresing token")
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	res, err := c.Do(req)
 	if err != nil {
-		log.Fatal(err)
-		return newToken, err
-	}
-
-	if res.StatusCode != http.StatusOK {
-		return newToken, errors.New("Refreshtoken didn't return a 200")
+		return newToken, errors.Wrap(err, "couldn't execute the request while refreshing token")
 	}
 
 	bytes, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Fatal(err)
-		return newToken, err
+		return newToken, errors.Wrap(err, "couldn't read the response body while refreshing ₺oken")
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return newToken, fmt.Errorf("couldn't refresh the token %s", string(bytes))
+	}
+
 	err = json.Unmarshal(bytes, &newToken)
 	if err != nil {
-		log.Fatal(err)
-		return newToken, err
-
+		return newToken, errors.Wrap(err, "couldn't unmarshal the json while refreshing token.")
 	}
 	//set expiredAt proprety so that we can check if the token has expired
 	t := time.Duration(newToken.ExpiresIn)
@@ -88,13 +85,13 @@ Rather than returning a pointer set to nil,
 Use comma ok idiom
 return a boolean and a value type
 */
-func Authorize(p OAuthParams, out io.Writer) (OAuthToken, error) {
+func Authenticate(p OAuthParams, out io.Writer) (OAuthToken, error) {
 
-	var token OAuthToken
-
+	var token *OAuthToken
 	authCode, err := getAuthCode(p, out)
+
 	if err != nil {
-		return token, err
+		return OAuthToken{}, errors.Wrap(err, "couldn't authenticate the user")
 	}
 
 	var getTokenParams = getTokenParams{
@@ -103,16 +100,15 @@ func Authorize(p OAuthParams, out io.Writer) (OAuthToken, error) {
 	}
 
 	token, err = getToken(getTokenParams)
+	if err != nil {
+		return OAuthToken{}, errors.Wrap(err, "couldn't get the oauth token")
+	}
 
 	//set expiredAt proprety so that we can check if the token has expired
 	t := time.Duration(token.ExpiresIn)
 	token.ExpiresAt = time.Now().Add(time.Second * t)
 
-	if err != nil {
-		return token, err
-	}
-
-	return token, nil
+	return *token, nil
 }
 
 func getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
@@ -129,30 +125,34 @@ func getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
 		authCode = AuthorizationCode(values.Get("code"))
 		fmt.Fprintln(w, "You can close this window now.")
 		time.Sleep(1 * time.Second)
-		if err := srv.Shutdown(context.TODO()); err != nil {
-			panic(err)
-		}
+		srv.Shutdown(context.TODO())
 	}
 
 	httpServerExitDone := &sync.WaitGroup{}
 	httpServerExitDone.Add(1)
 
-	srv = startOauthHttpServer(httpServerExitDone, ":5992", "/oauthv2", fnCallback)
+	srv, err := startOauthHttpServer(httpServerExitDone, ":5992", "/oauthv2", fnCallback)
+	if err != nil {
+		return "", errors.Wrap(err, "couldn't get the auth code")
+	}
 
 	//open a browser to authenticate the user
-	openWebBrowser(authCodeUrl)
+	err = openWebBrowser(authCodeUrl)
+	if err != nil {
+		return "", errors.Wrap(err, "couldn't get auth code")
+	}
 
 	fmt.Fprintln(out, "Please complete authentication process through your web browser...")
 	httpServerExitDone.Wait()
 
 	if authCode == "" {
-		return authCode, CannotGetAuthCode
+		return authCode, fmt.Errorf("couldn't get the auth code (auth code was empty)")
 	}
 
 	return authCode, nil
 }
 
-func getToken(p getTokenParams) (OAuthToken, error) {
+func getToken(p getTokenParams) (*OAuthToken, error) {
 
 	var token OAuthToken
 	tokenPath := fmt.Sprintf("%s/token", p.OAuthEndpoint)
@@ -168,34 +168,36 @@ func getToken(p getTokenParams) (OAuthToken, error) {
 
 	client := http.Client{}
 
-	request, _ := http.NewRequest(http.MethodPost, tokenPath, strings.NewReader(data.Encode()))
+	request, err := http.NewRequest(http.MethodPost, tokenPath, strings.NewReader(data.Encode()))
+	if err != nil {
+		return nil, errors.Wrap(err, "couldn't initialize the request")
+	}
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := client.Do(request)
-
 	if err != nil {
-		return token, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return token, FailedToGetToken
+		return nil, errors.Wrap(err, "couldn't execute the request")
 	}
 
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "couldn't read the response body")
 	}
 	defer resp.Body.Close()
 
-	err = json.Unmarshal(bytes, &token)
-	if err != nil {
-		return token, err
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("couldn't get the oauth token %s", string(bytes))
 	}
 
-	return token, nil
+	err = json.Unmarshal(bytes, &token)
+	if err != nil {
+		return nil, errors.Wrap(err, "couldn't deserialize the response")
+	}
+
+	return &token, nil
 }
 
-func openWebBrowser(url string) {
+func openWebBrowser(url string) error {
 	var err error
 	switch runtime.GOOS {
 	case "linux":
@@ -209,19 +211,22 @@ func openWebBrowser(url string) {
 	}
 
 	if err != nil {
-		log.Fatal(err)
+		return errors.Wrap(err, "couldn't start the web browser to authenticate the user")
 	}
+	return nil
 }
 
-func startOauthHttpServer(wg *sync.WaitGroup, addr string, pattern string, callback http.HandlerFunc) *http.Server {
+func startOauthHttpServer(wg *sync.WaitGroup, addr string, pattern string, callback http.HandlerFunc) (*http.Server, error) {
 	srv := &http.Server{Addr: addr}
 	http.HandleFunc(pattern, callback)
-	go func() {
+	//TODO: How to get err?
+	go func() error {
 		defer wg.Done()
 
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatalf("ListenAndServe(): %v", err)
+			return errors.Wrap(err, "couldn't start the http server")
 		}
+		return nil
 	}()
-	return srv
+	return srv, nil
 }

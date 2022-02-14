@@ -27,7 +27,6 @@ var rootCmd = &cobra.Command{
 //The function gets executed once the application starts without any commands/arguments.
 func startNoteSurvey() (int, error) {
 	noteContent, err := survey.AskNoteContent()
-	//TODO: consider creating constsns for error codes.
 	if err != nil {
 		return 1, err
 	}

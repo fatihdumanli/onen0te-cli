@@ -50,6 +50,7 @@ func getNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode, error) 
 
 	var statusCode HttpStatusCode = HttpStatusCode(resp.StatusCode)
 	respBody, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, statusCode, errors.Wrap(err, "couldn't read the response while getting notebooks")
 	}
@@ -81,6 +82,7 @@ func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, e
 	}
 	var statusCode HttpStatusCode = HttpStatusCode(res.StatusCode)
 	bytes, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
 	if err != nil {
 		return nil, statusCode, errors.Wrap(err, "couldn't read the response")
 	}
@@ -125,6 +127,7 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error) 
 		return "", 000, errors.Wrap(err, "couldn't make the request")
 	}
 
+	defer res.Body.Close()
 	var statusCode HttpStatusCode = HttpStatusCode(res.StatusCode)
 	bytes, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -148,12 +151,4 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error) 
 	}
 
 	return response.Links.OneNoteWebUrl.Href, statusCode, nil
-}
-
-func readResBody(r io.Reader) *string {
-	var bytes, err = ioutil.ReadAll(r)
-	if err != nil {
-	}
-	var strBody = string(bytes)
-	return &strBody
 }
