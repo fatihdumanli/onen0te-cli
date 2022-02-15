@@ -19,25 +19,32 @@ var browseCmd = &cobra.Command{
 	},
 }
 
-func browse() (int, error) {
+func browse() (_ int, err error) {
+
+	defer func() {
+		if err != nil {
+			err = errors.Wrap(err, "in browse()\n")
+		}
+	}()
+
 	notebooks, err := onenote.GetNotebooks()
 	if err != nil {
-		return 1, errors.Wrap(err, "getNotebooks operation has failed")
+		return 1, err
 	}
 
 	n, err := survey.AskNotebook(notebooks)
 	if err != nil {
-		return 1, errors.Wrap(err, "askNotebook operation has failed")
+		return 1, err
 	}
 
 	sections, err := onenote.GetSections(n)
 	if err != nil {
-		return 1, errors.Wrap(err, "getSections operation has failed")
+		return 1, err
 	}
 	s, err := survey.AskSection(n, sections)
 	_ = s
 	if err != nil {
-		return 1, errors.Wrap(err, "askSection operation has failed")
+		return 1, err
 	}
 
 	return 0, nil

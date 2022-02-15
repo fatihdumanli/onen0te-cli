@@ -106,6 +106,11 @@ func AskSection(n Notebook, slist []Section) (Section, error) {
 	}
 }
 
+//Prompts the user to select a onenote page
+func AskPage(s msftgraph.Section) (string, error) {
+	return "", nil
+}
+
 //In case there's no account have been set yet, prompt the user to ask whether create one at that moment.
 func AskSetupAccount() (bool, error) {
 	return askConfirmation("You haven't setup a Onenote account yet, would you like to setup one now?")

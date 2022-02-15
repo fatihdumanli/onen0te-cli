@@ -17,6 +17,7 @@ type HttpStatusCode int
 type Api struct {
 	GetNotebooks func(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode, error)
 	GetSections  func(token oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, error)
+	GetPages     func(token oauthv2.OAuthToken) (*Notebook, HttpStatusCode, error)
 	//Saves the note and returns the link to the newly created note.
 	SaveNote func(token oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error)
 }
@@ -25,6 +26,7 @@ func NewApi() Api {
 	return Api{
 		GetNotebooks: getNotebooks,
 		GetSections:  getSections,
+		GetPages:     getPages,
 		SaveNote:     saveNote,
 	}
 }
@@ -102,17 +104,39 @@ func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, e
 	return response.Sections, statusCode, nil
 }
 
+func getPages(t oauthv2.OAuthToken) (*Notebook, HttpStatusCode, error) {
+
+	c := http.Client{}
+	req, err := http.NewRequest(http.MethodGet, "https://graph.microsoft.com/v1.0/me/onenote/pages", nil)
+	if err != nil {
+		return nil, 000, errors.Wrap(err, "couldn't initialize the request")
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.AccessToken))
+	res, err := c.Do(req)
+	if err != nil {
+		return nil, 000, errors.Wrap(err, "couldn't make the request")
+	}
+	bytes, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	if err != nil {
+		return nil, 000, errors.Wrap(err, "couldn't read the response")
+	}
+	fmt.Println(string(bytes))
+
+	return nil, 200, nil
+}
+
 func saveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error) {
 	c := http.Client{}
 
 	var body = `<html>
-<head>
-<title>` + n.Title + `</title>
-</head>
-<body>
-<p>` + n.Content + `</p>
-</bod>
-</html>`
+			<head>
+				<title>` + n.Title + `</title>
+			</head>
+			<body>
+				<p>` + n.Content + `</p>
+			</body>
+		</html>`
 
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/onenote/sections/%s/pages", n.Section.ID)
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))

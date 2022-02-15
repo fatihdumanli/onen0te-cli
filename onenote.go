@@ -17,7 +17,7 @@ import (
 	"github.com/pterm/pterm"
 )
 
-type cnote struct {
+type onenote struct {
 	storage storage.Storer
 	auth    authentication.Authenticator
 	api     msftgraph.Api
@@ -27,7 +27,7 @@ type cnote struct {
 }
 
 var (
-	root cnote
+	root onenote
 )
 
 var shouldRetry = func(statusCode msftgraph.HttpStatusCode) bool {
@@ -271,7 +271,7 @@ func printAliasReminder(section string) {
 func init() {
 	api := msftgraph.NewApi()
 	bitcask := &storage.Bitcask{}
-	root = cnote{api: api, storage: bitcask}
+	root = onenote{api: api, storage: bitcask}
 	root.token = &oauthv2.OAuthToken{}
 
 	err := root.storage.Get(authentication.TOKEN_KEY, root.token)
