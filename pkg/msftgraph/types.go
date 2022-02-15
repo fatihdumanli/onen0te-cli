@@ -1,4 +1,4 @@
-package onenote
+package msftgraph
 
 type NotebookName string
 type SectionName string

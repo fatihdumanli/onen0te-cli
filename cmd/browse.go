@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/fatihdumanli/cnote"
-	"github.com/fatihdumanli/cnote/internal/survey"
+	"github.com/fatihdumanli/onenote"
+	"github.com/fatihdumanli/onenote/internal/survey"
 	errors "github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -20,7 +20,7 @@ var browseCmd = &cobra.Command{
 }
 
 func browse() (int, error) {
-	notebooks, err := cnote.GetNotebooks()
+	notebooks, err := onenote.GetNotebooks()
 	if err != nil {
 		return 1, errors.Wrap(err, "getNotebooks operation has failed")
 	}
@@ -30,7 +30,7 @@ func browse() (int, error) {
 		return 1, errors.Wrap(err, "askNotebook operation has failed")
 	}
 
-	sections, err := cnote.GetSections(n)
+	sections, err := onenote.GetSections(n)
 	if err != nil {
 		return 1, errors.Wrap(err, "getSections operation has failed")
 	}

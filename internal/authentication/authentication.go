@@ -1,9 +1,9 @@
 package authentication
 
 import (
-	"github.com/fatihdumanli/cnote/internal/config"
-	"github.com/fatihdumanli/cnote/internal/storage"
-	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote/internal/config"
+	"github.com/fatihdumanli/onenote/internal/storage"
+	"github.com/fatihdumanli/onenote/pkg/oauthv2"
 	errors "github.com/pkg/errors"
 )
 

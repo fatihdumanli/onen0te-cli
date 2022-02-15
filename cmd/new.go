@@ -5,11 +5,11 @@ import (
 
 	errors "github.com/pkg/errors"
 
-	"github.com/fatihdumanli/cnote"
-	"github.com/fatihdumanli/cnote/internal/style"
-	"github.com/fatihdumanli/cnote/internal/survey"
-	"github.com/fatihdumanli/cnote/internal/util/file"
-	"github.com/fatihdumanli/cnote/pkg/onenote"
+	"github.com/fatihdumanli/onenote"
+	"github.com/fatihdumanli/onenote/internal/style"
+	"github.com/fatihdumanli/onenote/internal/survey"
+	"github.com/fatihdumanli/onenote/internal/util/file"
+	"github.com/fatihdumanli/onenote/pkg/msftgraph"
 	"github.com/spf13/cobra"
 )
 
@@ -72,10 +72,10 @@ func saveNote(c *cobra.Command, args []string) (int, error) {
 		title = tAnswer
 	}
 
-	var section onenote.Section
+	var section msftgraph.Section
 
 	if alias == "" {
-		var notebooks, err = cnote.GetNotebooks()
+		var notebooks, err = onenote.GetNotebooks()
 		if err != nil {
 			return 1, errors.Wrap(err, "getNotebooks operation has failed")
 		}
@@ -84,7 +84,7 @@ func saveNote(c *cobra.Command, args []string) (int, error) {
 			return 1, errors.Wrap(err, "askNotebook operation has failed")
 		}
 
-		sections, err := cnote.GetSections(n)
+		sections, err := onenote.GetSections(n)
 		if err != nil {
 			return 1, errors.Wrap(err, "getSections operation has failed")
 		}
@@ -94,7 +94,7 @@ func saveNote(c *cobra.Command, args []string) (int, error) {
 		}
 
 	} else {
-		var a, err = cnote.GetAlias(alias)
+		var a, err = onenote.GetAlias(alias)
 		if err != nil {
 			return 1, errors.Wrap(err, "alias data couldn't be loaded")
 		}
@@ -109,7 +109,7 @@ func saveNote(c *cobra.Command, args []string) (int, error) {
 	}
 
 	//Save the note. Show alias instructions only if the user could've used an alias for the section.
-	_, err := cnote.SaveNotePage(*onenote.NewNotePage(section, title, *noteContent), alias == "")
+	_, err := onenote.SaveNotePage(*msftgraph.NewNotePage(section, title, *noteContent), alias == "")
 	if err != nil {
 		return 1, errors.Wrap(err, "saveNotePage operation has failed")
 	}

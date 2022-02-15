@@ -1,4 +1,4 @@
-package onenote
+package msftgraph
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 
 	errors "github.com/pkg/errors"
 
-	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote/pkg/oauthv2"
 )
 
 type HttpStatusCode int

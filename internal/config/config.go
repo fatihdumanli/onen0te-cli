@@ -3,7 +3,7 @@ package config
 import (
 	"io"
 
-	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote/pkg/oauthv2"
 )
 
 type AppOptions struct {

@@ -7,9 +7,9 @@ import (
 
 	errors "github.com/pkg/errors"
 
-	"github.com/fatihdumanli/cnote"
-	"github.com/fatihdumanli/cnote/internal/style"
-	"github.com/fatihdumanli/cnote/internal/survey"
+	"github.com/fatihdumanli/onenote"
+	"github.com/fatihdumanli/onenote/internal/style"
+	"github.com/fatihdumanli/onenote/internal/survey"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
@@ -51,7 +51,7 @@ var removeCmd = &cobra.Command{
 }
 
 func newAlias() (int, error) {
-	var notebooks, err = cnote.GetNotebooks()
+	var notebooks, err = onenote.GetNotebooks()
 	if err != nil {
 		return 1, errors.Wrap(err, "getNotebooks operation has failed\n")
 	}
@@ -61,7 +61,7 @@ func newAlias() (int, error) {
 		return 2, errors.Wrap(err, "askNotebook operation has failed\n")
 	}
 
-	sections, err := cnote.GetSections(n)
+	sections, err := onenote.GetSections(n)
 	if err != nil {
 		return 3, errors.Wrap(err, "getSections operation has failed\n")
 	}
@@ -70,7 +70,7 @@ func newAlias() (int, error) {
 	if err != nil {
 		return 4, errors.Wrap(err, "askSection operation has failed\n")
 	}
-	aliasList, err := cnote.GetAliases()
+	aliasList, err := onenote.GetAliases()
 	if err != nil {
 		return 1, errors.Wrap(err, "getAliases operation has failed\n")
 	}
@@ -92,7 +92,7 @@ func newAlias() (int, error) {
 		return 0, nil
 	}
 
-	err = cnote.SaveAlias(answer, n, s)
+	err = onenote.SaveAlias(answer, n, s)
 	if err == nil {
 		return 0, nil
 	}
@@ -100,7 +100,7 @@ func newAlias() (int, error) {
 }
 
 func displayAliasList() (int, error) {
-	var aliasList, err = cnote.GetAliases()
+	var aliasList, err = onenote.GetAliases()
 	if err != nil {
 		return 1, errors.Wrap(err, "getAliases operation has failed\n")
 	}
@@ -137,7 +137,7 @@ func removeAlias(c *cobra.Command, args []string) int {
 		return 1
 	}
 
-	err := cnote.RemoveAlias(args[0])
+	err := onenote.RemoveAlias(args[0])
 	if err != nil {
 		return 2
 	}

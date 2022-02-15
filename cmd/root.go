@@ -4,10 +4,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/fatihdumanli/cnote"
-	"github.com/fatihdumanli/cnote/internal/style"
-	"github.com/fatihdumanli/cnote/internal/survey"
-	"github.com/fatihdumanli/cnote/pkg/onenote"
+	"github.com/fatihdumanli/onenote"
+	"github.com/fatihdumanli/onenote/internal/style"
+	"github.com/fatihdumanli/onenote/internal/survey"
+	"github.com/fatihdumanli/onenote/pkg/msftgraph"
 	errors "github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +37,7 @@ func startNoteSurvey() (_ int, err error) {
 		return 1, err
 	}
 
-	notebooks, err := cnote.GetNotebooks()
+	notebooks, err := onenote.GetNotebooks()
 	if err != nil {
 		return 2, err
 	}
@@ -46,7 +46,7 @@ func startNoteSurvey() (_ int, err error) {
 	if err != nil {
 		return 1, err
 	}
-	sections, err := cnote.GetSections(n)
+	sections, err := onenote.GetSections(n)
 	if err != nil {
 		return 3, err
 	}
@@ -61,7 +61,7 @@ func startNoteSurvey() (_ int, err error) {
 	}
 
 	//Saving the note to the section
-	_, err = cnote.SaveNotePage(*onenote.NewNotePage(section, title, noteContent), false)
+	_, err = onenote.SaveNotePage(*msftgraph.NewNotePage(section, title, noteContent), false)
 	if err != nil {
 		return 1, err
 	}

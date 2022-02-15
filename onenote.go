@@ -1,4 +1,4 @@
-package cnote
+package onenote
 
 import (
 	"fmt"
@@ -8,19 +8,19 @@ import (
 
 	errors "github.com/pkg/errors"
 
-	"github.com/fatihdumanli/cnote/internal/authentication"
-	"github.com/fatihdumanli/cnote/internal/storage"
-	"github.com/fatihdumanli/cnote/internal/style"
-	"github.com/fatihdumanli/cnote/internal/survey"
-	"github.com/fatihdumanli/cnote/pkg/oauthv2"
-	"github.com/fatihdumanli/cnote/pkg/onenote"
+	"github.com/fatihdumanli/onenote/internal/authentication"
+	"github.com/fatihdumanli/onenote/internal/storage"
+	"github.com/fatihdumanli/onenote/internal/style"
+	"github.com/fatihdumanli/onenote/internal/survey"
+	"github.com/fatihdumanli/onenote/pkg/msftgraph"
+	"github.com/fatihdumanli/onenote/pkg/oauthv2"
 	"github.com/pterm/pterm"
 )
 
 type cnote struct {
 	storage storage.Storer
 	auth    authentication.Authenticator
-	api     onenote.Api
+	api     msftgraph.Api
 	//The nil value is important for the business logic
 	//So we're using a ptr type rather than value type
 	token *oauthv2.OAuthToken
@@ -30,7 +30,7 @@ var (
 	root cnote
 )
 
-var shouldRetry = func(statusCode onenote.HttpStatusCode) bool {
+var shouldRetry = func(statusCode msftgraph.HttpStatusCode) bool {
 	var hashset map[int]bool
 	hashset = make(map[int]bool, 0)
 	hashset[503] = true
@@ -39,7 +39,7 @@ var shouldRetry = func(statusCode onenote.HttpStatusCode) bool {
 }
 
 //Get the list of notebooks belonging to the user logged in
-func GetNotebooks() ([]onenote.Notebook, error) {
+func GetNotebooks() ([]msftgraph.Notebook, error) {
 	checkTokenPresented()
 
 	notebookSpinner, _ := pterm.DefaultSpinner.Start("Getting your notebooks...")
@@ -58,7 +58,7 @@ func GetNotebooks() ([]onenote.Notebook, error) {
 }
 
 //Get the list of notebooks belonging to the user logged in
-func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
+func GetSections(n msftgraph.Notebook) ([]msftgraph.Section, error) {
 	checkTokenPresented()
 
 	//TODO: We could wrap the code which the spinner would run while it's being executed
@@ -79,7 +79,7 @@ func GetSections(n onenote.Notebook) ([]onenote.Section, error) {
 
 //Save a note page using Onenote API
 //Returns the link to the page.
-func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
+func SaveNotePage(npage msftgraph.NotePage, remindAlias bool) (string, error) {
 	checkTokenPresented()
 
 	link, statusCode, err := root.api.SaveNote(*root.token, npage)
@@ -124,9 +124,9 @@ func SaveNotePage(npage onenote.NotePage, remindAlias bool) (string, error) {
 	return link, nil
 }
 
-func GetAliases() (*[]onenote.Alias, error) {
+func GetAliases() (*[]msftgraph.Alias, error) {
 
-	var result []onenote.Alias
+	var result []msftgraph.Alias
 	keys, err := root.storage.GetKeys()
 	if err != nil {
 		return nil, errors.Wrap(err, "couldn't get the aliases")
@@ -147,7 +147,7 @@ func GetAliases() (*[]onenote.Alias, error) {
 			continue
 		}
 
-		var a onenote.Alias
+		var a msftgraph.Alias
 		root.storage.Get(k, &a)
 		result = append(result, a)
 	}
@@ -156,7 +156,7 @@ func GetAliases() (*[]onenote.Alias, error) {
 }
 
 //Save the alias for a onenote section to use it later for quick save
-func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) error {
+func SaveAlias(name string, notebook msftgraph.Notebook, section msftgraph.Section) error {
 
 	var isExist, err = GetAlias(name)
 	if err != nil {
@@ -168,7 +168,7 @@ func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) 
 		return fmt.Errorf("the alias %s already exist", name)
 	}
 
-	err = root.storage.Set(name, onenote.Alias{
+	err = root.storage.Set(name, msftgraph.Alias{
 		Short:    name,
 		Notebook: notebook,
 		Section:  section})
@@ -186,8 +186,8 @@ func SaveAlias(name string, notebook onenote.Notebook, section onenote.Section) 
 
 //Get the details of given alias
 //Returns nil if the alias does not found
-func GetAlias(n string) (*onenote.Alias, error) {
-	var alias onenote.Alias
+func GetAlias(n string) (*msftgraph.Alias, error) {
+	var alias msftgraph.Alias
 	err := root.storage.Get(n, &alias)
 	if err != nil {
 		//TODO: Check if the error is KeyNotFound.
@@ -210,7 +210,7 @@ func RemoveAlias(a string) error {
 	return nil
 }
 
-func hasAlias(section onenote.Section, aliasList *[]onenote.Alias) bool {
+func hasAlias(section msftgraph.Section, aliasList *[]msftgraph.Alias) bool {
 	for _, a := range *aliasList {
 		if a.Section.ID == section.ID {
 			return true
@@ -269,7 +269,7 @@ func printAliasReminder(section string) {
 
 //Grab the token from the local storage upon startup
 func init() {
-	api := onenote.NewApi()
+	api := msftgraph.NewApi()
 	bitcask := &storage.Bitcask{}
 	root = cnote{api: api, storage: bitcask}
 	root.token = &oauthv2.OAuthToken{}

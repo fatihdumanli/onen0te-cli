@@ -1,11 +1,11 @@
-package cnote
+package onenote
 
 import (
 	"os"
 
-	"github.com/fatihdumanli/cnote/internal/authentication"
-	"github.com/fatihdumanli/cnote/internal/config"
-	"github.com/fatihdumanli/cnote/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote/internal/authentication"
+	"github.com/fatihdumanli/onenote/internal/config"
+	"github.com/fatihdumanli/onenote/pkg/oauthv2"
 )
 
 var c = config.MicrosoftGraphConfig{

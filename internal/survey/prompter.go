@@ -7,17 +7,17 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	s "github.com/AlecAivazis/survey/v2"
-	"github.com/fatihdumanli/cnote/internal/config"
-	"github.com/fatihdumanli/cnote/internal/style"
-	"github.com/fatihdumanli/cnote/pkg/onenote"
+	"github.com/fatihdumanli/onenote/internal/config"
+	"github.com/fatihdumanli/onenote/internal/style"
+	"github.com/fatihdumanli/onenote/pkg/msftgraph"
 )
 
 //Friendly names
 type AppOptions = config.AppOptions
-type Notebook = onenote.Notebook
-type Section = onenote.Section
-type SectionName = onenote.SectionName
-type NotebookName = onenote.NotebookName
+type Notebook = msftgraph.Notebook
+type Section = msftgraph.Section
+type SectionName = msftgraph.SectionName
+type NotebookName = msftgraph.NotebookName
 
 func AskNoteContent() (string, error) {
 
@@ -114,7 +114,7 @@ func AskSetupAccount() (bool, error) {
 //Promps the user to get confirmation on creating alias to given notebook&section combination.
 //Returns the answer and the error if any
 //Ask alias to make it easy to create a note within the section
-func AskAlias(section onenote.Section, aliaslist *[]onenote.Alias) (string, error) {
+func AskAlias(section msftgraph.Section, aliaslist *[]msftgraph.Alias) (string, error) {
 	promtMsg := fmt.Sprintf("Enter an alias for %s (Press <Enter> to skip.)", section.Name)
 
 outer:

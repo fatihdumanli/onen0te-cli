@@ -1,4 +1,4 @@
-module github.com/fatihdumanli/cnote
+module github.com/fatihdumanli/onenote
 
 go 1.16
 
