@@ -1,4 +1,4 @@
-package internal
+package file
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ func Exists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
-func ReadFile(path string) (string, error) {
+func ReadString(path string) (string, error) {
 
 	var content string
 	f, err := os.Open(path)

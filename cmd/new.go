@@ -6,9 +6,9 @@ import (
 	errors "github.com/pkg/errors"
 
 	"github.com/fatihdumanli/cnote"
-	"github.com/fatihdumanli/cnote/internal"
 	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/internal/survey"
+	"github.com/fatihdumanli/cnote/internal/util/file"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ var (
 )
 
 var newCmd = &cobra.Command{
-	Use:     "new <path to input>",
+	Use:     "new",
 	Aliases: []string{"add", "save"},
 	Short:   "Create a new note",
 	Long:    "Create a note on one of your Onenote sections",
@@ -41,10 +41,10 @@ func saveNote(c *cobra.Command, args []string) (int, error) {
 
 	if inputFilePath != "" {
 		//File specified
-		if !internal.Exists(inputFilePath) {
+		if !file.Exists(inputFilePath) {
 			return 3, fmt.Errorf("the file %s not found\n", inputFilePath)
 		}
-		fileContent, err := internal.ReadFile(inputFilePath)
+		fileContent, err := file.ReadString(inputFilePath)
 		if err != nil {
 			return 4, errors.Wrap(err, "in  saveNote()\n")
 		}
