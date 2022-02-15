@@ -23,39 +23,46 @@ var rootCmd = &cobra.Command{
 }
 
 //The function gets executed once the application starts without any commands/arguments.
-func startNoteSurvey() (int, error) {
+func startNoteSurvey() (_ int, err error) {
+
+	defer func() {
+		if err != nil {
+			err = errors.Wrap(err, "in startNoteSurvey\n")
+		}
+	}()
+
 	noteContent, err := survey.AskNoteContent()
 	if err != nil {
-		return 1, errors.Wrap(err, "askNoteContent operation has failed")
+		return 1, err
 	}
 
 	notebooks, err := cnote.GetNotebooks()
 	if err != nil {
-		return 2, errors.Wrap(err, "getNotebooks operation has failed")
+		return 2, err
 	}
 
 	n, err := survey.AskNotebook(notebooks)
 	if err != nil {
-		return 1, errors.Wrap(err, "askNotebook operation has failed")
+		return 1, err
 	}
 	sections, err := cnote.GetSections(n)
 	if err != nil {
-		return 3, errors.Wrap(err, "getSection operation has failed")
+		return 3, err
 	}
 	section, err := survey.AskSection(n, sections)
 	if err != nil {
-		return 4, errors.Wrap(err, "askSection operation has failed")
+		return 4, err
 	}
 
 	title, err := survey.AskTitle()
 	if err != nil {
-		return 4, errors.Wrap(err, "askTitle operation has failed")
+		return 4, err
 	}
 
 	//Saving the note to the section
 	_, err = cnote.SaveNotePage(*onenote.NewNotePage(section, title, noteContent), false)
 	if err != nil {
-		return 1, errors.Wrap(err, "saveNote operation has failed")
+		return 1, err
 	}
 
 	return 0, nil
