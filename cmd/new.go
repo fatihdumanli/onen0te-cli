@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	errors "github.com/pkg/errors"
 
@@ -15,11 +14,10 @@ import (
 )
 
 var (
-	alias string
-	//template string
+	alias         string
 	title         string
-	inline        bool
-	inlineContent string
+	inlineText    string
+	inputFilePath string
 )
 
 var newCmd = &cobra.Command{
@@ -28,48 +26,48 @@ var newCmd = &cobra.Command{
 	Short:   "Create a new note",
 	Long:    "Create a note on one of your Onenote sections",
 	RunE: func(c *cobra.Command, args []string) error {
-		var code, err = saveNote(c, args)
-		os.Exit(code)
+		var _, err = saveNote(c, args)
 		return err
 	},
 }
 
+//Three methods to save a note
+//1. Via default editor (Nano, vim or whatever.
+//2. Inline text
+//3. From a file
 func saveNote(c *cobra.Command, args []string) (int, error) {
 
 	var noteContent *string
 
-	if len(args) != 1 && !inline {
-		c.Usage()
-		return 1, fmt.Errorf("inline note requires exactly one argument")
-	}
-
-	//Input validations
-	if inline && inlineContent == "" {
-		return 2, fmt.Errorf("content flag cannot be empty")
-	}
-
-	if !inline {
-		//Load the content from the file
-		var inputPath = args[0]
-		if !internal.Exists(inputPath) {
-			return 3, fmt.Errorf("the file %s not found", inputPath)
+	if inputFilePath != "" {
+		//File specified
+		if !internal.Exists(inputFilePath) {
+			return 3, fmt.Errorf("the file %s not found\n", inputFilePath)
 		}
-
-		var fileContent, ok = internal.ReadFile(inputPath)
-		if !ok {
-			return 4, fmt.Errorf("couldn't read the file %s", inputPath)
+		fileContent, err := internal.ReadFile(inputFilePath)
+		if err != nil {
+			return 4, errors.Wrap(err, "in  saveNote()\n")
 		}
 
 		noteContent = &fileContent
+
+	} else if inlineText != "" {
+		//Inline text
+		noteContent = &inlineText
 	} else {
-		noteContent = &inlineContent
+		//Launch the editor
+		content, err := survey.AskNoteContent()
+		if err != nil {
+			return 1, errors.Wrap(err, "in saveNote()")
+		}
+		noteContent = &content
 	}
 
 	//Get confirmation on adding a note without a title.
 	if title == "" {
 		var tAnswer, err = survey.AskTitle()
 		if err != nil {
-			return 3, errors.Wrap(err, "askTitle operation has failed")
+			return 3, errors.Wrap(err, "in saveNote()\n")
 		}
 		title = tAnswer
 	}
@@ -120,11 +118,10 @@ func saveNote(c *cobra.Command, args []string) (int, error) {
 }
 
 func init() {
-	newCmd.PersistentFlags().BoolVarP(&inline, "inline", "i", false, "specify this flag along with --text flag to save an inline note.")
+	newCmd.PersistentFlags().StringVarP(&inputFilePath, "file", "f", "", "use this flag to send a file to onenote")
+	newCmd.PersistentFlags().StringVarP(&inlineText, "inline", "i", "", "use this flag to save an inline note")
 	newCmd.PersistentFlags().StringVarP(&alias, "alias", "a", "", "alias for the target onenote section.")
 	newCmd.PersistentFlags().StringVarP(&title, "title", "t", "", "title for the note page.")
-	newCmd.PersistentFlags().StringVarP(&inlineContent, "content", "c", "", "inline content for the note")
 
-	//newCmd.PersistentFlags().StringVarP(&template, "template", "t", "vanilla", "template for the note page that will be saved")
 	rootCmd.AddCommand(newCmd)
 }

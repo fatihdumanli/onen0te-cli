@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/fatihdumanli/cnote"
+	"github.com/fatihdumanli/cnote/internal/style"
 	"github.com/fatihdumanli/cnote/internal/survey"
 	"github.com/fatihdumanli/cnote/pkg/onenote"
 	errors "github.com/pkg/errors"
@@ -70,7 +71,7 @@ func startNoteSurvey() (_ int, err error) {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
+		log.Fatal(style.Error(err.Error()))
 		os.Exit(1)
 	}
 

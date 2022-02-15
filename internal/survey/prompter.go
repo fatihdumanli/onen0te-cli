@@ -20,11 +20,14 @@ type SectionName = onenote.SectionName
 type NotebookName = onenote.NotebookName
 
 func AskNoteContent() (string, error) {
+
+	var editorPrompt = &survey.Editor{
+		Message: "Enter the note content",
+	}
+
 	var noteContentQuestion = &survey.Question{
-		Name: "notecontent",
-		Prompt: &survey.Multiline{
-			Message: "Enter your note content.\n",
-		},
+		Name:     "notecontent",
+		Prompt:   editorPrompt,
 		Validate: survey.Required,
 	}
 
