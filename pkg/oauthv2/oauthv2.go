@@ -45,8 +45,9 @@ func RefreshToken(p OAuthParams, r string) (OAuthToken, error) {
 	data.Set("redirect_uri", p.RedirectUri)
 	data.Set("grant_type", "refresh_token")
 
+	tokenPath := fmt.Sprintf("%s/token", p.OAuthEndpoint)
 	c := http.Client{}
-	req, err := http.NewRequest(http.MethodPost, p.RefreshTokenEndpoint, strings.NewReader(data.Encode()))
+	req, err := http.NewRequest(http.MethodPost, tokenPath, strings.NewReader(data.Encode()))
 	if err != nil {
 		return newToken, errors.Wrap(err, "couldn't initialize the request when refresing token")
 	}
@@ -186,15 +187,6 @@ func getToken(p getTokenParams) (*OAuthToken, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("couldn't get the oauth token %s", string(bytes))
 	}
-
-	//TODO: CLean
-	fmt.Printf("response %s", string(bytes))
-	fmt.Printf("response %s", string(bytes))
-	fmt.Printf("response %s", string(bytes))
-	fmt.Printf("response %s", string(bytes))
-	fmt.Printf("response %s", string(bytes))
-	fmt.Printf("response %s", string(bytes))
-	fmt.Printf("response %s", string(bytes))
 
 	err = json.Unmarshal(bytes, &token)
 	if err != nil {

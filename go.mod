@@ -6,6 +6,7 @@ require (
 	git.mills.io/prologic/bitcask v1.0.2
 	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/jarcoal/httpmock v1.1.0 // indirect
+	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.36
 	github.com/spf13/cobra v1.3.0 // indirect

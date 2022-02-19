@@ -6,12 +6,11 @@ import (
 
 type AuthorizationCode string
 type OAuthParams struct {
-	ClientId             string
-	RedirectUri          string
-	Scope                []string
-	OAuthEndpoint        string
-	RefreshTokenEndpoint string
-	State                string
+	ClientId      string
+	RedirectUri   string
+	Scope         []string
+	OAuthEndpoint string
+	State         string
 }
 
 type getTokenParams struct {
