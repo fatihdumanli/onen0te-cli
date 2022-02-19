@@ -8,16 +8,14 @@ import (
 	"github.com/fatihdumanli/onenote/pkg/oauthv2"
 )
 
+//TODO: Use configuration file.
 var c = config.MicrosoftGraphConfig{
 	ClientId:    "2124cbcc-943a-4a41-b8b2-efabbfc99b65",
 	TenantId:    "31986ee9-8d0d-4a8e-8c6d-1d763b66d6c2",
 	RedirectUrl: "http://localhost:5992/oauthv2",
 }
 
-//TODO: Define a standard for colors here.
-//For aliases: CyanBg-RedFg
-//For sections: Red
-//...
+//Returns pre-configured Microsoft Graph configuration.
 func getMicrosoftGraphConfig() config.MicrosoftGraphConfig {
 
 	//NOTE
@@ -38,8 +36,6 @@ func getMicrosoftGraphConfig() config.MicrosoftGraphConfig {
 	return c
 }
 
-//TODO: Notice that this method gets called everywhere in the app
-//We might need to come up with a DI trick.
 func getOptions() config.AppOptions {
 	var msGraphOptions = getMicrosoftGraphConfig()
 

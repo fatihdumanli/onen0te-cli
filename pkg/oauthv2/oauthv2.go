@@ -118,8 +118,6 @@ func getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
 	var authCode AuthorizationCode
 	var srv *http.Server
 
-	//closure
-	//notice that we've passed a closure and we've utilized a local variable, awesome!
 	var fnCallback = func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 		authCode = AuthorizationCode(values.Get("code"))
@@ -189,6 +187,15 @@ func getToken(p getTokenParams) (*OAuthToken, error) {
 		return nil, fmt.Errorf("couldn't get the oauth token %s", string(bytes))
 	}
 
+	//TODO: CLean
+	fmt.Printf("response %s", string(bytes))
+	fmt.Printf("response %s", string(bytes))
+	fmt.Printf("response %s", string(bytes))
+	fmt.Printf("response %s", string(bytes))
+	fmt.Printf("response %s", string(bytes))
+	fmt.Printf("response %s", string(bytes))
+	fmt.Printf("response %s", string(bytes))
+
 	err = json.Unmarshal(bytes, &token)
 	if err != nil {
 		return nil, errors.Wrap(err, "couldn't deserialize the response")
@@ -219,14 +226,22 @@ func openWebBrowser(url string) error {
 func startOauthHttpServer(wg *sync.WaitGroup, addr string, pattern string, callback http.HandlerFunc) (*http.Server, error) {
 	srv := &http.Server{Addr: addr}
 	http.HandleFunc(pattern, callback)
-	//TODO: How to get err?
+
+	var ch chan error = make(chan error)
 	go func() error {
 		defer wg.Done()
 
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			return errors.Wrap(err, "couldn't start the http server")
+			ch <- errors.Wrap(err, "couldn't start the http server")
 		}
+		close(ch)
 		return nil
 	}()
-	return srv, nil
+
+	select {
+	case v := <-ch:
+		return nil, v
+	default:
+		return srv, nil
+	}
 }

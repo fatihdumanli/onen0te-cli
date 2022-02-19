@@ -91,7 +91,7 @@ func (b *Bitcask) GetKeys() (*[]string, error) {
 }
 
 func openBitcaskDb() (*bitcask.Bitcask, func() error, error) {
-	db, err := bitcask.Open("/tmp/cnote")
+	db, err := bitcask.Open("/tmp/nnote")
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "couldn't open bitcask db")
 	}

@@ -61,7 +61,6 @@ func GetNotebooks() ([]msftgraph.Notebook, error) {
 func GetSections(n msftgraph.Notebook) ([]msftgraph.Section, error) {
 	checkTokenPresented()
 
-	//TODO: We could wrap the code which the spinner would run while it's being executed
 	sectionsSpinner, _ := pterm.DefaultSpinner.Start("Getting sections...")
 	var sections, statusCode, err = root.api.GetSections(*root.token, n)
 
