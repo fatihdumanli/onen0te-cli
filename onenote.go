@@ -21,9 +21,7 @@ type onenote struct {
 	storage storage.Storer
 	auth    authentication.Authenticator
 	api     msftgraph.Api
-	//The nil value is important for the business logic
-	//So we're using a ptr type rather than value type
-	token *oauthv2.OAuthToken
+	token   *oauthv2.OAuthToken
 }
 
 var (

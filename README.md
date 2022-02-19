@@ -17,7 +17,6 @@ Please note that this is an unofficial onenote client and in order to use this a
 - Import contents of a file as a Onenote Page
 - Use aliases to quick access to your sections
 - Browse your notes
-- Edit your notes
 
 # Installation 
 This tool is written in Go. Run the command below to install the Onenote CLI.
