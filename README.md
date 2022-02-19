@@ -1,24 +1,15 @@
-<!--
-<p align="center"><a href="https://github.com/Trendyol/gaos" target="_blank"><img height="128" src="https://raw.githubusercontent.com/Trendyol/gaos/master/.res/logo.png"></a></p>
-
-<h1 align="center">GAOS</h1>
-
-<div align="center">
- <strong>
-   HTTP mocking to test API services for chaos scenarios
- </strong>
-</div>
-
--->
-
 # Onenote-CLI
-[![GoDoc](http://img.shields.io/badge/godoc-reference-5272B4.svg)](https://pkg.go.dev/github.com/AlecAivazis/survey/v2)
+
 A compact CLI tool to create/view the notes on your Onenote notebooks.
 
---gif here--
+[![GoDoc](http://img.shields.io/badge/godoc-reference-5272B4.svg)](https://pkg.go.dev/github.com/AlecAivazis/survey/v2)
+
+![preview](./img/nnote.gif)
 
 # How it works
-You can quickly take notes on your terminal and save them as Onenote pages. It's also possible to take a note on your favorite text editor, nnote will save the note to the specified section upon quitting the editor. Note that this is a unofficial onenote client and in order to use this app you need to authorize this app to access and write your OneNote notes. See the `Authentication` section for more info.
+You can quickly take notes on your terminal and save them as Onenote pages. It's also possible to take a note on your favorite text editor, onenote cli tool will save the note to the specified section upon quitting the editor. 
+
+Please note that this is an unofficial onenote client and in order to use this app you need to authorize this app to access and write your OneNote notes. See the **Authentication** section for more info.
 
 # Features
 - Take inline notes
@@ -36,10 +27,11 @@ $ go install github.com/fatihdumanli/onenote@latest
 ```
 
 ## Authentication
-Authentication is done during your very first interaction with nnote. To use this application, you must authorize the nnote to access/write your Onenote notebooks and sections.
+Authentication is done during your very first interaction with nnote. To use this application, you must authorize nnote to access/write your Onenote notebooks and sections.
 
-Feel free to change the ClientId and TenantId variables with yours from here. You can grab yours from Azure portal. See the following link for further information.
+Feel free to change the **ClientId** and **TenantId** variables with yours [here](https://github.com/fatihdumanli/onenote-cli/blob/master/options.go#L12). You can grab yours on Azure portal. See the following link for further information.
 
+[https://docs.microsoft.com/en-us/graph/auth-v2-user?context=graph%2Fapi%2F1.0&view=graph-rest-1.0#1-register-your-app](https://docs.microsoft.com/en-us/graph/auth-v2-user?context=graph/api/1.0&view=graph-rest-1.0#1-register-your-app)
 
 # Usage
 ```bash
