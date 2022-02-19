@@ -1,0 +1,175 @@
+<!--
+<p align="center"><a href="https://github.com/Trendyol/gaos" target="_blank"><img height="128" src="https://raw.githubusercontent.com/Trendyol/gaos/master/.res/logo.png"></a></p>
+
+<h1 align="center">GAOS</h1>
+
+<div align="center">
+ <strong>
+   HTTP mocking to test API services for chaos scenarios
+ </strong>
+</div>
+
+-->
+
+# Onenote-CLI
+[![GoDoc](http://img.shields.io/badge/godoc-reference-5272B4.svg)](https://pkg.go.dev/github.com/AlecAivazis/survey/v2)
+A compact CLI tool to create/view the notes on your Onenote notebooks.
+
+--gif here--
+
+# How it works
+You can quickly take notes on your terminal and save them as Onenote pages. It's also possible to take a note on your favorite text editor, nnote will save the note to the specified section upon quitting the editor. Note that this is a unofficial onenote client and in order to use this app you need to authorize this app to access and write your OneNote notes. See the `Authentication` section for more info.
+
+# Features
+- Take inline notes
+- Take notes on your favorite editor
+- Import contents of a file as a Onenote Page
+- Use aliases to quick access to your sections
+- Browse your notes
+- Edit your notes
+
+# Installation 
+This tool is written in Go. Run the command below to install the Onenote CLI.
+
+```bash
+$ go install github.com/fatihdumanli/onenote@latest
+```
+
+## Authentication
+Authentication is done during your very first interaction with nnote. To use this application, you must authorize the nnote to access/write your Onenote notebooks and sections.
+
+Feel free to change the ClientId and TenantId variables with yours from here. You can grab yours from Azure portal. See the following link for further information.
+
+
+# Usage
+```bash
+Usage:
+  nnote [command]
+
+Available Commands:
+  alias       add/list and remove alias
+  browse      browse the pages within a onenote section
+  new         Create a new note
+```
+
+## Creating a New Note
+
+Use `new` command to take notes on your Onenote account. You can use the following flags when taking notes.
+
+### Usage
+
+```bash
+Usage:
+  nnote new [flags]
+
+Aliases:
+  new, add, save
+
+Flags:
+- `-a`: Alias for the section
+- `-t`: Title for the page (default is empty)
+- `-i`: Use this flag to save inline note. Wrap your text with double quotes right after the flag literal.
+- `-f`: Read contents of the file and save it as a Onenote page.
+```
+### Take an inline note
+To take an inline note, use the command `new` with flag `-i`
+
+
+**Example 1 - Taking an inline note**
+```bash
+$ nnote new -i "taking inline notes are fun" 
+``` 
+
+**Example 2 - Taking an inline note using an alias**
+
+```bash
+$ nnote new -i "aliases help you to save time" -a fooSection
+```
+
+**Example 3 - Taking an inline note with a title**
+
+```bash
+$ nnote new -i "titles makes it easy to locate your notes!" -t "this is crazy important note!"
+``` 
+
+### Take note using your favorite editor
+To take a note using your favorite editor, do not send any flags or argument along with the `new` command. To launch your default text editor to save a Onenote page run the following command.
+
+```bash
+$ nnote new
+```
+Upon quitting the editor, you'll be prompted to choose the notebook and section to which the note'll be uploaded.
+
+### Import the contents of a file as Onenote page
+Use `-f` flag to save the contents of a file as a Onenote page.
+
+
+```bash
+$ cnote new -f /path/to/the/file.txt -t "it's recommended to speficy a title although it's not required!" -a barSection
+```
+
+> NOTE: You'll be prompted to choose notebook and section if you don't specify `-a` flag.
+
+## Aliases
+It's encourged you to tag your sections with aliases. It'll facilitate the process of taking a new note as you'll be skipping time consuming HTTP requests to fetch your notebooks and sections.
+
+### Usage
+```bash
+Usage:
+  nnote alias [command]
+
+Available Commands:
+  list        display alias list
+  new         create a new alias.
+  remove      remove an alias
+```
+
+### Creating a new alias
+Use the following command to create a new alias.
+
+TODO: Currently It does not work in this way
+```bash
+$ nnote alias new [alias]
+```
+
+You'll be prompted to select notebook and section in order. 
+
+**Example**
+```bash
+$ nnote alias new "quick notes"
+```
+
+```bash
+$ nnote alias new "asp.net"
+```
+
+### Listing aliases
+Use `list` command to list your aliases and the corresponding sections.
+
+```bash
+$ nnote alias list
+```
+
+### Removing aliases
+You may want to change the mapping for an alias. Use `remove` command to remove an alias.
+
+```bash
+$ nnote alias remove <alias>
+``` 
+
+**Example**
+```bash
+$ nnote alias remove "asp.net"
+```
+
+## View your notes
+TODO: Update
+## Edit your notes
+TODO: Update
+
+# Contribution
+# Licence
+
+
+
+
