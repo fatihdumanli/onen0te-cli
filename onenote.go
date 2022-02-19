@@ -101,9 +101,8 @@ func SaveNotePage(npage msftgraph.NotePage, remindAlias bool) (string, error) {
 		return "", errors.Wrap(err, "couldn't get the alias list")
 	}
 
-	var answer string
-
-	if !hasAlias(npage.Section, aliases) {
+	var hasAlias = hasAlias(npage.Section, aliases)
+	if !hasAlias {
 		answer, err := survey.AskAlias(npage.Section, aliases)
 		if err != nil {
 			return "", errors.Wrap(err, "couldn't ask the alias")
@@ -117,7 +116,7 @@ func SaveNotePage(npage msftgraph.NotePage, remindAlias bool) (string, error) {
 	}
 
 	//Print only if the alias didn't get created in this session.
-	if answer == "" && remindAlias {
+	if hasAlias && remindAlias {
 		printAliasReminder(npage.Section.Name)
 	}
 
