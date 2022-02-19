@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	errors "github.com/pkg/errors"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/fatihdumanli/onenote/internal/storage"
 	"github.com/fatihdumanli/onenote/internal/style"
 	"github.com/fatihdumanli/onenote/internal/survey"
+	"github.com/fatihdumanli/onenote/internal/util/file"
 	"github.com/fatihdumanli/onenote/pkg/msftgraph"
 	"github.com/fatihdumanli/onenote/pkg/oauthv2"
 	"github.com/pterm/pterm"
@@ -90,11 +90,7 @@ func SaveNotePage(npage msftgraph.NotePage, remindAlias bool) (string, error) {
 		return "", errors.Wrap(err, "couldn't save the note page")
 	}
 
-	var data = make([][]string, 2)
-	data[0] = []string{"Status", "Notebook", "Section", "Title", "Note Size", "Elapsed", "Link", "SavedAt"}
-	data[1] = []string{style.Success("OK"), npage.Section.Notebook.DisplayName, npage.Section.Name, npage.Title, "10 kB", "90 ms", "link FIXME", time.Now().Format(time.RFC3339)}
-	pterm.DefaultTable.WithHasHeader().WithData(data).Render()
-	fmt.Print("\n\n")
+	printSuccessOutput(link, npage)
 
 	aliases, err := GetAliases()
 	if err != nil {
@@ -216,6 +212,20 @@ func hasAlias(section msftgraph.Section, aliasList *[]msftgraph.Alias) bool {
 		}
 	}
 	return false
+}
+
+//Prints the outbut as a table upon saving a note
+func printSuccessOutput(link string, npage msftgraph.NotePage) {
+
+	var size = file.HumanizeSize(len([]byte(npage.Content)))
+
+	var data = make([][]string, 2)
+	data[0] = []string{"Status", "Notebook", "Section", "Title", "Size"}
+	data[1] = []string{style.Success("OK"), npage.Section.Notebook.DisplayName, npage.Section.Name, npage.Title, size}
+	pterm.DefaultTable.WithHasHeader().WithData(data).Render()
+	fmt.Print("\n")
+	fmt.Println(link)
+	fmt.Print("\n")
 }
 
 //This function gets called prior to each API operation to make sure that we're not going to deal with any stale token.

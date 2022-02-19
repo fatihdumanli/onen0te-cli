@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 
 	"github.com/pkg/errors"
 )
@@ -26,4 +27,11 @@ func ReadString(path string) (string, error) {
 	}
 	content = string(bytes)
 	return content, nil
+}
+
+func HumanizeSize(numOfBytes int) string {
+	if numOfBytes < 1024 {
+		return strconv.Itoa(numOfBytes) + "bytes"
+	}
+	return strconv.Itoa(numOfBytes/1024) + "kB"
 }
