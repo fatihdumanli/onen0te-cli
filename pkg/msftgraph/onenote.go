@@ -35,7 +35,7 @@ func (a *Api) GetNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode
 
 	res, statusCode, err := a.restClient.Get("https://graph.microsoft.com/v1.0/me/onenote/notebooks", headers)
 	if statusCode != http.StatusOK {
-		return nil, statusCode, fmt.Errorf("couldn't get the notebooks: %s", string(res))
+		return nil, statusCode, fmt.Errorf("the statusCode doesn't indicate a successful operation: %d", statusCode)
 	}
 
 	err = json.Unmarshal(res, &response)

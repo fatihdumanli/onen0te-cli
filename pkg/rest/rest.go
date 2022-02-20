@@ -18,11 +18,11 @@ type Requester interface {
 type RestClient struct{}
 
 func (h *RestClient) Get(url string, headers map[string]string) ([]byte, HttpStatusCode, error) {
-	return nil, 000, nil
+	return makeHttpRequest(url, http.MethodGet, nil, headers)
 }
 
 func (h *RestClient) Post(url string, headers map[string]string, body io.Reader) ([]byte, HttpStatusCode, error) {
-	return nil, 000, nil
+	return makeHttpRequest(url, http.MethodPost, body, headers)
 }
 
 //Makes an http request and returns the response as a slice of bytes.

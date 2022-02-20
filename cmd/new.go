@@ -77,7 +77,7 @@ func saveNote(c *cobra.Command, args []string) (int, error) {
 	if alias == "" {
 		var notebooks, err = onenote.GetNotebooks()
 		if err != nil {
-			return 1, errors.Wrap(err, "getNotebooks operation has failed")
+			return 1, errors.Wrap(err, "getNotebooks operation has failed\n")
 		}
 		n, err := survey.AskNotebook(notebooks)
 		if err != nil {

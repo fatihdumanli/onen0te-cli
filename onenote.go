@@ -48,7 +48,7 @@ func GetNotebooks() ([]msftgraph.Notebook, error) {
 			//TODO: implement retry.
 		}
 		notebookSpinner.Fail(err.Error())
-		return notebooks, errors.Wrap(err, "couldn't get the notebooks")
+		return notebooks, errors.Wrap(err, "couldn't get the notebooks\n")
 	}
 
 	notebookSpinner.Success(pterm.FgDefault.Sprint("DONE"))
