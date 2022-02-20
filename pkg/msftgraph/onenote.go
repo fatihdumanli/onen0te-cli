@@ -3,64 +3,42 @@ package msftgraph
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
 	errors "github.com/pkg/errors"
 
 	"github.com/fatihdumanli/onenote/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote/pkg/rest"
 )
 
-type HttpStatusCode int
+type HttpStatusCode = rest.HttpStatusCode
+
 type Api struct {
-	GetNotebooks func(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode, error)
-	GetSections  func(token oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, error)
-	GetPages     func(token oauthv2.OAuthToken) (*Notebook, HttpStatusCode, error)
-	//Saves the note and returns the link to the newly created note.
-	SaveNote func(token oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error)
+	restClient rest.Requester
 }
 
 func NewApi() Api {
 	return Api{
-		GetNotebooks: getNotebooks,
-		GetSections:  getSections,
-		GetPages:     getPages,
-		SaveNote:     saveNote,
+		restClient: &rest.RestClient{},
 	}
 }
 
-func getNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode, error) {
+func (a *Api) GetNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode, error) {
 
 	var response struct {
 		Notebooks []Notebook `json:"value"`
 	}
 
-	client := http.Client{}
-	request, err := http.NewRequest(http.MethodGet, "https://graph.microsoft.com/v1.0/me/onenote/notebooks", nil)
-	if err != nil {
-		return nil, 000, errors.Wrap(err, "couldn't initialize the request while getting notebooks")
+	var headers = make(map[string]string, 0)
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
+
+	res, statusCode, err := a.restClient.Get("https://graph.microsoft.com/v1.0/me/onenote/notebooks", headers)
+	if statusCode != http.StatusOK {
+		return nil, statusCode, fmt.Errorf("couldn't get the notebooks: %s", string(res))
 	}
 
-	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token.AccessToken))
-
-	resp, err := client.Do(request)
-	if err != nil {
-		return nil, 000, errors.Wrap(err, "couldn't make the request while getting notebooks")
-	}
-
-	var statusCode HttpStatusCode = HttpStatusCode(resp.StatusCode)
-	respBody, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		return nil, statusCode, errors.Wrap(err, "couldn't read the response while getting notebooks")
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, statusCode, fmt.Errorf("couldn't get the notebooks: %s", string(respBody))
-	}
-
-	err = json.Unmarshal(respBody, &response)
+	err = json.Unmarshal(res, &response)
 	if err != nil {
 		return nil, statusCode, errors.Wrap(err, "couldn't deserialize response data while getting the notebooks")
 	}
@@ -68,34 +46,24 @@ func getNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode, error) 
 	return response.Notebooks, statusCode, nil
 }
 
-func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, error) {
+func (a *Api) GetSections(token oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, error) {
 	var response struct {
 		Sections []Section `json:"value"`
 	}
-	c := http.Client{}
-	req, err := http.NewRequest(http.MethodGet, n.SectionsUrl, nil)
-	if err != nil {
-		return nil, 000, errors.Wrap(err, "couldn't initialize the request")
-	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.AccessToken))
-	res, err := c.Do(req)
-	if err != nil {
-		return nil, 000, errors.Wrap(err, "couldn't make the request")
-	}
-	var statusCode HttpStatusCode = HttpStatusCode(res.StatusCode)
-	bytes, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
-	if err != nil {
-		return nil, statusCode, errors.Wrap(err, "couldn't read the response")
-	}
-	if res.StatusCode != http.StatusOK {
-		return nil, statusCode, fmt.Errorf("couldn't load the sections: %s", string(bytes))
+
+	var headers = make(map[string]string, 0)
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
+
+	res, statusCode, err := a.restClient.Get(n.SectionsUrl, headers)
+	if statusCode != http.StatusOK {
+		return nil, statusCode, fmt.Errorf("couldn't load the sections: %s", string(res))
 	}
 
-	err = json.Unmarshal(bytes, &response)
+	err = json.Unmarshal(res, &response)
 	if err != nil {
 		return nil, statusCode, errors.Wrap(err, "couldn't deserialize the response data")
 	}
+
 	//Set notebook ptr of each section in the response
 	for i := 0; i < len(response.Sections); i++ {
 		response.Sections[i].Notebook = &n
@@ -104,61 +72,31 @@ func getSections(t oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, e
 	return response.Sections, statusCode, nil
 }
 
-func getPages(t oauthv2.OAuthToken) (*Notebook, HttpStatusCode, error) {
+//TODO:Complete
+//func getPages(token oauthv2.OAuthToken) (*Notebook, HttpStatusCode, error) {
+//
+//	var headers = make(map[string]string, 0)
+//	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
+//	res, statusCode, err := makeHttpRequest("https://graph.microsoft.com/v1.0/me/onenote/pages", http.MethodGet, nil, headers)
+//	_ = res
+//	_ = statusCode
+//	_ = err
+//
+//	return nil, 200, nil
+//}
 
-	c := http.Client{}
-	req, err := http.NewRequest(http.MethodGet, "https://graph.microsoft.com/v1.0/me/onenote/pages", nil)
-	if err != nil {
-		return nil, 000, errors.Wrap(err, "couldn't initialize the request")
-	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.AccessToken))
-	res, err := c.Do(req)
-	if err != nil {
-		return nil, 000, errors.Wrap(err, "couldn't make the request")
-	}
-	bytes, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
-	if err != nil {
-		return nil, 000, errors.Wrap(err, "couldn't read the response")
-	}
-	fmt.Println(string(bytes))
-
-	return nil, 200, nil
-}
-
-func saveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error) {
-	c := http.Client{}
-
-	var body = `<html>
-			<head>
-				<title>` + n.Title + `</title>
-			</head>
-			<body>
-				<p>` + n.Content + `</p>
-			</body>
-		</html>`
-
+func (a *Api) SaveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error) {
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/onenote/sections/%s/pages", n.Section.ID)
-	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
-	if err != nil {
-		return "", 000, errors.Wrap(err, "couldn't initialize the request")
-	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.AccessToken))
-	req.Header.Add("Content-Type", "application/xhtml+xml")
+	body := getNoteTemplate(n.Title, n.Content)
 
-	res, err := c.Do(req)
-	if err != nil {
-		return "", 000, errors.Wrap(err, "couldn't make the request")
-	}
+	var headers map[string]string
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", t.AccessToken)
+	headers["Content-Type"] = "application/xhtml+xml"
 
-	defer res.Body.Close()
-	var statusCode HttpStatusCode = HttpStatusCode(res.StatusCode)
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		return "", statusCode, errors.Wrap(err, "couldn't read the response")
-	}
-	if res.StatusCode != http.StatusCreated {
-		return "", statusCode, fmt.Errorf("couldn't save the note: %s", string(bytes))
+	res, statusCode, err := a.restClient.Post(url, headers, strings.NewReader(body))
+
+	if statusCode != http.StatusCreated {
+		return "", statusCode, fmt.Errorf("couldn't save the note: %s", string(res))
 	}
 
 	var response struct {
@@ -169,10 +107,24 @@ func saveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error) 
 		} `json:"links"`
 	}
 
-	err = json.Unmarshal(bytes, &response)
+	err = json.Unmarshal(res, &response)
 	if err != nil {
 		return "", statusCode, errors.Wrap(err, "couldn't deserialize the response data")
 	}
 
 	return response.Links.OneNoteWebUrl.Href, statusCode, nil
+}
+
+func getNoteTemplate(title, content string) string {
+
+	var body = `<html>
+			<head>
+				<title>` + title + `</title>
+			</head>
+			<body>
+				<p>` + content + `</p>
+			</body>
+		</html>`
+
+	return body
 }
