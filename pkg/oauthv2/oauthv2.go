@@ -35,13 +35,13 @@ func (t *OAuthToken) IsExpired() bool {
 	return time.Now().After(t.ExpiresAt)
 }
 
-func RefreshToken(p OAuthParams, r string) (OAuthToken, error) {
+func RefreshToken(p OAuthParams, refreshToken string) (OAuthToken, error) {
 	var newToken OAuthToken
 
 	var data = url.Values{}
 	data.Set("client_id", p.ClientId)
 	data.Set("scope", strings.Join(p.Scope, " "))
-	data.Set("refresh_token", r)
+	data.Set("refresh_token", refreshToken)
 	data.Set("redirect_uri", p.RedirectUri)
 	data.Set("grant_type", "refresh_token")
 

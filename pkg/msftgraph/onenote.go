@@ -18,9 +18,9 @@ type Api struct {
 	restClient rest.Requester
 }
 
-func NewApi() Api {
+func NewApi(r rest.Requester) Api {
 	return Api{
-		restClient: &rest.RestClient{},
+		restClient: r,
 	}
 }
 

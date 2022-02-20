@@ -14,6 +14,7 @@ import (
 	"github.com/fatihdumanli/onenote/internal/util/file"
 	"github.com/fatihdumanli/onenote/pkg/msftgraph"
 	"github.com/fatihdumanli/onenote/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote/pkg/rest"
 	"github.com/pterm/pterm"
 )
 
@@ -275,7 +276,7 @@ func printAliasReminder(section string) {
 
 //Grab the token from the local storage upon startup
 func init() {
-	api := msftgraph.NewApi()
+	api := msftgraph.NewApi(&rest.RestClient{})
 	bitcask := &storage.Bitcask{}
 	root = onenote{api: api, storage: bitcask}
 	root.token = &oauthv2.OAuthToken{}
