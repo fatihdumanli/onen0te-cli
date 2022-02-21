@@ -1,0 +1,34 @@
+trigger: 
+ - setup-azure-pipelines
+
+pool:
+   vmImage: 'ubuntu-latest'
+
+steps: 
+- task: GoTool@0
+  inputs:
+    version: '1.16.7'
+- task: Go@0
+  inputs:
+    command: 'get'
+    arguments: '-d'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
+- task: Go@0
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
+- task: CopyFiles@2
+  inputs:
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+- task: PublishBuildArtifacts@1
+  inputs:
+     artifactName: drop
+- task: Go@0
+  inputs: 
+  command: 'build'
+  workingDirectory: '$(System.DefaultWorkingDirectory)'
+- task: Go@0
+  inputs: 
+  command: 'test'
+  arguments: './...'
+  workingDirectory: '$(modulePath)'
