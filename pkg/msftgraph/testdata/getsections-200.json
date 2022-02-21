@@ -1,0 +1,38 @@
+{
+  "value": [
+    {
+      "id": "a1",
+      "self": "",
+      "createdDateTime": "",
+      "displayName": "Section A1",
+      "lastModifiedDateTime": "",
+      "isDefault": false,
+      "pagesUrl": "http://pages-url-to-section-a1",
+      "createdBy": null,
+      "lastModifiedBy": null,
+      "parentNotebook": {
+        "id": "a-id",
+        "displayName": "Notebook A",
+        "self": ""
+      },
+      "parentSectionGroup": null
+    },
+    {
+      "id": "a2",
+      "self": "",
+      "createdDateTime": "",
+      "displayName": "Section A2",
+      "lastModifiedDateTime": "",
+      "isDefault": false,
+      "pagesUrl": "http://pages-url-to-section-a2",
+      "createdBy": null,
+      "lastModifiedBy": null,
+      "parentNotebook": {
+        "id": "a-id",
+        "displayName": "Notebook A",
+        "self": ""
+      },
+      "parentSectionGroup": null
+    }
+  ]
+}

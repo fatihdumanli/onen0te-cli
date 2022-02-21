@@ -55,6 +55,7 @@ func (a *Api) GetSections(token oauthv2.OAuthToken, n Notebook) ([]Section, Http
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
 
 	res, statusCode, err := a.restClient.Get(n.SectionsUrl, headers)
+
 	if statusCode != http.StatusOK {
 		return nil, statusCode, fmt.Errorf("couldn't get the sections from the server")
 	}
@@ -89,12 +90,11 @@ func (a *Api) SaveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/onenote/sections/%s/pages", n.Section.ID)
 	body := getNoteTemplate(n.Title, n.Content)
 
-	var headers map[string]string
+	var headers map[string]string = make(map[string]string, 0)
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", t.AccessToken)
 	headers["Content-Type"] = "application/xhtml+xml"
 
 	res, statusCode, err := a.restClient.Post(url, headers, strings.NewReader(body))
-
 	if statusCode != http.StatusCreated {
 		return "", statusCode, fmt.Errorf("couldn't save the note")
 	}

@@ -1,0 +1,17 @@
+{
+    "contentUrl": "",
+    "createdByAppId": "",
+    "createdDateTime": "2022-02-21T11:11:30.5067513Z",
+    "id": "",
+    "lastModifiedDateTime": "2022-02-21T11:11:30.5067513Z",
+    "links": {
+        "oneNoteClientUrl": {
+            "href": "onenote://new-note"
+        },
+        "oneNoteWebUrl": {
+            "href": "http://new-note"
+        }
+    },
+    "self": "",
+    "title": "Note Title"
+}
