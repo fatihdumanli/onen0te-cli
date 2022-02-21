@@ -9,11 +9,6 @@ import (
 
 type TokenStatus int
 
-var (
-	InvalidTokenType  = errors.New("Token type is invalid")
-	TokenStorageError = errors.New("Stored token is corrupted")
-)
-
 const (
 	DoesntExist TokenStatus = iota
 	Expired
@@ -30,7 +25,7 @@ type Authenticator interface {
 func AuthenticateUser(oauthClient *oauthv2.OAuthClient, opts config.AppOptions, storer storage.Storer) (oauthv2.OAuthToken, error) {
 
 	//If the user confirms to setup an account now we trigger the authentication process.
-	t, err := oauthClient.Authenticate(opts.OAuthParams, opts.Out)
+	t, err := oauthClient.Authenticate(opts.OAuthParams)
 	if err != nil {
 		return oauthv2.OAuthToken{}, errors.Wrap(err, "couldn't authenticate the user")
 	}

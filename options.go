@@ -30,8 +30,6 @@ func getOptions() config.AppOptions {
 	}
 
 	return config.AppOptions{
-		In:           os.Stdin,
-		Out:          os.Stdout,
 		OAuthParams:  oauthParams,
 		ReservedKeys: []string{authentication.TOKEN_KEY},
 	}

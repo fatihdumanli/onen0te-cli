@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -83,10 +82,10 @@ Rather than returning a pointer set to nil,
 Use comma ok idiom
 return a boolean and a value type
 */
-func (o *OAuthClient) Authenticate(p OAuthParams, out io.Writer) (OAuthToken, error) {
+func (o *OAuthClient) Authenticate(p OAuthParams) (OAuthToken, error) {
 
 	var token *OAuthToken
-	authCode, err := o.getAuthCode(p, out)
+	authCode, err := o.getAuthCode(p)
 
 	if err != nil {
 		return OAuthToken{}, errors.Wrap(err, "couldn't authenticate the user")
@@ -109,7 +108,7 @@ func (o *OAuthClient) Authenticate(p OAuthParams, out io.Writer) (OAuthToken, er
 	return *token, nil
 }
 
-func (o *OAuthClient) getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
+func (o *OAuthClient) getAuthCode(p OAuthParams) (AuthorizationCode, error) {
 
 	authCodeUrl := fmt.Sprintf("%s/authorize?client_id=%s&response_type=code&redirect_uri=%s&response_mode=query&scope=%s&state=%s", p.OAuthEndpoint, p.ClientId, p.RedirectUri, strings.Join(p.Scope, " "), p.State)
 
@@ -138,7 +137,7 @@ func (o *OAuthClient) getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCo
 		return "", errors.Wrap(err, "couldn't get auth code")
 	}
 
-	fmt.Fprintln(out, "Please complete authentication process through your web browser...")
+	fmt.Println("Please complete authentication process through your web browser...")
 	httpServerExitDone.Wait()
 
 	if authCode == "" {
