@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -15,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fatihdumanli/onenote/pkg/rest"
 	errors "github.com/pkg/errors"
 )
 
@@ -35,7 +35,17 @@ func (t *OAuthToken) IsExpired() bool {
 	return time.Now().After(t.ExpiresAt)
 }
 
-func RefreshToken(p OAuthParams, refreshToken string) (OAuthToken, error) {
+type OAuthClient struct {
+	restClient rest.Requester
+}
+
+func NewOAuthClient(restClient rest.Requester) *OAuthClient {
+	return &OAuthClient{
+		restClient: restClient,
+	}
+}
+
+func (o *OAuthClient) RefreshToken(p OAuthParams, refreshToken string) (OAuthToken, error) {
 	var newToken OAuthToken
 
 	var data = url.Values{}
@@ -46,33 +56,20 @@ func RefreshToken(p OAuthParams, refreshToken string) (OAuthToken, error) {
 	data.Set("grant_type", "refresh_token")
 
 	tokenPath := fmt.Sprintf("%s/token", p.OAuthEndpoint)
-	c := http.Client{}
-	req, err := http.NewRequest(http.MethodPost, tokenPath, strings.NewReader(data.Encode()))
-	if err != nil {
-		return newToken, errors.Wrap(err, "couldn't initialize the request when refresing token")
+
+	var headers map[string]string = make(map[string]string)
+	headers["Content-Type"] = "application/x-www-form-urlencoded"
+
+	res, statusCode, err := o.restClient.Post(tokenPath, headers, strings.NewReader(data.Encode()))
+	if statusCode != http.StatusOK {
+		return newToken, fmt.Errorf("couldn't refresh the token")
 	}
 
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	res, err := c.Do(req)
-	if err != nil {
-		return newToken, errors.Wrap(err, "couldn't execute the request while refreshing token")
-	}
-
-	bytes, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return newToken, errors.Wrap(err, "couldn't read the response body while refreshing ₺oken")
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return newToken, fmt.Errorf("couldn't refresh the token %s", string(bytes))
-	}
-
-	err = json.Unmarshal(bytes, &newToken)
+	err = json.Unmarshal(res, &newToken)
 	if err != nil {
 		return newToken, errors.Wrap(err, "couldn't unmarshal the json while refreshing token.")
 	}
+
 	//set expiredAt proprety so that we can check if the token has expired
 	t := time.Duration(newToken.ExpiresIn)
 	newToken.ExpiresAt = time.Now().Add(time.Second * t)
@@ -86,10 +83,10 @@ Rather than returning a pointer set to nil,
 Use comma ok idiom
 return a boolean and a value type
 */
-func Authenticate(p OAuthParams, out io.Writer) (OAuthToken, error) {
+func (o *OAuthClient) Authenticate(p OAuthParams, out io.Writer) (OAuthToken, error) {
 
 	var token *OAuthToken
-	authCode, err := getAuthCode(p, out)
+	authCode, err := o.getAuthCode(p, out)
 
 	if err != nil {
 		return OAuthToken{}, errors.Wrap(err, "couldn't authenticate the user")
@@ -100,7 +97,7 @@ func Authenticate(p OAuthParams, out io.Writer) (OAuthToken, error) {
 		AuthCode:    authCode,
 	}
 
-	token, err = getToken(getTokenParams)
+	token, err = o.getToken(getTokenParams)
 	if err != nil {
 		return OAuthToken{}, errors.Wrap(err, "couldn't get the oauth token")
 	}
@@ -112,7 +109,7 @@ func Authenticate(p OAuthParams, out io.Writer) (OAuthToken, error) {
 	return *token, nil
 }
 
-func getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
+func (o *OAuthClient) getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
 
 	authCodeUrl := fmt.Sprintf("%s/authorize?client_id=%s&response_type=code&redirect_uri=%s&response_mode=query&scope=%s&state=%s", p.OAuthEndpoint, p.ClientId, p.RedirectUri, strings.Join(p.Scope, " "), p.State)
 
@@ -151,7 +148,7 @@ func getAuthCode(p OAuthParams, out io.Writer) (AuthorizationCode, error) {
 	return authCode, nil
 }
 
-func getToken(p getTokenParams) (*OAuthToken, error) {
+func (o *OAuthClient) getToken(p getTokenParams) (*OAuthToken, error) {
 
 	var token OAuthToken
 	tokenPath := fmt.Sprintf("%s/token", p.OAuthEndpoint)
@@ -165,30 +162,16 @@ func getToken(p getTokenParams) (*OAuthToken, error) {
 	data.Set("redirect_uri", p.RedirectUri)
 	data.Set("grant_type", "authorization_code")
 
-	client := http.Client{}
+	var headers map[string]string = make(map[string]string)
+	headers["Content-Type"] = "application/x-www-form-urlencoded"
 
-	request, err := http.NewRequest(http.MethodPost, tokenPath, strings.NewReader(data.Encode()))
-	if err != nil {
-		return nil, errors.Wrap(err, "couldn't initialize the request")
-	}
-	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	res, statusCode, err := o.restClient.Post(tokenPath, headers, strings.NewReader(data.Encode()))
 
-	resp, err := client.Do(request)
-	if err != nil {
-		return nil, errors.Wrap(err, "couldn't execute the request")
+	if statusCode != http.StatusOK {
+		return nil, fmt.Errorf("couldn't get the oauth token")
 	}
 
-	bytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "couldn't read the response body")
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("couldn't get the oauth token %s", string(bytes))
-	}
-
-	err = json.Unmarshal(bytes, &token)
+	err = json.Unmarshal(res, &token)
 	if err != nil {
 		return nil, errors.Wrap(err, "couldn't deserialize the response")
 	}

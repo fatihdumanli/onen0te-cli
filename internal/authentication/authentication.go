@@ -27,10 +27,10 @@ type Authenticator interface {
 	RefreshToken() error
 }
 
-func AuthenticateUser(opts config.AppOptions, storer storage.Storer) (oauthv2.OAuthToken, error) {
+func AuthenticateUser(oauthClient *oauthv2.OAuthClient, opts config.AppOptions, storer storage.Storer) (oauthv2.OAuthToken, error) {
 
 	//If the user confirms to setup an account now we trigger the authentication process.
-	t, err := oauthv2.Authenticate(opts.OAuthParams, opts.Out)
+	t, err := oauthClient.Authenticate(opts.OAuthParams, opts.Out)
 	if err != nil {
 		return oauthv2.OAuthToken{}, errors.Wrap(err, "couldn't authenticate the user")
 	}
@@ -44,8 +44,8 @@ func AuthenticateUser(opts config.AppOptions, storer storage.Storer) (oauthv2.OA
 	return t, nil
 }
 
-func RefreshToken(opts config.AppOptions, token oauthv2.OAuthToken, storer storage.Storer) (oauthv2.OAuthToken, error) {
-	newToken, err := oauthv2.RefreshToken(opts.OAuthParams, token.RefreshToken)
+func RefreshToken(oauthClient *oauthv2.OAuthClient, opts config.AppOptions, token oauthv2.OAuthToken, storer storage.Storer) (oauthv2.OAuthToken, error) {
+	newToken, err := oauthClient.RefreshToken(opts.OAuthParams, token.RefreshToken)
 	if err != nil {
 		panic(err)
 	}

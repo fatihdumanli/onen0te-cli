@@ -19,10 +19,11 @@ import (
 )
 
 type onenote struct {
-	storage storage.Storer
-	auth    authentication.Authenticator
-	api     msftgraph.Api
-	token   *oauthv2.OAuthToken
+	storage     storage.Storer
+	auth        authentication.Authenticator
+	api         msftgraph.Api
+	token       *oauthv2.OAuthToken
+	oauthClient *oauthv2.OAuthClient
 }
 
 var (
@@ -240,7 +241,7 @@ func checkTokenPresented() {
 			os.Exit(1)
 		}
 
-		token, err := authentication.AuthenticateUser(opts, root.storage)
+		token, err := authentication.AuthenticateUser(root.oauthClient, opts, root.storage)
 		if err != nil {
 			var errWrapped = errors.Wrap(err, "couldn't check the token if it's presented")
 			log.Fatal(errWrapped)
@@ -249,7 +250,7 @@ func checkTokenPresented() {
 	} else {
 		//Check if the token has expired
 		if root.token.IsExpired() {
-			token, err := authentication.RefreshToken(opts, *root.token, root.storage)
+			token, err := authentication.RefreshToken(root.oauthClient, opts, *root.token, root.storage)
 			if err != nil {
 				var errWrapped = errors.Wrap(err, "couldn't check the token if it's presented")
 				log.Fatal(errWrapped)
@@ -280,6 +281,7 @@ func init() {
 	bitcask := &storage.Bitcask{}
 	root = onenote{api: api, storage: bitcask}
 	root.token = &oauthv2.OAuthToken{}
+	root.oauthClient = oauthv2.NewOAuthClient(&rest.RestClient{})
 
 	err := root.storage.Get(authentication.TOKEN_KEY, root.token)
 	if err != nil {
