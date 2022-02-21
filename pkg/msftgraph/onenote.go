@@ -42,8 +42,7 @@ func (a *Api) GetNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode
 	if err != nil {
 		return nil, statusCode, errors.Wrap(err, "couldn't deserialize response data while getting the notebooks")
 	}
-	//	return response.Notebooks, statusCode, nil
-	return nil, 000, nil
+	return response.Notebooks, statusCode, nil
 }
 
 func (a *Api) GetSections(token oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, error) {
