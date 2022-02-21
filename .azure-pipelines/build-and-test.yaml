@@ -21,7 +21,6 @@ steps:
   inputs:
     command: 'test'
     arguments: '-v'
-    workingDirectory: '$(modulePath)'
 - task: CopyFiles@2
   inputs:
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
