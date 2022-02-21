@@ -26,5 +26,4 @@ steps:
 - task: Go@0
   inputs: 
     command: 'test'
-    arguments: './...'
     workingDirectory: '$(modulePath)'
