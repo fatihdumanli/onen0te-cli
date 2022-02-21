@@ -35,7 +35,7 @@ func (a *Api) GetNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode
 
 	res, statusCode, err := a.restClient.Get("https://graph.microsoft.com/v1.0/me/onenote/notebooks", headers)
 	if statusCode != http.StatusOK {
-		return nil, statusCode, fmt.Errorf("the statusCode doesn't indicate a successful operation: %d", statusCode)
+		return nil, statusCode, fmt.Errorf("couldn't get the notebooks from the server")
 	}
 
 	err = json.Unmarshal(res, &response)
@@ -56,7 +56,7 @@ func (a *Api) GetSections(token oauthv2.OAuthToken, n Notebook) ([]Section, Http
 
 	res, statusCode, err := a.restClient.Get(n.SectionsUrl, headers)
 	if statusCode != http.StatusOK {
-		return nil, statusCode, fmt.Errorf("couldn't load the sections: %s", string(res))
+		return nil, statusCode, fmt.Errorf("couldn't get the sections from the server")
 	}
 
 	err = json.Unmarshal(res, &response)
@@ -96,7 +96,7 @@ func (a *Api) SaveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode
 	res, statusCode, err := a.restClient.Post(url, headers, strings.NewReader(body))
 
 	if statusCode != http.StatusCreated {
-		return "", statusCode, fmt.Errorf("couldn't save the note: %s", string(res))
+		return "", statusCode, fmt.Errorf("couldn't save the note")
 	}
 
 	var response struct {

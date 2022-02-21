@@ -1,0 +1,70 @@
+{
+  "value": [
+    {
+      "id": "a-id",
+      "self": "",
+      "createdDateTime": "",
+      "displayName": "Notebook A",
+      "lastModifiedDateTime": "",
+      "isDefault": false,
+      "userRole": "",
+      "isShared": false,
+      "sectionsUrl": "http://link-to-sections-of-notebook-a",
+      "sectionGroupsUrl": "",
+      "createdBy": null,
+      "lastModifiedBy": null,
+      "links": {
+        "oneNoteClientUrl": {
+          "href": ""
+        },
+        "oneNoteWebUrl": {
+          "href": ""
+        }
+      }
+    },
+    {
+      "id": "b-id",
+      "self": "",
+      "createdDateTime": "",
+      "displayName": "Notebook B",
+      "lastModifiedDateTime": "",
+      "isDefault": false,
+      "userRole": "",
+      "isShared": false,
+      "sectionsUrl": "http://link-to-sections-of-notebook-b",
+      "sectionGroupsUrl": "",
+      "createdBy": null,
+      "lastModifiedBy": null,
+      "links": {
+        "oneNoteClientUrl": {
+          "href": ""
+        },
+        "oneNoteWebUrl": {
+          "href": ""
+        }
+      }
+    },
+    {
+      "id": "c-id",
+      "self": "",
+      "createdDateTime": "",
+      "displayName": "Notebook C",
+      "lastModifiedDateTime": "",
+      "isDefault": false,
+      "userRole": "",
+      "isShared": false,
+      "sectionsUrl": "http://link-to-sections-of-notebook-c",
+      "sectionGroupsUrl": "",
+      "createdBy": null,
+      "lastModifiedBy": null,
+      "links": {
+        "oneNoteClientUrl": {
+          "href": ""
+        },
+        "oneNoteWebUrl": {
+          "href": ""
+        }
+      }
+    }
+  ]
+}
