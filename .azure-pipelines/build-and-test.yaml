@@ -25,10 +25,10 @@ steps:
      artifactName: drop
 - task: Go@0
   inputs: 
-  command: 'build'
-  workingDirectory: '$(System.DefaultWorkingDirectory)'
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
 - task: Go@0
   inputs: 
-  command: 'test'
-  arguments: './...'
-  workingDirectory: '$(modulePath)'
+    command: 'test'
+    arguments: './...'
+    workingDirectory: '$(modulePath)'
