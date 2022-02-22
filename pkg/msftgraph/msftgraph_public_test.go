@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/fatihdumanli/onenote/pkg/msftgraph"
@@ -15,72 +14,41 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-type SuccessfulRestStub struct {
-	rest.Requester
+type RestStub struct {
+	get  func(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error)
+	post func(url string, headers map[string]string, body io.Reader) ([]byte, rest.HttpStatusCode, error)
 }
 
-func (r SuccessfulRestStub) Get(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error) {
-
-	//Get notebooks
-	if url == "https://graph.microsoft.com/v1.0/me/onenote/notebooks" {
-		//Return a successful json
-		var body, err = readFromFile("testdata/getnotebooks-200.json")
-		if err != nil {
-			return nil, 000, errors.New("check the json file path")
-		}
-		return body, http.StatusOK, nil
-	}
-
-	//Get sections (Notebook A)
-	if strings.HasSuffix(url, "/sections") {
-		var body, err = readFromFile("testdata/getsections-200.json")
-		if err != nil {
-			return nil, 000, errors.New("check the json file path")
-		}
-		return body, http.StatusOK, nil
-	}
-
-	return nil, 000, nil
+func (stub *RestStub) Get(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error) {
+	return stub.get(url, headers)
 }
 
-func (r SuccessfulRestStub) Post(url string, headers map[string]string, body io.Reader) ([]byte, rest.HttpStatusCode, error) {
-
-	//Save note
-	if strings.HasSuffix(url, "/pages") {
-		var body, err = readFromFile("testdata/savenote-200.json")
-		if err != nil {
-			return nil, 000, errors.New("check the json file path")
-		}
-		return body, http.StatusCreated, nil
-	}
-
-	return nil, 000, nil
-}
-
-type BadRequestRestStub struct {
-	rest.Requester
-}
-
-func (r BadRequestRestStub) Get(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error) {
-	return nil, 400, nil
-}
-
-func (r BadRequestRestStub) Post(url string, headers map[string]string, body io.Reader) ([]byte, rest.HttpStatusCode, error) {
-	return nil, 400, nil
+func (stub *RestStub) Post(url string, headers map[string]string, body io.Reader) ([]byte, rest.HttpStatusCode, error) {
+	return stub.Post(url, headers, body)
 }
 
 //Tests msftgraph.GetNotebooks()
 func TestGetNotebooks(t *testing.T) {
+
 	data := []struct {
 		name       string
-		restStub   rest.Requester
+		get        func(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error)
 		token      oauthv2.OAuthToken
 		statusCode int
 		notebooks  []msftgraph.Notebook
 		errMsg     string
 	}{
-		{"getnotebooks-successful", SuccessfulRestStub{}, oauthv2.OAuthToken{},
-			200, []msftgraph.Notebook{
+		{"getnotebooks-successful",
+			func(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error) {
+				var body, err = readFromFile("testdata/getnotebooks-200.json")
+				if err != nil {
+					return nil, 000, errors.New("check the json file path")
+				}
+				return body, http.StatusOK, nil
+			},
+			oauthv2.OAuthToken{},
+			200,
+			[]msftgraph.Notebook{
 				{
 					"a-id", "Notebook A", "http://link-to-sections-of-notebook-a",
 				},
@@ -90,13 +58,21 @@ func TestGetNotebooks(t *testing.T) {
 				{
 					"c-id", "Notebook C", "http://link-to-sections-of-notebook-c",
 				},
-			}, ""},
-		{"getnotebooks-4xx", BadRequestRestStub{}, oauthv2.OAuthToken{}, 400, nil, "couldn't get the notebooks from the server"},
+			},
+			""},
+
+		{"getnotebooks-4xx",
+			func(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error) {
+				return nil, 400, nil
+			},
+			oauthv2.OAuthToken{},
+			200, nil, ""},
 	}
 
 	for _, d := range data {
+		var api = msftgraph.NewApi(
+			&RestStub{get: d.get})
 
-		var api = msftgraph.NewApi(d.restStub)
 		t.Run(d.name, func(t *testing.T) {
 
 			notebooks, _, err := api.GetNotebooks(d.token)
@@ -113,8 +89,10 @@ func TestGetNotebooks(t *testing.T) {
 				t.Errorf("expected error message `%s`, got `%s`", d.errMsg, errMsg)
 			}
 		})
+
 	}
 
+	_ = data
 }
 
 //Tests the function msftgraph.GetSections()
@@ -122,23 +100,32 @@ func TestGetSections(t *testing.T) {
 	data := []struct {
 		name       string
 		notebook   msftgraph.Notebook
-		restStub   rest.Requester
+		get        func(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error)
 		token      oauthv2.OAuthToken
 		statusCode int
 		sections   []msftgraph.Section
 		errMsg     string
 	}{
-		{"getsections-200", msftgraph.Notebook{DisplayName: "Notebook A", SectionsUrl: "http://notebook-a/sections"}, SuccessfulRestStub{}, oauthv2.OAuthToken{},
-			200, []msftgraph.Section{
+		{"getsections-200", msftgraph.Notebook{DisplayName: "Notebook A", SectionsUrl: "http://notebook-a/sections"},
+			func(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error) {
+				var body, err = readFromFile("testdata/getsections-200.json")
+				if err != nil {
+					return nil, 000, errors.New("check the json file path")
+				}
+				return body, http.StatusOK, nil
+			},
+			oauthv2.OAuthToken{}, 200, []msftgraph.Section{
 				{
 					"Section A1", "a1", nil,
 				},
 				{
 					"Section A2", "a2", nil,
 				},
-			}, "",
-		},
-		{"getsections-4xx", msftgraph.Notebook{}, BadRequestRestStub{}, oauthv2.OAuthToken{}, 400, nil, "couldn't get the sections from the server"},
+			},
+			""},
+		{"getsections-4xx", msftgraph.Notebook{}, func(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error) {
+			return nil, 400, nil
+		}, oauthv2.OAuthToken{}, 400, nil, "couldn't get the sections from the server"},
 	}
 
 	sectionComparer := cmp.Comparer(func(x, y msftgraph.Section) bool {
@@ -146,7 +133,9 @@ func TestGetSections(t *testing.T) {
 	})
 
 	for _, d := range data {
-		var api = msftgraph.NewApi(d.restStub)
+		var api = msftgraph.NewApi(&RestStub{
+			get: d.get,
+		})
 		t.Run(d.name, func(t *testing.T) {
 			sections, _, err := api.GetSections(d.token, d.notebook)
 			if diff := cmp.Diff(sections, d.sections, sectionComparer); diff != "" {
@@ -162,27 +151,40 @@ func TestGetSections(t *testing.T) {
 				t.Errorf("expected error message `%s`, got `%s`", d.errMsg, errMsg)
 			}
 		})
+
 	}
+
 }
 
 //Tests the function msftgraph.SaveNote()
 func TestSaveNote(t *testing.T) {
-
 	data := []struct {
 		name       string
 		notepage   msftgraph.NotePage
+		post       func(url string, headers map[string]string, body io.Reader) ([]byte, rest.HttpStatusCode, error)
 		token      oauthv2.OAuthToken
-		restStub   rest.Requester
 		statusCode int
 		link       string
 		errMsg     string
 	}{
-		{"savenote-200", msftgraph.NotePage{}, oauthv2.OAuthToken{}, SuccessfulRestStub{}, 201, "http://new-note", ""},
-		{"savenote-4xx", msftgraph.NotePage{}, oauthv2.OAuthToken{}, BadRequestRestStub{}, 400, "", "couldn't save the note"},
+		{"savenote-201", msftgraph.NotePage{},
+			func(url string, headers map[string]string, body io.Reader) ([]byte, rest.HttpStatusCode, error) {
+				var b, err = readFromFile("testdata/savenote-200.json")
+				if err != nil {
+					return nil, 000, errors.New("check the json file path")
+				}
+				return b, http.StatusCreated, nil
+			},
+			oauthv2.OAuthToken{}, 201, "http://new-note", ""},
+		{"savenote-4xx", msftgraph.NotePage{},
+			func(url string, headers map[string]string, body io.Reader) ([]byte, rest.HttpStatusCode, error) {
+				return nil, 400, nil
+			},
+			oauthv2.OAuthToken{}, 400, "", "couldn't save the note"},
 	}
 
 	for _, d := range data {
-		var api = msftgraph.NewApi(d.restStub)
+		var api = msftgraph.NewApi(&RestStub{post: d.post})
 		t.Run(d.name, func(t *testing.T) {
 			link, _, err := api.SaveNote(d.token, d.notepage)
 
