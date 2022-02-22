@@ -277,7 +277,7 @@ func printAliasReminder(section string) {
 
 //Grab the token from the local storage upon startup
 func init() {
-	api := msftgraph.NewApi(&rest.RestClient{})
+	api := msftgraph.NewApi(&rest.RestClient{}, "https://graph.microsoft.com/v1.0")
 	bitcask := &storage.Bitcask{}
 	root = onenote{api: api, storage: bitcask}
 	root.token = &oauthv2.OAuthToken{}

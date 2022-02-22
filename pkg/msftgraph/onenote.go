@@ -15,12 +15,14 @@ import (
 type HttpStatusCode = rest.HttpStatusCode
 
 type Api struct {
-	restClient rest.Requester
+	msftgraphURL string
+	restClient   rest.Requester
 }
 
-func NewApi(r rest.Requester) Api {
+func NewApi(r rest.Requester, msftgraphApiUrl string) Api {
 	return Api{
-		restClient: r,
+		msftgraphURL: msftgraphApiUrl,
+		restClient:   r,
 	}
 }
 
@@ -33,9 +35,9 @@ func (a *Api) GetNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode
 	var headers = make(map[string]string, 0)
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
 
-	res, statusCode, err := a.restClient.Get("https://graph.microsoft.com/v1.0/me/onenote/notebooks", headers)
+	res, statusCode, err := a.restClient.Get(a.msftgraphURL+"/me/onenote/notebooks", headers)
 	if statusCode != http.StatusOK {
-		return nil, statusCode, fmt.Errorf("couldn't get the notebooks from the server")
+		return nil, statusCode, fmt.Errorf("couldn't get the notebooks from the server %s", string(res))
 	}
 
 	err = json.Unmarshal(res, &response)
@@ -53,7 +55,7 @@ func (a *Api) GetSections(token oauthv2.OAuthToken, n Notebook) ([]Section, Http
 	var headers = make(map[string]string, 0)
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
 
-	res, statusCode, err := a.restClient.Get(n.SectionsUrl, headers)
+	res, statusCode, err := a.restClient.Get(replaceServerUrl(n.SectionsUrl, a.msftgraphURL), headers)
 
 	if statusCode != http.StatusOK {
 		return nil, statusCode, fmt.Errorf("couldn't get the sections from the server")
@@ -84,9 +86,9 @@ func (a *Api) GetSections(token oauthv2.OAuthToken, n Notebook) ([]Section, Http
 //
 //	return nil, 200, nil
 //}
-
+//
 func (a *Api) SaveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error) {
-	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/onenote/sections/%s/pages", n.Section.ID)
+	url := fmt.Sprintf("%s/me/onenote/sections/%s/pages", a.msftgraphURL, n.Section.ID)
 	body := getNoteTemplate(n.Title, n.Content)
 
 	var headers map[string]string = make(map[string]string, 0)
@@ -126,4 +128,12 @@ func getNoteTemplate(title, content string) string {
 		</html>`
 
 	return body
+}
+
+//Microsoft Graph API returns some of the endpoints in the response body.
+//It makes it difficult to test these endpoint as it's impossible to mock the given url.
+//We use this function to override the server url
+//TODO: Complete
+func replaceServerUrl(org, replacement string) string {
+	return org
 }
