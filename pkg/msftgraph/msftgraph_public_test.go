@@ -2,30 +2,150 @@ package msftgraph_test
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+
+	"github.com/fatihdumanli/onenote/pkg/msftgraph"
+	"github.com/fatihdumanli/onenote/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote/pkg/rest"
+	"github.com/google/go-cmp/cmp"
 )
 
-func TestGetNotebooks(t *testing.T) {
+//Ergonomic alias
+type AuthToken = oauthv2.OAuthToken
+type Notebook = msftgraph.Notebook
+type HttpStatusCode = rest.HttpStatusCode
 
+//Assure that we're sending the following data to the remote server.
+type apiDebugInfo struct {
+	statusCode   int
+	requestBody  io.Reader
+	headers      map[string]string
+	responseBody []byte
+}
+
+var token = AuthToken{
+	AccessToken: "some-secret-stuff",
+}
+
+var notebooks = []msftgraph.Notebook{
+	{
+		"a-id", "Notebook A", "http://link-to-sections-of-notebook-a",
+	},
+	{
+		"b-id", "Notebook B", "http://link-to-sections-of-notebook-b",
+	},
+	{
+		"c-id", "Notebook C", "http://link-to-sections-of-notebook-c",
+	},
+}
+
+var sections = []msftgraph.Section{
+	{
+		"Section A1", "a1", nil,
+	},
+	{
+		"Section A2", "a2", nil,
+	},
+}
+
+func launchTestHttpServer(io apiDebugInfo, t *testing.T) *httptest.Server {
 	server := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(400)
-			w.Write([]byte("hey"))
+
+			//Return 400 if the anticipated body is different than the one has sent to the server
+			if io.requestBody != nil {
+				if diff := cmp.Diff(io.requestBody, r.Body); diff != "" {
+					t.Error(diff)
+					w.WriteHeader(400)
+					return
+				}
+			}
+
+			for k, v := range io.headers {
+				var headerValue = r.Header.Get(k)
+
+				if headerValue == "" {
+					t.Error(fmt.Sprintf("the header %s was not sent to the server", k))
+				}
+
+				if headerValue != v {
+					t.Error(fmt.Sprintf("exptected value for the header %s was %s, got %s", k, v, headerValue))
+					w.WriteHeader(400)
+					return
+				}
+			}
+
+			//Write the anticipated status code if everything goes well
+			w.WriteHeader(io.statusCode)
+			w.Write(io.responseBody)
+
 		}))
-
-	defer server.Close()
-
-	var c = server.Client()
-	_ = c
-	fmt.Println(server.URL)
-
-	res, err := c.Get(server.URL)
-	fmt.Println(res)
-	fmt.Println(err)
+	return server
 
 }
+
+//Tests the function msftgraph.GetNotebooks()
+func TestGetNotebooks(t *testing.T) {
+
+	var io apiDebugInfo = apiDebugInfo{requestBody: nil, statusCode: 200}
+	var headers map[string]string = make(map[string]string)
+	headers["Authorization"] = "Bearer " + token.AccessToken
+	io.headers = headers
+	bytes, err := readFromFile("testdata/getnotebooks-200.json")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	io.responseBody = bytes
+
+	server := launchTestHttpServer(io, t)
+	defer server.Close()
+
+	var api = msftgraph.NewApi(&rest.RestClient{}, server.URL)
+	data := []struct {
+		name       string
+		token      AuthToken
+		apiio      apiDebugInfo
+		statusCode int
+		notebooks  []Notebook
+		errMsg     string
+	}{
+		{"getnotebooks-200", token, io, io.statusCode, notebooks, ""},
+	}
+
+	for _, d := range data {
+		t.Run(d.name, func(t *testing.T) {
+
+			notebooks, statusCode, err := api.GetNotebooks(d.token)
+
+			if int(statusCode) != d.statusCode {
+				t.Errorf("expected status code %d, got %d", d.statusCode, statusCode)
+			}
+
+			if diff := cmp.Diff(notebooks, d.notebooks); diff != "" {
+				t.Error(diff)
+			}
+
+			var errMsg string
+			if err != nil {
+				errMsg = err.Error()
+			}
+
+			if errMsg != d.errMsg {
+				t.Errorf("expected error message `%s`, got `%s`", d.errMsg, errMsg)
+			}
+
+		})
+	}
+
+}
+
+//Tests the function msftgraph.GetSections()
+//TODO: It requires the replace function completed.
 
 //type RestStub struct {
 //	get  func(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error)
@@ -218,15 +338,15 @@ func TestGetNotebooks(t *testing.T) {
 //
 //}
 //
-//func readFromFile(f string) ([]byte, error) {
-//	file, err := os.Open(f)
-//	if err != nil {
-//		return nil, err
-//	}
-//	bytes, err := ioutil.ReadAll(file)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return bytes, nil
-//}
+func readFromFile(f string) ([]byte, error) {
+	file, err := os.Open(f)
+	if err != nil {
+		return nil, err
+	}
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
+}
