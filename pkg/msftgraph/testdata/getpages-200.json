@@ -1,0 +1,67 @@
+{
+  "value": [
+    {
+      "id": "0-89e6b44d08a6406984e6353ef1f51c5a!11-5110B4D7F12FECBB!928670",
+      "self": "",
+      "createdDateTime": "2022-02-11T17:36:34Z",
+      "title": "denis waitley",
+      "createdByAppId": "",
+      "contentUrl": "http://127.0.0.1/pages/1000",
+      "lastModifiedDateTime": "2022-02-11T17:36:35Z",
+      "links": {
+        "oneNoteClientUrl": {
+          "href": "onenote:https://d.docs.live.net"
+        },
+        "oneNoteWebUrl": {
+          "href": ""
+        }
+      },
+      "parentSection": {
+        "id": "0-5110B4D7F12FECBB!928670",
+        "displayName": "Domain Events"
+      }
+    },
+    {
+      "id": "0-89e6b44d08a6406984e6353ef1f51c5a!11-5110B4D7F12FECBB!928670",
+      "self": "",
+      "createdDateTime": "2022-02-11T17:36:34Z",
+      "title": "gina bianchini",
+      "createdByAppId": "",
+      "contentUrl": "http://127.0.0.1/pages/1001",
+      "lastModifiedDateTime": "2022-02-11T17:36:35Z",
+      "links": {
+        "oneNoteClientUrl": {
+          "href": "onenote:https://d.docs.live.net"
+        },
+        "oneNoteWebUrl": {
+          "href": ""
+        }
+      },
+      "parentSection": {
+        "id": "0-5110B4D7F12FECBB!928670",
+        "displayName": "Domain Events"
+      }
+    },
+    {
+      "id": "0-89e6b44d08a6406984e6353ef1f51c5a!11-5110B4D7F12FECBB!928670",
+      "self": "",
+      "createdDateTime": "2022-02-11T17:36:34Z",
+      "title": "peter marshall",
+      "createdByAppId": "",
+      "contentUrl": "http://127.0.0.1/pages/1002",
+      "lastModifiedDateTime": "2022-02-11T17:36:35Z",
+      "links": {
+        "oneNoteClientUrl": {
+          "href": "onenote:https://d.docs.live.net"
+        },
+        "oneNoteWebUrl": {
+          "href": ""
+        }
+      },
+      "parentSection": {
+        "id": "0-5110B4D7F12FECBB!928670",
+        "displayName": "Domain Events"
+      }
+    }
+  ]
+}

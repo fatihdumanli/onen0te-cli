@@ -86,16 +86,7 @@ func launchTestHttpServer(io apiDebugInfo, t *testing.T) *httptest.Server {
 //Tests the function msftgraph.GetNotebooks()
 func TestGetNotebooks(t *testing.T) {
 
-	var io apiDebugInfo = apiDebugInfo{requestBody: nil, statusCode: 200}
-	var headers map[string]string = make(map[string]string)
-	headers["Authorization"] = "Bearer " + token.AccessToken
-	io.headers = headers
-	bytes, err := readFromFile("testdata/getnotebooks-200.json")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	io.responseBody = bytes
-
+	var io = newApiDebugInfo(200, nil, "Bearer "+token.AccessToken, "testdata/getnotebooks-200.json", t)
 	server := launchTestHttpServer(io, t)
 	defer server.Close()
 
@@ -115,24 +106,13 @@ func TestGetNotebooks(t *testing.T) {
 		t.Run(d.name, func(t *testing.T) {
 
 			notebooks, statusCode, err := api.GetNotebooks(d.token)
-
-			if int(statusCode) != d.statusCode {
-				t.Errorf("expected status code %d, got %d", d.statusCode, statusCode)
-			}
+			failIfStatusCodesDontMatch(d.statusCode, int(statusCode), t)
 
 			if diff := cmp.Diff(notebooks, d.notebooks); diff != "" {
 				t.Error(diff)
 			}
 
-			var errMsg string
-			if err != nil {
-				errMsg = err.Error()
-			}
-
-			if errMsg != d.errMsg {
-				t.Errorf("expected error message `%s`, got `%s`", d.errMsg, errMsg)
-			}
-
+			failIfErrorsDontMatch(d.errMsg, err, t)
 		})
 	}
 
@@ -140,20 +120,12 @@ func TestGetNotebooks(t *testing.T) {
 
 func Test_GetSections(t *testing.T) {
 
-	var io apiDebugInfo = apiDebugInfo{requestBody: nil, statusCode: 200}
-	var headers map[string]string = make(map[string]string)
-	headers["Authorization"] = "Bearer " + token.AccessToken
-	io.headers = headers
-	bytes, err := readFromFile("testdata/getsections-200.json")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	io.responseBody = bytes
+	var io = newApiDebugInfo(200, nil, "Bearer "+token.AccessToken, "testdata/getsections-200.json", t)
 
 	server := launchTestHttpServer(io, t)
 	defer server.Close()
-	var api = msftgraph.NewApi(&rest.RestClient{}, server.URL)
 
+	var api = msftgraph.NewApi(&rest.RestClient{}, server.URL)
 	var notebook = Notebook{SectionsUrl: server.URL}
 	var sections = []msftgraph.Section{
 		{
@@ -181,43 +153,82 @@ func Test_GetSections(t *testing.T) {
 
 			sections, statusCode, err := api.GetSections(d.token, d.notebook)
 
-			if int(statusCode) != d.statusCode {
-				t.Errorf("expected status code %d, got %d", d.statusCode, statusCode)
-			}
+			failIfStatusCodesDontMatch(d.statusCode, int(statusCode), t)
 
 			if diff := cmp.Diff(sections, d.sections); diff != "" {
 				t.Error(diff)
 			}
 
-			var errMsg string
-			if err != nil {
-				errMsg = err.Error()
-			}
-
-			if errMsg != d.errMsg {
-				t.Errorf("expected error message `%s`, got `%s`", d.errMsg, errMsg)
-			}
-
+			failIfErrorsDontMatch(d.errMsg, err, t)
 		})
 	}
 
 }
 
-func Test_SaveNote(t *testing.T) {
-	var io apiDebugInfo = apiDebugInfo{requestBody: nil, statusCode: 201}
-	var headers map[string]string = make(map[string]string)
-	headers["Authorization"] = "Bearer " + token.AccessToken
-	io.headers = headers
-	bytes, err := readFromFile("testdata/savenote-200.json")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	io.responseBody = bytes
+func Test_GetPages(t *testing.T) {
+	var io = newApiDebugInfo(200, nil, "Bearer "+token.AccessToken, "testdata/getpages-200.json", t)
 
 	server := launchTestHttpServer(io, t)
 	defer server.Close()
+
+	var pages = []msftgraph.NotePage{
+		{
+			Title:      "denis waitley",
+			Content:    "learn from the past, set vivid, detailed goals for the future, and live in the only moment of time over which you have any control: now",
+			ContentUrl: "http://127.0.0.1/pages/1000",
+		},
+		{
+			Title:      "gina bianchini",
+			Content:    "courage is not being afraid, its being afraid and doing it anyways",
+			ContentUrl: "http://127.0.0.1/pages/1001",
+		},
+		{
+			Title:      "peter marshall",
+			Content:    "small deeds done are better than great deeds planned.",
+			ContentUrl: "http://127.0.0.1/pages/1002",
+		},
+	}
+
 	var api = msftgraph.NewApi(&rest.RestClient{}, server.URL)
 
+	data := []struct {
+		name               string
+		token              AuthToken
+		section            Section
+		apiio              apiDebugInfo
+		expectedStatusCode int
+		expectedPages      []NotePage
+		expectedErrMsg     string
+	}{
+		{"getpages-200", token, Section{}, io, io.statusCode, pages, ""},
+	}
+
+	comparer := cmp.Comparer(func(x, y NotePage) bool {
+		return x.Title == y.Title && x.ContentUrl == y.ContentUrl
+	})
+
+	for _, d := range data {
+		t.Run(d.name, func(t *testing.T) {
+
+			pages, statusCode, err := api.GetPages(d.token, d.section)
+
+			if diff := cmp.Diff(d.expectedPages, pages, comparer); diff != "" {
+				t.Error(diff)
+			}
+
+			failIfStatusCodesDontMatch(d.expectedStatusCode, int(statusCode), t)
+			failIfErrorsDontMatch(d.expectedErrMsg, err, t)
+		})
+	}
+}
+
+func Test_SaveNote(t *testing.T) {
+
+	var io = newApiDebugInfo(201, nil, "Bearer "+token.AccessToken, "testdata/savenote-200.json", t)
+	server := launchTestHttpServer(io, t)
+	defer server.Close()
+
+	var api = msftgraph.NewApi(&rest.RestClient{}, server.URL)
 	var notepage = msftgraph.NewNotePage(msftgraph.Section{Name: "Competent Vaughan"}, "Kind Wescoff", "I'm not afraid of storms, for I'm learning how to sail my ship.")
 	data := []struct {
 		name       string
@@ -236,23 +247,13 @@ func Test_SaveNote(t *testing.T) {
 		t.Run(d.name, func(t *testing.T) {
 			link, statusCode, err := api.SaveNote(d.token, d.notepage)
 
-			if int(statusCode) != d.statusCode {
-				t.Errorf("expected status code %d, got %d", d.statusCode, statusCode)
-			}
+			failIfStatusCodesDontMatch(d.statusCode, int(statusCode), t)
 
 			if link != d.link {
 				t.Errorf("expected url %s, got %s", d.link, link)
 			}
 
-			var errMsg string
-			if err != nil {
-				errMsg = err.Error()
-			}
-
-			if errMsg != d.errMsg {
-				t.Errorf("expected error message `%s`, got `%s`", d.errMsg, errMsg)
-			}
-
+			failIfErrorsDontMatch(d.errMsg, err, t)
 		})
 	}
 
@@ -449,6 +450,43 @@ func Test_SaveNote(t *testing.T) {
 //
 //}
 //
+
+func failIfStatusCodesDontMatch(expected, got int, t *testing.T) {
+	if got != expected {
+		t.Errorf("expected status code %d, got %d", expected, got)
+	}
+}
+
+func failIfErrorsDontMatch(expected string, got error, t *testing.T) {
+	var errMsg string
+	if got != nil {
+		errMsg = got.Error()
+	}
+
+	if errMsg != expected {
+		t.Errorf("expected error message `%s`, got `%s`", expected, errMsg)
+	}
+}
+
+func newApiDebugInfo(statusCode int, requestbody io.Reader, authHeader string, responseBodyPath string, t *testing.T) apiDebugInfo {
+
+	var io = apiDebugInfo{statusCode: statusCode, requestBody: requestbody}
+
+	var headers map[string]string = make(map[string]string)
+	headers["Authorization"] = "Bearer " + token.AccessToken
+	io.headers = headers
+
+	if responseBodyPath != "" {
+		bytes, err := readFromFile(responseBodyPath)
+		io.responseBody = bytes
+		if err != nil {
+			t.Error(err.Error())
+		}
+	}
+
+	return io
+}
+
 func readFromFile(f string) ([]byte, error) {
 	file, err := os.Open(f)
 	if err != nil {
