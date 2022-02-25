@@ -55,7 +55,7 @@ func (a *Api) GetSections(token oauthv2.OAuthToken, n Notebook) ([]Section, Http
 	var headers = make(map[string]string, 0)
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
 
-	res, statusCode, err := a.restClient.Get(replaceServerUrl(n.SectionsUrl, a.msftgraphURL), headers)
+	res, statusCode, err := a.restClient.Get(n.SectionsUrl, headers)
 
 	if statusCode != http.StatusOK {
 		return nil, statusCode, fmt.Errorf("couldn't get the sections from the server")
@@ -128,12 +128,4 @@ func getNoteTemplate(title, content string) string {
 		</html>`
 
 	return body
-}
-
-//Microsoft Graph API returns some of the endpoints in the response body.
-//It makes it difficult to test these endpoint as it's impossible to mock the given url.
-//We use this function to override the server url
-//TODO: Complete
-func replaceServerUrl(org, replacement string) string {
-	return org
 }

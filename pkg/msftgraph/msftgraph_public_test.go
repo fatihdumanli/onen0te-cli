@@ -18,7 +18,9 @@ import (
 //Ergonomic alias
 type AuthToken = oauthv2.OAuthToken
 type Notebook = msftgraph.Notebook
+type Section = msftgraph.Section
 type HttpStatusCode = rest.HttpStatusCode
+type NotePage = msftgraph.NotePage
 
 //Assure that we're sending the following data to the remote server.
 type apiDebugInfo struct {
@@ -44,15 +46,7 @@ var notebooks = []msftgraph.Notebook{
 	},
 }
 
-var sections = []msftgraph.Section{
-	{
-		"Section A1", "a1", nil,
-	},
-	{
-		"Section A2", "a2", nil,
-	},
-}
-
+//TODO: Centralize this function.
 func launchTestHttpServer(io apiDebugInfo, t *testing.T) *httptest.Server {
 	server := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -144,8 +138,125 @@ func TestGetNotebooks(t *testing.T) {
 
 }
 
-//Tests the function msftgraph.GetSections()
-//TODO: It requires the replace function completed.
+func Test_GetSections(t *testing.T) {
+
+	var io apiDebugInfo = apiDebugInfo{requestBody: nil, statusCode: 200}
+	var headers map[string]string = make(map[string]string)
+	headers["Authorization"] = "Bearer " + token.AccessToken
+	io.headers = headers
+	bytes, err := readFromFile("testdata/getsections-200.json")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	io.responseBody = bytes
+
+	server := launchTestHttpServer(io, t)
+	defer server.Close()
+	var api = msftgraph.NewApi(&rest.RestClient{}, server.URL)
+
+	var notebook = Notebook{SectionsUrl: server.URL}
+	var sections = []msftgraph.Section{
+		{
+			"Section A1", "a1", &notebook,
+		},
+		{
+			"Section A2", "a2", &notebook,
+		},
+	}
+
+	data := []struct {
+		name       string
+		token      AuthToken
+		notebook   Notebook
+		apiio      apiDebugInfo
+		statusCode int
+		sections   []Section
+		errMsg     string
+	}{
+		{"getsections-200", token, Notebook{SectionsUrl: server.URL}, io, io.statusCode, sections, ""},
+	}
+
+	for _, d := range data {
+		t.Run(d.name, func(t *testing.T) {
+
+			sections, statusCode, err := api.GetSections(d.token, d.notebook)
+
+			if int(statusCode) != d.statusCode {
+				t.Errorf("expected status code %d, got %d", d.statusCode, statusCode)
+			}
+
+			if diff := cmp.Diff(sections, d.sections); diff != "" {
+				t.Error(diff)
+			}
+
+			var errMsg string
+			if err != nil {
+				errMsg = err.Error()
+			}
+
+			if errMsg != d.errMsg {
+				t.Errorf("expected error message `%s`, got `%s`", d.errMsg, errMsg)
+			}
+
+		})
+	}
+
+}
+
+func Test_SaveNote(t *testing.T) {
+	var io apiDebugInfo = apiDebugInfo{requestBody: nil, statusCode: 201}
+	var headers map[string]string = make(map[string]string)
+	headers["Authorization"] = "Bearer " + token.AccessToken
+	io.headers = headers
+	bytes, err := readFromFile("testdata/savenote-200.json")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	io.responseBody = bytes
+
+	server := launchTestHttpServer(io, t)
+	defer server.Close()
+	var api = msftgraph.NewApi(&rest.RestClient{}, server.URL)
+
+	var notepage = msftgraph.NewNotePage(msftgraph.Section{Name: "pack-rat"}, "title", "some content")
+	data := []struct {
+		name       string
+		token      AuthToken
+		notepage   NotePage
+		apiio      apiDebugInfo
+		statusCode int
+		link       string
+		errMsg     string
+	}{
+		//NOTE: The expected note link is defined in /testdata/savenote-200.json
+		{"savenote-200", token, *notepage, io, io.statusCode, "http://new-note", ""},
+	}
+
+	for _, d := range data {
+		t.Run(d.name, func(t *testing.T) {
+			link, statusCode, err := api.SaveNote(d.token, d.notepage)
+
+			if int(statusCode) != d.statusCode {
+				t.Errorf("expected status code %d, got %d", d.statusCode, statusCode)
+			}
+
+			if link != d.link {
+				t.Errorf("expected url %s, got %s", d.link, link)
+			}
+
+			var errMsg string
+			if err != nil {
+				errMsg = err.Error()
+			}
+
+			if errMsg != d.errMsg {
+				t.Errorf("expected error message `%s`, got `%s`", d.errMsg, errMsg)
+			}
+
+		})
+	}
+
+}
 
 //type RestStub struct {
 //	get  func(url string, headers map[string]string) ([]byte, rest.HttpStatusCode, error)
