@@ -1,38 +1,38 @@
 {
   "value": [
     {
-      "id": "a1",
+      "id": "100001",
       "self": "",
       "createdDateTime": "",
-      "displayName": "Section A1",
+      "displayName": "Optimistic Shannon",
       "lastModifiedDateTime": "",
       "isDefault": false,
-      "pagesUrl": "http://pages-url-to-section-a1",
+      "pagesUrl": "http://127.0.0.1/sections/100001",
       "createdBy": null,
       "lastModifiedBy": null,
       "parentNotebook": {
-        "id": "a-id",
-        "displayName": "Notebook A",
+        "id": "",
+        "displayName": "",
         "self": ""
       },
       "parentSectionGroup": null
     },
     {
-      "id": "a2",
+      "id": "100002",
       "self": "",
       "createdDateTime": "",
-      "displayName": "Section A2",
+      "displayName": "Strange Snyder",
       "lastModifiedDateTime": "",
       "isDefault": false,
-      "pagesUrl": "http://pages-url-to-section-a2",
+      "pagesUrl": "http://127.0.0.1/sections/100002",
       "createdBy": null,
       "lastModifiedBy": null,
       "parentNotebook": {
-        "id": "a-id",
-        "displayName": "Notebook A",
+        "id": "",
+        "displayName": "",
         "self": ""
       },
-      "parentSectionGroup": null
+      "": null
     }
   ]
 }

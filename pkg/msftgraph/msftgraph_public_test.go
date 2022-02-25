@@ -36,13 +36,13 @@ var token = AuthToken{
 
 var notebooks = []msftgraph.Notebook{
 	{
-		"10001", "Lucid Ellis", "http://127.0.0.1/notebooks/10001",
+		"10001", "Lucid Ellis", "http://127.0.0.1/notebooks/10001/sections",
 	},
 	{
-		"10002", "Happy Driscoll", "http://127.0.0.1/notebooks/10002",
+		"10002", "Happy Driscoll", "http://127.0.0.1/notebooks/10002/sections",
 	},
 	{
-		"10003", "Eager Banzai", "http://127.0.0.1/notebooks/10003",
+		"10003", "Eager Banzai", "http://127.0.0.1/notebooks/10003/sections",
 	},
 }
 
