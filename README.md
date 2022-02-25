@@ -6,7 +6,7 @@ A compact CLI tool to create/view the notes on your Onenote notebooks.
 
 ![preview](./img/nnote.gif)
 
-# How it works
+# What is it?
 You can quickly take notes on your terminal and save them as Onenote pages. It's also possible to take a note on your favorite text editor, onenote cli tool will save the note to the specified section upon quitting the editor. 
 
 Please note that this is an unofficial onenote client and in order to use this app you need to authorize this app to access and write your OneNote notes. See the **Authentication** section for more info.
@@ -16,7 +16,8 @@ Please note that this is an unofficial onenote client and in order to use this a
 - Take notes on your favorite editor
 - Import contents of a file as a Onenote Page
 - Use aliases to quick access to your sections
-- Browse your notes
+- [ ] Browse your notes
+- [ ] Search in notebooks
 
 # Installation 
 This tool is written in Go. Run the command below to install the Onenote CLI.
