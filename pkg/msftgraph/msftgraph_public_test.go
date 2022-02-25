@@ -31,18 +31,18 @@ type apiDebugInfo struct {
 }
 
 var token = AuthToken{
-	AccessToken: "some-secret-stuff",
+	AccessToken: "secretive-and-magical-clarke",
 }
 
 var notebooks = []msftgraph.Notebook{
 	{
-		"a-id", "Notebook A", "http://link-to-sections-of-notebook-a",
+		"10001", "Lucid Ellis", "http://127.0.0.1/notebooks/10001",
 	},
 	{
-		"b-id", "Notebook B", "http://link-to-sections-of-notebook-b",
+		"10002", "Happy Driscoll", "http://127.0.0.1/notebooks/10002",
 	},
 	{
-		"c-id", "Notebook C", "http://link-to-sections-of-notebook-c",
+		"10003", "Eager Banzai", "http://127.0.0.1/notebooks/10003",
 	},
 }
 
@@ -157,10 +157,10 @@ func Test_GetSections(t *testing.T) {
 	var notebook = Notebook{SectionsUrl: server.URL}
 	var sections = []msftgraph.Section{
 		{
-			"Section A1", "a1", &notebook,
+			"Optimistic Shannon", "100001", &notebook,
 		},
 		{
-			"Section A2", "a2", &notebook,
+			"Strange Snyder", "100002", &notebook,
 		},
 	}
 
@@ -218,7 +218,7 @@ func Test_SaveNote(t *testing.T) {
 	defer server.Close()
 	var api = msftgraph.NewApi(&rest.RestClient{}, server.URL)
 
-	var notepage = msftgraph.NewNotePage(msftgraph.Section{Name: "pack-rat"}, "title", "some content")
+	var notepage = msftgraph.NewNotePage(msftgraph.Section{Name: "Competent Vaughan"}, "Kind Wescoff", "I'm not afraid of storms, for I'm learning how to sail my ship.")
 	data := []struct {
 		name       string
 		token      AuthToken
@@ -229,7 +229,7 @@ func Test_SaveNote(t *testing.T) {
 		errMsg     string
 	}{
 		//NOTE: The expected note link is defined in /testdata/savenote-200.json
-		{"savenote-200", token, *notepage, io, io.statusCode, "http://new-note", ""},
+		{"savenote-200", token, *notepage, io, io.statusCode, "http://127.0.0.1/notes/1001", ""},
 	}
 
 	for _, d := range data {

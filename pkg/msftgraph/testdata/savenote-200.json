@@ -6,12 +6,12 @@
     "lastModifiedDateTime": "2022-02-21T11:11:30.5067513Z",
     "links": {
         "oneNoteClientUrl": {
-            "href": "onenote://new-note"
+            "href": "onenote://1001"
         },
         "oneNoteWebUrl": {
-            "href": "http://new-note"
+            "href": "http://127.0.0.1/notes/1001"
         }
     },
     "self": "",
-    "title": "Note Title"
+    "title": ""
 }
