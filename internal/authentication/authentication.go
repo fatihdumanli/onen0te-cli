@@ -42,12 +42,12 @@ func AuthenticateUser(oauthClient *oauthv2.OAuthClient, opts config.AppOptions, 
 func RefreshToken(oauthClient *oauthv2.OAuthClient, opts config.AppOptions, token oauthv2.OAuthToken, storer storage.Storer) (oauthv2.OAuthToken, error) {
 	newToken, err := oauthClient.RefreshToken(opts.OAuthParams, token.RefreshToken)
 	if err != nil {
-		panic(err)
+		return oauthv2.OAuthToken{}, errors.Wrap(err, "couldn't refresh the token\n")
 	}
 
 	err = storer.Set(TOKEN_KEY, newToken)
 	if err != nil {
-		panic(err)
+		return oauthv2.OAuthToken{}, errors.Wrap(err, "couldn't save the token\n")
 	}
 
 	return newToken, nil

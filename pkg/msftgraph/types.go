@@ -32,9 +32,11 @@ type Alias struct {
 
 //Represents a note page
 type NotePage struct {
-	Section Section
-	Title   string
-	Content string
+	Section       Section
+	Title         string `json:"title"`
+	Content       string
+	ContentUrl    string  `json:"contentUrl"`
+	ParentSection Section `json:"parentSection"`
 }
 
 func NewNotePage(s Section, t string, c string) *NotePage {

@@ -69,11 +69,48 @@ func GetSections(n msftgraph.Notebook) ([]msftgraph.Section, error) {
 		if shouldRetry(statusCode) {
 		}
 		sectionsSpinner.Fail(err.Error())
-		return sections, errors.Wrap(err, "couldn't get the sections")
+		return sections, errors.Wrap(err, "couldn't get the sections\n")
 	}
 
 	sectionsSpinner.Success(pterm.FgDefault.Sprint("DONE"))
 	return sections, nil
+}
+
+//Get the lisft of pages of given section
+func GetPages(section msftgraph.Section) ([]msftgraph.NotePage, error) {
+	checkTokenPresented()
+
+	pagesSpinner, _ := pterm.DefaultSpinner.Start("Getting note pages...")
+	var pages, statusCode, err = root.api.GetPages(*root.token, section)
+
+	if err != nil {
+		//TODO: Implement retry
+		if shouldRetry(statusCode) {
+		}
+		pagesSpinner.Fail(err.Error())
+		return pages, errors.Wrap(err, "couldn't get the note pages\n")
+	}
+	pagesSpinner.Success(pterm.FgDefault.Sprint("DONE"))
+
+	return pages, err
+}
+
+func GetPageContent(notepage msftgraph.NotePage) ([]byte, error) {
+	checkTokenPresented()
+
+	spinner, _ := pterm.DefaultSpinner.Start("Getting the note content...")
+	content, statusCode, err := root.api.GetContent(*root.token, notepage)
+
+	if err != nil {
+		//TODO: Implement retry
+		if shouldRetry(statusCode) {
+		}
+		spinner.Fail(err.Error())
+		return content, errors.Wrap(err, "couldn't get the note content\n")
+	}
+	spinner.Success(pterm.FgDefault.Sprint("DONE"))
+
+	return content, nil
 }
 
 //Save a note page using Onenote API
@@ -93,19 +130,19 @@ func SaveNotePage(npage msftgraph.NotePage, remindAlias bool) (string, error) {
 
 	aliases, err := GetAliases()
 	if err != nil {
-		return "", errors.Wrap(err, "couldn't get the alias list")
+		return "", errors.Wrap(err, "couldn't get the alias list\n")
 	}
 
 	var hasAlias = hasAlias(npage.Section, aliases)
 	if !hasAlias {
 		answer, err := survey.AskAlias(npage.Section, aliases)
 		if err != nil {
-			return "", errors.Wrap(err, "couldn't ask the alias")
+			return "", errors.Wrap(err, "couldn't ask the alias\n")
 		}
 		if answer != "" {
 			err := SaveAlias(answer, *npage.Section.Notebook, npage.Section)
 			if err != nil {
-				return "", errors.Wrap(err, "couldn't save the alias")
+				return "", errors.Wrap(err, "couldn't save the alias\n")
 			}
 		}
 	}
@@ -123,7 +160,7 @@ func GetAliases() (*[]msftgraph.Alias, error) {
 	var result []msftgraph.Alias
 	keys, err := root.storage.GetKeys()
 	if err != nil {
-		return nil, errors.Wrap(err, "couldn't get the aliases")
+		return nil, errors.Wrap(err, "couldn't get the aliases\n")
 	}
 
 	var opts = getOptions()
@@ -133,7 +170,7 @@ func GetAliases() (*[]msftgraph.Alias, error) {
 	}
 
 	if err != nil {
-		return nil, errors.Wrap(err, "couldn't get the alias data")
+		return nil, errors.Wrap(err, "couldn't get the alias data\n")
 	}
 
 	for _, k := range *keys {
@@ -154,7 +191,7 @@ func SaveAlias(name string, notebook msftgraph.Notebook, section msftgraph.Secti
 
 	var isExist, err = GetAlias(name)
 	if err != nil {
-		return errors.Wrap(err, "couldn't check the alias if it already exists")
+		return errors.Wrap(err, "couldn't check the alias if it already exists\n")
 	}
 
 	if isExist != nil {
@@ -167,7 +204,7 @@ func SaveAlias(name string, notebook msftgraph.Notebook, section msftgraph.Secti
 		Notebook: notebook,
 		Section:  section})
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("couldn't save the alias %s to the local storage", name))
+		return errors.Wrap(err, fmt.Sprintf("couldn't save the alias %s to the local storage\n", name))
 	}
 
 	var msg = fmt.Sprintf("Alias '%s' has been saved.", name)
@@ -196,7 +233,7 @@ func RemoveAlias(a string) error {
 	if err != nil {
 		var msg = fmt.Sprintf("The alias %s has not found.\n", a)
 		fmt.Println(style.Error(msg))
-		return errors.Wrap(err, "couldn't remove the alias")
+		return errors.Wrap(err, "couldn't remove the alias\n")
 	}
 
 	var msg = fmt.Sprintf("The alias %s has been deleted.\n", a)
@@ -243,7 +280,7 @@ func checkTokenPresented() {
 
 		token, err := authentication.AuthenticateUser(root.oauthClient, opts, root.storage)
 		if err != nil {
-			var errWrapped = errors.Wrap(err, "couldn't check the token if it's presented")
+			var errWrapped = errors.Wrap(err, "couldn't check the token if it's presented\n")
 			log.Fatal(errWrapped)
 		}
 		root.token = &token
@@ -252,7 +289,7 @@ func checkTokenPresented() {
 		if root.token.IsExpired() {
 			token, err := authentication.RefreshToken(root.oauthClient, opts, *root.token, root.storage)
 			if err != nil {
-				var errWrapped = errors.Wrap(err, "couldn't check the token if it's presented")
+				var errWrapped = errors.Wrap(err, "couldn't check the token if it's presented\n")
 				log.Fatal(errWrapped)
 			}
 			root.token = &token

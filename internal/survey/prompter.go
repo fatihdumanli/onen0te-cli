@@ -16,6 +16,7 @@ import (
 type AppOptions = config.AppOptions
 type Notebook = msftgraph.Notebook
 type Section = msftgraph.Section
+type NotePage = msftgraph.NotePage
 type SectionName = msftgraph.SectionName
 type NotebookName = msftgraph.NotebookName
 
@@ -66,10 +67,9 @@ func AskNotebook(nlist []Notebook) (Notebook, error) {
 	}); ok {
 		//if notebook exist
 		return n, nil
-	} else {
-		return n, fmt.Errorf("the notebook %s does not exist", answer)
 	}
 
+	return Notebook{}, nil
 }
 
 //Ask for the section in which the note(onenote page) will be created.
@@ -98,17 +98,39 @@ func AskSection(n Notebook, slist []Section) (Section, error) {
 	if s, ok := findSection(slist, func(x Section) bool {
 		return x.Name == answer
 	}); ok {
-		//section is found
 		return s, nil
-	} else {
-		//section does not exist
-		return s, fmt.Errorf("section %s could not be found", answer)
 	}
+
+	return Section{}, nil
 }
 
 //Prompts the user to select a onenote page
-func AskPage(s msftgraph.Section) (string, error) {
-	return "", nil
+func AskPage(plist []msftgraph.NotePage) (NotePage, error) {
+
+	var pages []string
+
+	for _, p := range plist {
+		pages = append(pages, p.Title)
+	}
+
+	var prompt = &survey.Select{
+		Message:  "Select a page",
+		Options:  pages,
+		PageSize: 100,
+	}
+
+	var answer string
+	if err := s.AskOne(prompt, &answer); err != nil {
+		return NotePage{}, errors.Wrap(err, "couldn't start note page survey")
+	}
+
+	if n, ok := findNotepage(plist, func(x NotePage) bool {
+		return x.Title == answer
+	}); ok {
+		return n, nil
+	}
+
+	return NotePage{}, nil
 }
 
 //In case there's no account have been set yet, prompt the user to ask whether create one at that moment.
@@ -184,6 +206,16 @@ func askSinglelineFreeText(msg string) (string, error) {
 		return "", errors.Wrap(err, "couldn't ask single line text question")
 	}
 	return answer, nil
+}
+
+//Iterates over the given notepages and returns the one satisfies the given condiition. Returns zero value and false in case there is not any match.
+func findNotepage(arr []NotePage, f func(s NotePage) bool) (NotePage, bool) {
+	for _, x := range arr {
+		if f(x) {
+			return x, true
+		}
+	}
+	return NotePage{}, false
 }
 
 //Iterates over the sections and returns the one satisfies the given condition

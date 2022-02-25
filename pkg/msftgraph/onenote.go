@@ -26,6 +26,7 @@ func NewApi(r rest.Requester, msftgraphApiUrl string) Api {
 	}
 }
 
+//https://docs.microsoft.com/en-us/graph/api/onenote-list-notebooks?view=graph-rest-1.0&tabs=http
 func (a *Api) GetNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode, error) {
 
 	var response struct {
@@ -47,12 +48,13 @@ func (a *Api) GetNotebooks(token oauthv2.OAuthToken) ([]Notebook, HttpStatusCode
 	return response.Notebooks, statusCode, nil
 }
 
+//https://docs.microsoft.com/en-us/graph/api/onenote-list-sections?view=graph-rest-1.0&tabs=http
 func (a *Api) GetSections(token oauthv2.OAuthToken, n Notebook) ([]Section, HttpStatusCode, error) {
 	var response struct {
 		Sections []Section `json:"value"`
 	}
 
-	var headers = make(map[string]string, 0)
+	var headers = make(map[string]string)
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
 
 	res, statusCode, err := a.restClient.Get(n.SectionsUrl, headers)
@@ -74,19 +76,44 @@ func (a *Api) GetSections(token oauthv2.OAuthToken, n Notebook) ([]Section, Http
 	return response.Sections, statusCode, nil
 }
 
-//TODO:Complete
-//func getPages(token oauthv2.OAuthToken) (*Notebook, HttpStatusCode, error) {
-//
-//	var headers = make(map[string]string, 0)
-//	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
-//	res, statusCode, err := makeHttpRequest("https://graph.microsoft.com/v1.0/me/onenote/pages", http.MethodGet, nil, headers)
-//	_ = res
-//	_ = statusCode
-//	_ = err
-//
-//	return nil, 200, nil
-//}
-//
+//https://docs.microsoft.com/en-us/graph/api/onenote-list-pages?view=graph-rest-1.0
+func (a *Api) GetPages(token oauthv2.OAuthToken, section Section) ([]NotePage, HttpStatusCode, error) {
+
+	var response struct {
+		NotePages []NotePage `json:"value"`
+	}
+
+	var headers = make(map[string]string)
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
+
+	var url = fmt.Sprintf("%s/me/onenote/sections/%s/pages", a.msftgraphURL, section.ID)
+	res, statusCode, err := a.restClient.Get(url, headers)
+	if statusCode != http.StatusOK {
+		return nil, statusCode, errors.Wrap(err, "couldn't get the note pages")
+	}
+
+	err = json.Unmarshal(res, &response)
+	if err != nil {
+		return nil, statusCode, errors.Wrap(err, "couldn't deserialize the response data")
+	}
+
+	return response.NotePages, statusCode, nil
+}
+
+//Returns the page content as string
+func (a *Api) GetContent(token oauthv2.OAuthToken, notepage NotePage) ([]byte, HttpStatusCode, error) {
+	var headers = make(map[string]string)
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
+
+	res, statusCode, err := a.restClient.Get(notepage.ContentUrl, headers)
+	if statusCode != http.StatusOK {
+		return nil, statusCode, errors.Wrap(err, "couldn't get the note conten")
+	}
+
+	return res, statusCode, nil
+}
+
+//https://docs.microsoft.com/en-us/graph/api/onenote-post-pages?view=graph-rest-1.0
 func (a *Api) SaveNote(t oauthv2.OAuthToken, n NotePage) (string, HttpStatusCode, error) {
 	url := fmt.Sprintf("%s/me/onenote/sections/%s/pages", a.msftgraphURL, n.Section.ID)
 	body := getNoteTemplate(n.Title, n.Content)

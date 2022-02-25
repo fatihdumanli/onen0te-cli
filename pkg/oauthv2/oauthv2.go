@@ -61,7 +61,7 @@ func (o *OAuthClient) RefreshToken(p OAuthParams, refreshToken string) (OAuthTok
 
 	res, statusCode, err := o.restClient.Post(tokenPath, headers, strings.NewReader(data.Encode()))
 	if statusCode != http.StatusOK {
-		return newToken, fmt.Errorf("couldn't refresh the token")
+		return newToken, fmt.Errorf("status code is %d %s", int(statusCode), string(res))
 	}
 
 	err = json.Unmarshal(res, &newToken)
