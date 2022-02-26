@@ -1,20 +1,22 @@
 package main
 
 import (
-	"html"
 	"os"
 	"regexp"
 
 	s "github.com/AlecAivazis/survey/v2"
 	"github.com/fatihdumanli/onenote"
+	"github.com/fatihdumanli/onenote/internal/style"
 	"github.com/fatihdumanli/onenote/internal/survey"
 	"github.com/fatihdumanli/onenote/pkg/msftgraph"
 	errors "github.com/pkg/errors"
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
 type Notebook = msftgraph.Notebook
 type Section = msftgraph.Section
+type NotePage = msftgraph.NotePage
 
 var browseCmd = &cobra.Command{
 	Use:   "browse",
@@ -43,6 +45,7 @@ func list() (_ int, err error) {
 	var answer int = 1
 	var content []byte
 	var s Section
+	var p NotePage
 
 	//0: Back to the section
 	//1: Notebooks
@@ -66,23 +69,23 @@ func list() (_ int, err error) {
 			if err != nil {
 				return 1, err
 			}
-			p, err := survey.AskPage(pages)
+			p, err = survey.AskPage(pages)
 			if err != nil {
 				return 1, err
 			}
 			content, err = onenote.GetPageContent(p)
-		case 2:
+		case 0:
 			pages, err := onenote.GetPages(s)
 			if err != nil {
 				return 1, err
 			}
-			p, err := survey.AskPage(pages)
+			p, err = survey.AskPage(pages)
 			if err != nil {
 				return 1, err
 			}
 			content, err = onenote.GetPageContent(p)
 		}
-		answer, _ = displayContent(&options, &content)
+		answer, _ = displayContent(&options, p, &content)
 	}
 
 	return 0, nil
@@ -102,9 +105,17 @@ func askSection(n msftgraph.Notebook) (msftgraph.Section, error) {
 }
 
 //Returns the option index
-func displayContent(options *[]string, content *[]byte) (int, error) {
+func displayContent(options *[]string, page msftgraph.NotePage, content *[]byte) (int, error) {
 
-	var contentString = stripHtmlRegex(html.EscapeString(string(*content)))
+	//Title, section and date saved
+	var contentString = stripHtmlRegex(string(*content))
+	var tableData [][]string
+	tableData = append(tableData, []string{style.TableHeader("Title"), style.TableHeader("Section"), style.TableHeader("Last Modified Date/time")})
+	tableData = append(tableData, []string{page.Title, page.ParentSection.Name, page.LastModifiedDateTime.Format("2006-01-02 15:04:05 Monday")})
+
+	tableStr, _ := pterm.DefaultTable.WithHasHeader().WithData(tableData).Srender()
+	tableStr = pterm.DefaultBox.Sprint(tableStr)
+	contentString = "\n\n" + tableStr + "\n" + page.Links.OneNoteWebURL.Href + "\n" + contentString
 
 	var navPrompt = &s.Select{
 		Message: contentString,

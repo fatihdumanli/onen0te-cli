@@ -1,12 +1,10 @@
 package msftgraph
 
+import "time"
+
 type NotebookName string
 type SectionName string
 type AliasName string
-
-const (
-	AliasesKey = "aliases"
-)
 
 //Represents a onenote notebook
 type Notebook struct {
@@ -32,11 +30,20 @@ type Alias struct {
 
 //Represents a note page
 type NotePage struct {
-	Section       Section
-	Title         string `json:"title"`
-	Content       string
-	ContentUrl    string  `json:"contentUrl"`
-	ParentSection Section `json:"parentSection"`
+	Section    Section
+	Title      string `json:"title"`
+	Content    string
+	ContentUrl string `json:"contentUrl"`
+	Links      struct {
+		OneNoteClientURL struct {
+			Href string `json:"href"`
+		} `json:"oneNoteClientUrl"`
+		OneNoteWebURL struct {
+			Href string `json:"href"`
+		} `json:"oneNoteWebUrl"`
+	} `json:"links"`
+	ParentSection        Section   `json:"parentSection"`
+	LastModifiedDateTime time.Time `json:"lastModifiedDateTime"`
 }
 
 func NewNotePage(s Section, t string, c string) *NotePage {

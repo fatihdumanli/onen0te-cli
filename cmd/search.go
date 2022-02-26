@@ -8,6 +8,7 @@ import (
 	"github.com/fatihdumanli/onenote"
 	"github.com/fatihdumanli/onenote/internal/style"
 	"github.com/fatihdumanli/onenote/internal/survey"
+	"github.com/fatihdumanli/onenote/pkg/msftgraph"
 	errors "github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -48,12 +49,14 @@ func search(query string) (_ int, err error) {
 
 	options := []string{"◀️ Back to the search results", "❌ Exit"}
 	var answer = 0
+	var notepage msftgraph.NotePage
 	var content []byte
 
 	for answer != 1 {
 		switch answer {
 		case 0:
-			notepage, err := survey.AskPage(pages)
+			notepage, err = survey.AskPage(pages)
+			//fmt.Println(notepage)
 			if err != nil {
 				return 1, err
 			}
@@ -61,9 +64,10 @@ func search(query string) (_ int, err error) {
 			if err != nil {
 				return 1, err
 			}
+			notepage.Section, _ = onenote.GetSection(notepage.Section.ID)
 		}
 
-		answer, _ = displayContent(&options, &content)
+		answer, _ = displayContent(&options, notepage, &content)
 	}
 
 	return 0, nil

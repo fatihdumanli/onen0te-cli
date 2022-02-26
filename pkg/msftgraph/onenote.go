@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 
 	errors "github.com/pkg/errors"
@@ -101,15 +100,16 @@ func (a *Api) GetPages(token oauthv2.OAuthToken, section Section) ([]NotePage, H
 	return response.NotePages, statusCode, nil
 }
 
+//Searchs in all notes
+//https://docs.microsoft.com/en-us/graph/search-query-parameter
 func (a *Api) SearchPage(token oauthv2.OAuthToken, q string) ([]NotePage, HttpStatusCode, error) {
 	var response struct {
 		NotePages []NotePage `json:"value"`
 	}
 
-	var queryParam = url.QueryEscape(fmt.Sprintf(`?$search="%s"`, q))
+	var queryParam = fmt.Sprintf(`?$search="%s"`, q)
 
 	url := fmt.Sprintf(`%s/me/onenote/pages%s`, a.msftgraphURL, queryParam)
-	fmt.Println(url)
 
 	var headers = make(map[string]string)
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
@@ -137,11 +137,41 @@ func (a *Api) GetContent(token oauthv2.OAuthToken, notepage NotePage) ([]byte, H
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
 
 	res, statusCode, err := a.restClient.Get(notepage.ContentUrl, headers)
+	if err != nil {
+		return nil, statusCode, errors.Wrap(err, "couldn't get the note content\n")
+	}
+
 	if statusCode != http.StatusOK {
-		return nil, statusCode, errors.Wrap(err, "couldn't get the note conten")
+		return nil, statusCode, fmt.Errorf("couldn't get the note content %d - %s", statusCode, string(res))
 	}
 
 	return res, statusCode, nil
+}
+
+//Gets the section data by given id
+//https://docs.microsoft.com/en-us/graph/api/section-get?view=graph-rest-1.0&tabs=go
+func (a *Api) GetSection(token oauthv2.OAuthToken, id string) (Section, HttpStatusCode, error) {
+
+	var headers = make(map[string]string)
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
+
+	url := fmt.Sprintf("%s/me/onenote/sections/%s", a.msftgraphURL, id)
+	res, statusCode, err := a.restClient.Get(url, headers)
+	if err != nil {
+		return Section{}, statusCode, errors.Wrap(err, "couldn't get the section data\n")
+	}
+
+	if statusCode != http.StatusOK {
+		return Section{}, statusCode, fmt.Errorf("couldn't get the section data %d - %s", statusCode, string(res))
+	}
+
+	var response Section
+	err = json.Unmarshal(res, &response)
+	if err != nil {
+		return Section{}, statusCode, errors.Wrap(err, "couldn't deserialize the response data")
+	}
+
+	return response, statusCode, nil
 }
 
 //https://docs.microsoft.com/en-us/graph/api/onenote-post-pages?view=graph-rest-1.0

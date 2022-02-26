@@ -43,6 +43,7 @@ func GetNotebooks() ([]msftgraph.Notebook, error) {
 	checkTokenPresented()
 
 	notebookSpinner, _ := pterm.DefaultSpinner.Start("Getting your notebooks...")
+	notebookSpinner.RemoveWhenDone = true
 	var notebooks, statusCode, err = root.api.GetNotebooks(*root.token)
 
 	if err != nil {
@@ -62,6 +63,7 @@ func GetSections(n msftgraph.Notebook) ([]msftgraph.Section, error) {
 	checkTokenPresented()
 
 	sectionsSpinner, _ := pterm.DefaultSpinner.Start("Getting sections...")
+	sectionsSpinner.RemoveWhenDone = true
 	var sections, statusCode, err = root.api.GetSections(*root.token, n)
 
 	if err != nil {
@@ -76,11 +78,27 @@ func GetSections(n msftgraph.Notebook) ([]msftgraph.Section, error) {
 	return sections, nil
 }
 
+//Gets the section by id
+func GetSection(id string) (msftgraph.Section, error) {
+	checkTokenPresented()
+
+	var section, statusCode, err = root.api.GetSection(*root.token, id)
+
+	if err != nil {
+		//TODO: implement retry
+		if shouldRetry(statusCode) {
+		}
+		return section, errors.Wrap(err, "couldn't get the section data\n")
+	}
+	return section, nil
+}
+
 //Get the lisft of pages of given section
 func GetPages(section msftgraph.Section) ([]msftgraph.NotePage, error) {
 	checkTokenPresented()
 
 	pagesSpinner, _ := pterm.DefaultSpinner.Start("Getting note pages...")
+	pagesSpinner.RemoveWhenDone = true
 	var pages, statusCode, err = root.api.GetPages(*root.token, section)
 
 	if err != nil {

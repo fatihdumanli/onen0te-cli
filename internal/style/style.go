@@ -38,3 +38,7 @@ var Reminder Style = func(s string) string {
 var Warning Style = func(s string) string {
 	return pterm.Warning.Sprintf("%s", s)
 }
+
+var TableHeader Style = func(s string) string {
+	return pterm.BgMagenta.Sprint(pterm.FgWhite.Sprint(s))
+}
