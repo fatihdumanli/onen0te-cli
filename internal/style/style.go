@@ -42,3 +42,7 @@ var Warning Style = func(s string) string {
 var TableHeader Style = func(s string) string {
 	return pterm.BgMagenta.Sprint(pterm.FgWhite.Sprint(s))
 }
+
+var OnenoteHeader Style = func(s string) string {
+	return pterm.DefaultHeader.WithFullWidth().WithBackgroundStyle(pterm.NewStyle(pterm.BgMagenta)).WithTextStyle(pterm.NewStyle(pterm.FgBlack)).Sprintf(s)
+}

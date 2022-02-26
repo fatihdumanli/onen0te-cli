@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 
 	s "github.com/AlecAivazis/survey/v2"
 	"github.com/fatihdumanli/onenote"
+	"github.com/fatihdumanli/onenote/internal/style"
 	"github.com/fatihdumanli/onenote/internal/survey"
+	"github.com/fatihdumanli/onenote/internal/util/datetime"
+	"github.com/fatihdumanli/onenote/internal/util/process"
 	"github.com/fatihdumanli/onenote/pkg/msftgraph"
 	"github.com/k3a/html2text"
 	errors "github.com/pkg/errors"
@@ -87,8 +89,9 @@ func list() (_ int, err error) {
 				return 1, err
 			}
 			content, err = onenote.GetPageContent(p)
+		default:
 		}
-		answer, _ = displayContent(&options, n, p, &content)
+		answer, _ = displayContent(options, n, p, &content)
 	}
 
 	return 0, nil
@@ -108,14 +111,16 @@ func askSection(n msftgraph.Notebook) (msftgraph.Section, error) {
 }
 
 //Returns the option index
-func displayContent(options *[]string, n msftgraph.Notebook, page msftgraph.NotePage, content *[]byte) (int, error) {
+func displayContent(options []string, n msftgraph.Notebook, page msftgraph.NotePage, content *[]byte) (int, error) {
 
-	//Title, section and date saved
+	options = append(options, "🌐 View it on web")
+	options = append(options, "📓 View it on Onenote client")
+
 	var contentString = html2text.HTML2Text(string(*content))
-
 	var seperator string = pterm.FgDarkGray.Sprint(pterm.BgMagenta.Sprint("▶️"))
-	titleStr := pterm.DefaultHeader.WithFullWidth().WithBackgroundStyle(pterm.NewStyle(pterm.BgMagenta)).WithTextStyle(pterm.NewStyle(pterm.FgBlack)).Sprint(page.Title)
-	breadcrumbStr := fmt.Sprintf("%s %s  %s %s  %s  (%s)", "Notebook name", seperator, page.ParentSection.Name, seperator, page.Title, page.LastModifiedDateTime.Format("2006-01-02 15:04:05 Monday"))
+	titleStr := style.OnenoteHeader(page.Title)
+	breadcrumbStr := fmt.Sprintf("%s %s  %s %s  %s  (%s)", "Notebook name",
+		seperator, page.ParentSection.Name, seperator, page.Title, datetime.FormatLongWeekDay(page.LastModifiedDateTime))
 
 	var output strings.Builder
 	output.WriteString(titleStr)
@@ -126,7 +131,7 @@ func displayContent(options *[]string, n msftgraph.Notebook, page msftgraph.Note
 
 	var navPrompt = &s.Select{
 		Message: "\n" + output.String(),
-		Options: *options,
+		Options: options,
 	}
 
 	var answer string
@@ -135,9 +140,15 @@ func displayContent(options *[]string, n msftgraph.Notebook, page msftgraph.Note
 		return -1, errors.Wrap(err, "couldn't start the navigation prompt survey")
 	}
 
+	if answer == "🌐 View it on web" {
+		process.Start(page.Links.OneNoteWebURL.Href)
+	} else if answer == "📓 View it on Onenote client" {
+		process.Start(page.Links.OneNoteClientURL.Href)
+	}
+
 	var findAnswerIndex = func() int {
-		for i := 0; i < len(*options); i++ {
-			if (*options)[i] == answer {
+		for i := 0; i < len(options); i++ {
+			if (options)[i] == answer {
 				return i
 			}
 		}
@@ -145,11 +156,6 @@ func displayContent(options *[]string, n msftgraph.Notebook, page msftgraph.Note
 	}
 
 	return findAnswerIndex(), nil
-}
-
-func stripHtmlRegex(s string) string {
-	r := regexp.MustCompile(`<.*?>`)
-	return r.ReplaceAllString(s, "")
 }
 
 func init() {

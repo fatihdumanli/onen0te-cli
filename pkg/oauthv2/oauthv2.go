@@ -4,15 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
-	"os/exec"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/fatihdumanli/onenote/internal/util/process"
 	"github.com/fatihdumanli/onenote/pkg/rest"
 	errors "github.com/pkg/errors"
 )
@@ -132,7 +130,7 @@ func (o *OAuthClient) getAuthCode(p OAuthParams) (AuthorizationCode, error) {
 	}
 
 	//open a browser to authenticate the user
-	err = openWebBrowser(authCodeUrl)
+	err = process.Start(authCodeUrl)
 	if err != nil {
 		return "", errors.Wrap(err, "couldn't get auth code")
 	}
@@ -176,25 +174,6 @@ func (o *OAuthClient) getToken(p getTokenParams) (*OAuthToken, error) {
 	}
 
 	return &token, nil
-}
-
-func openWebBrowser(url string) error {
-	var err error
-	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	default:
-		log.Fatal("your OS is not supported.")
-	}
-
-	if err != nil {
-		return errors.Wrap(err, "couldn't start the web browser to authenticate the user")
-	}
-	return nil
 }
 
 func startOauthHttpServer(wg *sync.WaitGroup, addr string, pattern string, callback http.HandlerFunc) (*http.Server, error) {

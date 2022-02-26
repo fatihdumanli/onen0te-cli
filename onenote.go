@@ -136,6 +136,7 @@ func GetPageContent(notepage msftgraph.NotePage) ([]byte, error) {
 	checkTokenPresented()
 
 	spinner, _ := pterm.DefaultSpinner.Start("Getting the note content...")
+	spinner.RemoveWhenDone = true
 	content, statusCode, err := root.api.GetContent(*root.token, notepage)
 
 	if err != nil {

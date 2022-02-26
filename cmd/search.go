@@ -65,9 +65,10 @@ func search(query string) (_ int, err error) {
 				return 1, err
 			}
 			notepage.Section, _ = onenote.GetSection(notepage.Section.ID)
+		default:
 		}
 
-		answer, _ = displayContent(&options, msftgraph.Notebook{}, notepage, &content)
+		answer, _ = displayContent(options, msftgraph.Notebook{}, notepage, &content)
 	}
 
 	return 0, nil
