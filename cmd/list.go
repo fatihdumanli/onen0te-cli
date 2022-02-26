@@ -1,14 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	s "github.com/AlecAivazis/survey/v2"
 	"github.com/fatihdumanli/onenote"
-	"github.com/fatihdumanli/onenote/internal/style"
 	"github.com/fatihdumanli/onenote/internal/survey"
 	"github.com/fatihdumanli/onenote/pkg/msftgraph"
+	"github.com/k3a/html2text"
 	errors "github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -46,6 +48,7 @@ func list() (_ int, err error) {
 	var content []byte
 	var s Section
 	var p NotePage
+	var n Notebook
 
 	//0: Back to the section
 	//1: Notebooks
@@ -56,7 +59,7 @@ func list() (_ int, err error) {
 	for answer != 2 {
 		switch answer {
 		case 1:
-			n, err := survey.AskNotebook(notebooks)
+			n, err = survey.AskNotebook(notebooks)
 			if err != nil {
 				return 1, err
 			}
@@ -85,7 +88,7 @@ func list() (_ int, err error) {
 			}
 			content, err = onenote.GetPageContent(p)
 		}
-		answer, _ = displayContent(&options, p, &content)
+		answer, _ = displayContent(&options, n, p, &content)
 	}
 
 	return 0, nil
@@ -105,20 +108,24 @@ func askSection(n msftgraph.Notebook) (msftgraph.Section, error) {
 }
 
 //Returns the option index
-func displayContent(options *[]string, page msftgraph.NotePage, content *[]byte) (int, error) {
+func displayContent(options *[]string, n msftgraph.Notebook, page msftgraph.NotePage, content *[]byte) (int, error) {
 
 	//Title, section and date saved
-	var contentString = stripHtmlRegex(string(*content))
-	var tableData [][]string
-	tableData = append(tableData, []string{style.TableHeader("Title"), style.TableHeader("Section"), style.TableHeader("Last Modified Date/time")})
-	tableData = append(tableData, []string{page.Title, page.ParentSection.Name, page.LastModifiedDateTime.Format("2006-01-02 15:04:05 Monday")})
+	var contentString = html2text.HTML2Text(string(*content))
 
-	tableStr, _ := pterm.DefaultTable.WithHasHeader().WithData(tableData).Srender()
-	tableStr = pterm.DefaultBox.Sprint(tableStr)
-	contentString = "\n\n" + tableStr + "\n" + page.Links.OneNoteWebURL.Href + "\n" + contentString
+	var seperator string = pterm.FgDarkGray.Sprint(pterm.BgMagenta.Sprint("▶️"))
+	titleStr := pterm.DefaultHeader.WithFullWidth().WithBackgroundStyle(pterm.NewStyle(pterm.BgMagenta)).WithTextStyle(pterm.NewStyle(pterm.FgBlack)).Sprint(page.Title)
+	breadcrumbStr := fmt.Sprintf("%s %s  %s %s  %s  (%s)", "Notebook name", seperator, page.ParentSection.Name, seperator, page.Title, page.LastModifiedDateTime.Format("2006-01-02 15:04:05 Monday"))
+
+	var output strings.Builder
+	output.WriteString(titleStr)
+	output.WriteString("\n")
+	output.WriteString(pterm.DefaultBox.Sprint(breadcrumbStr))
+	output.WriteString("\n\n")
+	output.WriteString(contentString)
 
 	var navPrompt = &s.Select{
-		Message: contentString,
+		Message: "\n" + output.String(),
 		Options: *options,
 	}
 
