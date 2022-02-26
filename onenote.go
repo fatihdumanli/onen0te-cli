@@ -92,9 +92,28 @@ func GetPages(section msftgraph.Section) ([]msftgraph.NotePage, error) {
 	}
 	pagesSpinner.Success(pterm.FgDefault.Sprint("DONE"))
 
-	return pages, err
+	return pages, nil
 }
 
+//Perfrom search in all your notebooks
+func Search(phrase string) ([]msftgraph.NotePage, error) {
+	checkTokenPresented()
+
+	spinner, _ := pterm.DefaultSpinner.Start("Searching...")
+	spinner.RemoveWhenDone = true
+	searchResult, statusCode, err := root.api.SearchPage(*root.token, phrase)
+
+	if err != nil {
+		if shouldRetry(statusCode) {
+		}
+		spinner.Fail(err.Error())
+		return nil, errors.Wrap(err, "failed to perform search\n")
+	}
+	spinner.Success(pterm.FgDefault.Sprint("DONE"))
+
+	return searchResult, nil
+
+}
 func GetPageContent(notepage msftgraph.NotePage) ([]byte, error) {
 	checkTokenPresented()
 

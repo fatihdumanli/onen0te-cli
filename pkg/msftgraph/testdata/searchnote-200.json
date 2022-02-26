@@ -1,0 +1,25 @@
+{
+  "value": [
+    {
+      "id": "1001",
+      "self": "",
+      "createdDateTime": "2022-02-05T13:10:57.761Z",
+      "title": "daisaku ikeda",
+      "createdByAppId": "",
+      "contentUrl": "http://127.0.0.1/notes/1001",
+      "lastModifiedDateTime": "2022-02-05T14:11:00Z",
+      "links": {
+        "oneNoteClientUrl": {
+          "href": ""
+        },
+        "oneNoteWebUrl": {
+          "href": ""
+        }
+      },
+      "parentSection": {
+        "id": "10001",
+        "displayName": "Cool Words"
+      }
+    }
+  ]
+}

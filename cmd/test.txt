@@ -1,4 +1,0 @@
-this is text file
-test.txt
-this is sample content
-and we're gonna send the content to onenote.

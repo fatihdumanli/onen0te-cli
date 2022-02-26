@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	errors "github.com/pkg/errors"
@@ -90,6 +91,36 @@ func (a *Api) GetPages(token oauthv2.OAuthToken, section Section) ([]NotePage, H
 	res, statusCode, err := a.restClient.Get(url, headers)
 	if statusCode != http.StatusOK {
 		return nil, statusCode, errors.Wrap(err, "couldn't get the note pages")
+	}
+
+	err = json.Unmarshal(res, &response)
+	if err != nil {
+		return nil, statusCode, errors.Wrap(err, "couldn't deserialize the response data")
+	}
+
+	return response.NotePages, statusCode, nil
+}
+
+func (a *Api) SearchPage(token oauthv2.OAuthToken, q string) ([]NotePage, HttpStatusCode, error) {
+	var response struct {
+		NotePages []NotePage `json:"value"`
+	}
+
+	var queryParam = url.QueryEscape(fmt.Sprintf(`?$search="%s"`, q))
+
+	url := fmt.Sprintf(`%s/me/onenote/pages%s`, a.msftgraphURL, queryParam)
+	fmt.Println(url)
+
+	var headers = make(map[string]string)
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
+
+	res, statusCode, err := a.restClient.Get(url, headers)
+	if err != nil {
+		return nil, statusCode, errors.Wrap(err, "couldn't perform the search\n")
+	}
+
+	if statusCode != http.StatusOK {
+		return nil, statusCode, fmt.Errorf("couldn't perform the search: %s\n", string(res))
 	}
 
 	err = json.Unmarshal(res, &response)

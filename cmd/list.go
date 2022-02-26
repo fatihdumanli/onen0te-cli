@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html"
 	"os"
 	"regexp"
 
@@ -39,13 +40,19 @@ func list() (_ int, err error) {
 		return 1, err
 	}
 
-	var answer string = "1"
+	var answer int = 1
 	var content []byte
 	var s Section
 
-	for answer != "exit" {
+	//0: Back to the section
+	//1: Notebooks
+	//2: Exit
+	//TODO: add display html in web browser
+	options := []string{"◀️ Back to the section", "📃 Notebooks", "❌ Exit"}
+
+	for answer != 2 {
 		switch answer {
-		case "1":
+		case 1:
 			n, err := survey.AskNotebook(notebooks)
 			if err != nil {
 				return 1, err
@@ -64,7 +71,7 @@ func list() (_ int, err error) {
 				return 1, err
 			}
 			content, err = onenote.GetPageContent(p)
-		case "2":
+		case 2:
 			pages, err := onenote.GetPages(s)
 			if err != nil {
 				return 1, err
@@ -75,7 +82,7 @@ func list() (_ int, err error) {
 			}
 			content, err = onenote.GetPageContent(p)
 		}
-		answer, _ = displayContent(&content)
+		answer, _ = displayContent(&options, &content)
 	}
 
 	return 0, nil
@@ -94,29 +101,32 @@ func askSection(n msftgraph.Notebook) (msftgraph.Section, error) {
 	return s, nil
 }
 
-func displayContent(content *[]byte) (string, error) {
+//Returns the option index
+func displayContent(options *[]string, content *[]byte) (int, error) {
 
-	var contentString = stripHtmlRegex(string(*content))
-
-	//TODO: add display html in web browser
-	options := []string{"◀️ Back to the section", "📃 Notebooks", "❌ Exit"}
+	var contentString = stripHtmlRegex(html.EscapeString(string(*content)))
 
 	var navPrompt = &s.Select{
 		Message: contentString,
-		Options: options,
+		Options: *options,
 	}
 
 	var answer string
-	s.AskOne(navPrompt, &answer)
-
-	if answer == "◀️ Back to the section" {
-		return "2", nil
-	} else if answer == "📃 Notebooks" {
-		return "1", nil
-	} else {
-		return "exit", nil
+	err := s.AskOne(navPrompt, &answer)
+	if err != nil {
+		return -1, errors.Wrap(err, "couldn't start the navigation prompt survey")
 	}
 
+	var findAnswerIndex = func() int {
+		for i := 0; i < len(*options); i++ {
+			if (*options)[i] == answer {
+				return i
+			}
+		}
+		return -1
+	}
+
+	return findAnswerIndex(), nil
 }
 
 func stripHtmlRegex(s string) string {
