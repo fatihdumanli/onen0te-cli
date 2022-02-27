@@ -2,8 +2,9 @@
 
 A compact CLI tool to create/view the notes on your Onenote notebooks.
 
+![Build Status](https://img.shields.io/github/workflow/status/fatihdumanli/onen0te-cli/Test)
 [![Build Status](https://dev.azure.com/fatihdumanli0884/onenote-cli/_apis/build/status/build-and-test?branchName=master)](https://dev.azure.com/fatihdumanli0884/onenote-cli/_build/latest?definitionId=24&branchName=master)
-![Build Status](https://img.shields.io/github/workflow/status/fatihdumanli/onenote-cli/Test)
+![Build Status](https://img.shields.io/github/workflow/status/fatihdumanli/onen0te-cli/Test)
 
 
 
@@ -32,7 +33,7 @@ $ go install github.com/fatihdumanli/onen0te-cli/cmd/nnote@latest
 ## Authentication
 Authentication is done during your very first interaction with nnote. To use this application, you must authorize nnote to access/write your Onenote notebooks and sections.
 
-Feel free to change the **ClientId** and **TenantId** variables with yours [here](https://github.com/fatihdumanli/onenote-cli/blob/master/options.go#L12). You can grab yours on Azure portal. See the following link for further information.
+Feel free to change the **ClientId** and **TenantId** variables with yours [here](https://github.com/fatihdumanli/onen0te-cli/blob/master/options.go#L14). You can grab yours on Azure portal. See the following link for further information.
 
 [https://docs.microsoft.com/en-us/graph/auth-v2-user?context=graph%2Fapi%2F1.0&view=graph-rest-1.0#1-register-your-app](https://docs.microsoft.com/en-us/graph/auth-v2-user?context=graph/api/1.0&view=graph-rest-1.0#1-register-your-app)
 
