@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/fatihdumanli/onenote/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote-cli/pkg/oauthv2"
 )
 
 type AppOptions struct {

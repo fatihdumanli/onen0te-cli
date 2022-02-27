@@ -10,9 +10,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/fatihdumanli/onenote/pkg/msftgraph"
-	"github.com/fatihdumanli/onenote/pkg/oauthv2"
-	"github.com/fatihdumanli/onenote/pkg/rest"
+	"github.com/fatihdumanli/onenote-cli/pkg/msftgraph"
+	"github.com/fatihdumanli/onenote-cli/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote-cli/pkg/rest"
 	"github.com/google/go-cmp/cmp"
 )
 

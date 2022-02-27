@@ -9,8 +9,8 @@ import (
 
 	errors "github.com/pkg/errors"
 
-	"github.com/fatihdumanli/onenote/pkg/oauthv2"
-	"github.com/fatihdumanli/onenote/pkg/rest"
+	"github.com/fatihdumanli/onenote-cli/pkg/oauthv2"
+	"github.com/fatihdumanli/onenote-cli/pkg/rest"
 )
 
 type HttpStatusCode = rest.HttpStatusCode

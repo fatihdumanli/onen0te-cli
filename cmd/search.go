@@ -5,10 +5,10 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/fatihdumanli/onenote"
-	"github.com/fatihdumanli/onenote/internal/style"
-	"github.com/fatihdumanli/onenote/internal/survey"
-	"github.com/fatihdumanli/onenote/pkg/msftgraph"
+	"github.com/fatihdumanli/onenote-cli"
+	"github.com/fatihdumanli/onenote-cli/internal/style"
+	"github.com/fatihdumanli/onenote-cli/internal/survey"
+	"github.com/fatihdumanli/onenote-cli/pkg/msftgraph"
 	errors "github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )

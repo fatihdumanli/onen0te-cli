@@ -7,9 +7,9 @@ import (
 
 	errors "github.com/pkg/errors"
 
-	"github.com/fatihdumanli/onenote"
-	"github.com/fatihdumanli/onenote/internal/style"
-	"github.com/fatihdumanli/onenote/internal/survey"
+	"github.com/fatihdumanli/onenote-cli"
+	"github.com/fatihdumanli/onenote-cli/internal/style"
+	"github.com/fatihdumanli/onenote-cli/internal/survey"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )

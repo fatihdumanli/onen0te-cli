@@ -3,7 +3,7 @@ package onenote
 import (
 	"testing"
 
-	"github.com/fatihdumanli/onenote/pkg/msftgraph"
+	"github.com/fatihdumanli/onenote-cli/pkg/msftgraph"
 	"github.com/google/go-cmp/cmp"
 )
 
