@@ -1,9 +1,9 @@
 package authentication
 
 import (
-	"github.com/fatihdumanli/onenote-cli/internal/config"
-	"github.com/fatihdumanli/onenote-cli/internal/storage"
-	"github.com/fatihdumanli/onenote-cli/pkg/oauthv2"
+	"github.com/fatihdumanli/onen0te-cli/internal/config"
+	"github.com/fatihdumanli/onen0te-cli/internal/storage"
+	"github.com/fatihdumanli/onen0te-cli/pkg/oauthv2"
 	errors "github.com/pkg/errors"
 )
 

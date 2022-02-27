@@ -5,11 +5,11 @@ import (
 
 	errors "github.com/pkg/errors"
 
-	"github.com/fatihdumanli/onenote-cli"
-	"github.com/fatihdumanli/onenote-cli/internal/style"
-	"github.com/fatihdumanli/onenote-cli/internal/survey"
-	"github.com/fatihdumanli/onenote-cli/internal/util/file"
-	"github.com/fatihdumanli/onenote-cli/pkg/msftgraph"
+	onenote "github.com/fatihdumanli/onen0te-cli"
+	"github.com/fatihdumanli/onen0te-cli/internal/style"
+	"github.com/fatihdumanli/onen0te-cli/internal/survey"
+	"github.com/fatihdumanli/onen0te-cli/internal/util/file"
+	"github.com/fatihdumanli/onen0te-cli/pkg/msftgraph"
 	"github.com/spf13/cobra"
 )
 

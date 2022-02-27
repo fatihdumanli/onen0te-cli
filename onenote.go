@@ -7,14 +7,14 @@ import (
 
 	errors "github.com/pkg/errors"
 
-	"github.com/fatihdumanli/onenote-cli/internal/authentication"
-	"github.com/fatihdumanli/onenote-cli/internal/storage"
-	"github.com/fatihdumanli/onenote-cli/internal/style"
-	"github.com/fatihdumanli/onenote-cli/internal/survey"
-	"github.com/fatihdumanli/onenote-cli/internal/util/file"
-	"github.com/fatihdumanli/onenote-cli/pkg/msftgraph"
-	"github.com/fatihdumanli/onenote-cli/pkg/oauthv2"
-	"github.com/fatihdumanli/onenote-cli/pkg/rest"
+	"github.com/fatihdumanli/onen0te-cli/internal/authentication"
+	"github.com/fatihdumanli/onen0te-cli/internal/storage"
+	"github.com/fatihdumanli/onen0te-cli/internal/style"
+	"github.com/fatihdumanli/onen0te-cli/internal/survey"
+	"github.com/fatihdumanli/onen0te-cli/internal/util/file"
+	"github.com/fatihdumanli/onen0te-cli/pkg/msftgraph"
+	"github.com/fatihdumanli/onen0te-cli/pkg/oauthv2"
+	"github.com/fatihdumanli/onen0te-cli/pkg/rest"
 	"github.com/pterm/pterm"
 )
 

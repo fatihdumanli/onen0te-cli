@@ -7,9 +7,9 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	s "github.com/AlecAivazis/survey/v2"
-	"github.com/fatihdumanli/onenote-cli/internal/config"
-	"github.com/fatihdumanli/onenote-cli/internal/style"
-	"github.com/fatihdumanli/onenote-cli/pkg/msftgraph"
+	"github.com/fatihdumanli/onen0te-cli/internal/config"
+	"github.com/fatihdumanli/onen0te-cli/internal/style"
+	"github.com/fatihdumanli/onen0te-cli/pkg/msftgraph"
 )
 
 //Friendly names

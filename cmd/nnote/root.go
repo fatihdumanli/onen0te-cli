@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/fatihdumanli/onenote-cli/internal/style"
+	"github.com/fatihdumanli/onen0te-cli/internal/style"
 	"github.com/spf13/cobra"
 )
 

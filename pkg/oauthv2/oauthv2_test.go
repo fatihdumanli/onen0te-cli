@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fatihdumanli/onenote-cli/pkg/rest"
+	"github.com/fatihdumanli/onen0te-cli/pkg/rest"
 	"github.com/google/go-cmp/cmp"
 )
 

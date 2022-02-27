@@ -1,4 +1,4 @@
-module github.com/fatihdumanli/onenote-cli
+module github.com/fatihdumanli/onen0te-cli
 
 go 1.16
 

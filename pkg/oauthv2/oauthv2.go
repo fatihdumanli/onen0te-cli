@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fatihdumanli/onenote-cli/internal/util/process"
-	"github.com/fatihdumanli/onenote-cli/pkg/rest"
+	"github.com/fatihdumanli/onen0te-cli/internal/util/process"
+	"github.com/fatihdumanli/onen0te-cli/pkg/rest"
 	errors "github.com/pkg/errors"
 )
 

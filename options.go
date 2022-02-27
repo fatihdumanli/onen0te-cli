@@ -3,9 +3,9 @@ package onenote
 import (
 	"os"
 
-	"github.com/fatihdumanli/onenote-cli/internal/authentication"
-	"github.com/fatihdumanli/onenote-cli/internal/config"
-	"github.com/fatihdumanli/onenote-cli/pkg/oauthv2"
+	"github.com/fatihdumanli/onen0te-cli/internal/authentication"
+	"github.com/fatihdumanli/onen0te-cli/internal/config"
+	"github.com/fatihdumanli/onen0te-cli/pkg/oauthv2"
 	_ "github.com/joho/godotenv/autoload"
 )
 
