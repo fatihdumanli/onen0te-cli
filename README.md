@@ -7,7 +7,7 @@ A compact CLI tool to create/view the notes on your Onenote notebooks.
 
 
 
-![preview](./img/nnote.gif)
+![preview](https://thumbs.gfycat.com/BasicJubilantBluebottle-size_restricted.gif)
 
 # What is it?
 You can quickly take notes on your terminal and save them as Onenote pages. It's also possible to take a note on your favorite text editor, onenote cli tool will save the note to the specified section upon quitting the editor. 
@@ -138,7 +138,7 @@ $ nnote alias new "quick notes"
 ```
 
 ```bash
-$ nnote alias new "asp.net"
+$ nnote alias new "elasticsearch"
 ```
 
 ### Listing aliases
@@ -157,7 +157,7 @@ $ nnote alias remove <alias>
 
 **Example**
 ```bash
-$ nnote alias remove "asp.net"
+$ nnote alias remove "qn"
 ```
 
 ## View your notes
@@ -170,7 +170,7 @@ Use `search` command to search in your notes. This command will perform a search
 
 **Example**
 ```
-$ nnote search "assigned to me"
+$ nnote search "redis"
 ```
 
 # Thanks

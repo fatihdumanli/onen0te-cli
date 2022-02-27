@@ -156,6 +156,8 @@ func GetPageContent(notepage msftgraph.NotePage) ([]byte, error) {
 func SaveNotePage(npage msftgraph.NotePage, remindAlias bool) (string, error) {
 	checkTokenPresented()
 
+	spinner, _ := pterm.DefaultSpinner.Start("Saving your note...")
+	spinner.RemoveWhenDone = true
 	link, statusCode, err := root.api.SaveNote(*root.token, npage)
 	if err != nil {
 		if shouldRetry(statusCode) {
@@ -164,6 +166,7 @@ func SaveNotePage(npage msftgraph.NotePage, remindAlias bool) (string, error) {
 		return "", errors.Wrap(err, "couldn't save the note page")
 	}
 
+	spinner.Success(pterm.FgDefault.Sprint("DONE"))
 	printSuccessOutput(link, npage)
 
 	aliases, err := GetAliases()
