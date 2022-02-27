@@ -12,6 +12,7 @@ var rootCmd = &cobra.Command{
 	Long:                  "Take notes on your Onenote notebooks from terminal",
 	Use:                   "nnote",
 	DisableFlagsInUseLine: true,
+	CompletionOptions:     cobra.CompletionOptions{DisableDefaultCmd: true},
 }
 
 func Execute() {
