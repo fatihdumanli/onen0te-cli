@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	errors "github.com/pkg/errors"
@@ -107,9 +108,10 @@ func (a *Api) SearchPage(token oauthv2.OAuthToken, q string) ([]NotePage, HttpSt
 		NotePages []NotePage `json:"value"`
 	}
 
-	var queryParam = fmt.Sprintf(`?$search="%s"`, q)
+	var queryParam = fmt.Sprintf(`"%s"`, q)
+	queryParam = url.QueryEscape(queryParam)
 
-	url := fmt.Sprintf(`%s/me/onenote/pages%s`, a.msftgraphURL, queryParam)
+	url := fmt.Sprintf(`%s/me/onenote/pages?$search=%s`, a.msftgraphURL, queryParam)
 
 	var headers = make(map[string]string)
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", token.AccessToken)
