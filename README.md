@@ -10,9 +10,9 @@ create & view onenote notes on terminal.
 ![preview](https://thumbs.gfycat.com/BasicJubilantBluebottle-size_restricted.gif)
 
 # What is it?
-You can quickly take notes on your terminal and save them as Onenote pages. It's also possible to take a note on your favorite text editor, note will be saved to the specified section upon quitting the editor. 
+This tool (will be referenced as 'nnote') is used to view & create onenote pages on the terminal using Microsoft Graph APIs. 
 
-Please note that this is an unofficial Onenote client and in order to use this app you need to authorize this app to access and write your OneNote notes. See the **Authentication** section for more info.
+Please bear in mind that this is an unofficial Onenote client and in order to use this app you need to authorize this app to access and write your OneNote notes. See the **Authentication** section for more info.
 
 # Features
 - Take inline notes
@@ -99,7 +99,7 @@ To take a note using your favorite editor, do not specify any flag or argument a
 ```
 $ nnote new
 ```
-Upon quitting the editor, you'll be prompted to choose the notebook and section to which the note will be uploaded.
+You'll be prompted to choose the notebook and section to which the note will be uploaded right after quitting the editor.
 
 ![browse in notes](https://thumbs.gfycat.com/ImpressiveRemoteFerret-size_restricted.gif)
 
