@@ -1,8 +1,6 @@
 package onenote
 
 import (
-	"os"
-
 	"github.com/fatihdumanli/onen0te-cli/internal/authentication"
 	"github.com/fatihdumanli/onen0te-cli/internal/config"
 	"github.com/fatihdumanli/onen0te-cli/pkg/oauthv2"
@@ -11,10 +9,10 @@ import (
 
 func getOptions() config.AppOptions {
 
-	var oauthEndpoint = os.Getenv("OAUTH_ENDPOINT")
-	var redirectUri = os.Getenv("REDIRECT_URL")
-	var clientId = os.Getenv("CLIENT_ID")
-	var tenantId = os.Getenv("TENANT_ID")
+	var oauthEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0"
+	var redirectUri = "http://localhost:5992/oauthv2"
+	var clientId = "2124cbcc-943a-4a41-b8b2-efabbfc99b65"
+	var tenantId = "31986ee9-8d0d-4a8e-8c6d-1d763b66d6c2"
 
 	var msGraphOptions = config.MicrosoftGraphConfig{
 		ClientId:    clientId,

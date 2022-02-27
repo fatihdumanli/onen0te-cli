@@ -26,7 +26,7 @@ Please note that this is an unofficial onenote client and in order to use this a
 This tool is written in Go. Run the command below to install the Onenote CLI.
 
 ```bash
-$ go install github.com/fatihdumanli/onenote@latest
+$ go install github.com/fatihdumanli/onen0te-cli/cmd/nnote@latest
 ```
 
 ## Authentication
@@ -205,7 +205,6 @@ $ nnote alias remove "qn"
 
 - [prologic/bitcask](https://git.mills.io/prologic/bitcask)
 - [AlecAivazis/survey](https://github.com/AlecAivazis/survey)
-- [joho/godotenv](https://github.com/joho/godotenv)
 - [k3a/html2text](https://github.com/k3a/html2text)
 - [pterm](https://github.com/pterm/pterm)
 - [spf13/cobra](https://github.com/spf13/cobra)
