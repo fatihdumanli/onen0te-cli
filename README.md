@@ -1,4 +1,4 @@
-# Onenote-CLI
+# onen0te-CLI
 
 A compact CLI tool to create/view the notes on your Onenote notebooks.
 
