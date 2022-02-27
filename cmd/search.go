@@ -64,7 +64,6 @@ func search(query string) (_ int, err error) {
 			if err != nil {
 				return 1, err
 			}
-			notepage.Section, _ = onenote.GetSection(notepage.Section.ID)
 		default:
 		}
 

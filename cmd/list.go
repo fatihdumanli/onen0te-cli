@@ -91,6 +91,8 @@ func list() (_ int, err error) {
 			content, err = onenote.GetPageContent(p)
 		default:
 		}
+
+		p.Section.Notebook = &n
 		answer, _ = displayContent(options, n, p, &content)
 	}
 
@@ -119,7 +121,7 @@ func displayContent(options []string, n msftgraph.Notebook, page msftgraph.NoteP
 	var contentString = html2text.HTML2Text(string(*content))
 	var seperator string = pterm.FgDarkGray.Sprint(pterm.BgMagenta.Sprint("▶️"))
 	titleStr := style.OnenoteHeader(page.Title)
-	breadcrumbStr := fmt.Sprintf("%s %s  %s %s  %s  (%s)", "Notebook name",
+	breadcrumbStr := fmt.Sprintf("%s %s  %s %s  %s  (%s)", page.Section.Notebook.DisplayName,
 		seperator, page.ParentSection.Name, seperator, page.Title, datetime.FormatLongWeekDay(page.LastModifiedDateTime))
 
 	var output strings.Builder
