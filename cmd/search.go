@@ -51,6 +51,7 @@ func search(query string) (_ int, err error) {
 	var answer = 0
 	var notepage msftgraph.NotePage
 	var content []byte
+	var section msftgraph.Section
 
 	for answer != 1 {
 		switch answer {
@@ -60,14 +61,21 @@ func search(query string) (_ int, err error) {
 			if err != nil {
 				return 1, err
 			}
+			//page content - section data, concurrent
 			content, err = onenote.GetPageContent(notepage)
+			if err != nil {
+				return 1, err
+			}
+
+			section, err = onenote.GetSection(notepage.ParentSection.ID)
+			notepage.Section = section
 			if err != nil {
 				return 1, err
 			}
 		default:
 		}
 
-		answer, _ = displayContent(options, msftgraph.Notebook{}, notepage, &content)
+		answer, _ = displayContent(options, notepage, &content)
 	}
 
 	return 0, nil

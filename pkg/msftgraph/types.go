@@ -15,10 +15,9 @@ type Notebook struct {
 
 //Represents a section in a notebook
 type Section struct {
-	Name string `json:"displayName"`
-	ID   string `json:"id"`
-	//Need the pointer in runtime. It's not gonna be saved.
-	Notebook *Notebook
+	Name     string    `json:"displayName"`
+	ID       string    `json:"id"`
+	Notebook *Notebook `json:"parentNotebook"`
 }
 
 //Represents a section alias

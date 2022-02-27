@@ -93,7 +93,7 @@ func list() (_ int, err error) {
 		}
 
 		p.Section.Notebook = &n
-		answer, _ = displayContent(options, n, p, &content)
+		answer, _ = displayContent(options, p, &content)
 	}
 
 	return 0, nil
@@ -113,7 +113,7 @@ func askSection(n msftgraph.Notebook) (msftgraph.Section, error) {
 }
 
 //Returns the option index
-func displayContent(options []string, n msftgraph.Notebook, page msftgraph.NotePage, content *[]byte) (int, error) {
+func displayContent(options []string, page msftgraph.NotePage, content *[]byte) (int, error) {
 
 	options = append(options, "🌐 View it on web")
 	options = append(options, "📓 View it on Onenote client")
