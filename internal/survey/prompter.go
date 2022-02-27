@@ -166,7 +166,7 @@ outer:
 }
 
 //Asks title if the user is about to create an untitled note with the command
-//"cnote new <input-file>" (without the -title flag.)
+//"nnote new <input-file>" (without the -title flag.)
 func AskForgottenTitle() (string, error) {
 	var msg = "Did you forget to pass the title flag? Set it now: (Press <Enter> to skip.)"
 	return askSinglelineFreeText(msg)

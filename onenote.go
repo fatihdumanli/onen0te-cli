@@ -249,7 +249,7 @@ func SaveAlias(name string, notebook msftgraph.Notebook, section msftgraph.Secti
 	fmt.Println(style.Success(msg))
 	var infoMsg = "Now you can quickly add inline notes with the following command:"
 	fmt.Println(style.Info(infoMsg))
-	fmt.Println(fmt.Sprintf("$ cnote new -i \"inline text\" -a %s\n", name))
+	fmt.Println(fmt.Sprintf("$ nnote new -i \"inline text\" -a %s\n", name))
 	return nil
 }
 
@@ -344,7 +344,7 @@ func printAliasReminder(section string) {
 		if a.Section.Name == section {
 			var msg = fmt.Sprintf("Existing alias for the section '%s' is '%s'", section, a.Short)
 			fmt.Println(style.Reminder(msg))
-			fmt.Printf("$ cnote new -i \"inline text\" -a %s\n", a.Short)
+			fmt.Printf("$ nnote new -i \"inline text\" -a %s\n", a.Short)
 		}
 	}
 	fmt.Println()

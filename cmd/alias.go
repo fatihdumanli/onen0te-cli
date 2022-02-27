@@ -78,7 +78,7 @@ func newAlias() (int, error) {
 	//Check if there's already an alias for the section.
 	for _, a := range *aliasList {
 		if a.Section.ID == s.ID {
-			var warningMsg = fmt.Sprintf("There's already an alias for the section %s. Run cnote alias list to see the whole list.", s.Name)
+			var warningMsg = fmt.Sprintf("There's already an alias for the section %s. Run nnote alias list to see the whole list.", s.Name)
 			fmt.Println(style.Warning(warningMsg))
 			return 7, fmt.Errorf("another alias for the section already exists\n")
 		}

@@ -19,8 +19,8 @@ Please note that this is an unofficial onenote client and in order to use this a
 - Take notes on your favorite editor
 - Import contents of a file as a Onenote Page
 - Use aliases to quick access to your sections
-- [ ] Browse your notes
-- [ ] Search in notebooks
+- Browse in your notes
+- Search in notebooks
 
 # Installation 
 This tool is written in Go. Run the command below to install the Onenote CLI.
@@ -37,14 +37,17 @@ Feel free to change the **ClientId** and **TenantId** variables with yours [here
 [https://docs.microsoft.com/en-us/graph/auth-v2-user?context=graph%2Fapi%2F1.0&view=graph-rest-1.0#1-register-your-app](https://docs.microsoft.com/en-us/graph/auth-v2-user?context=graph/api/1.0&view=graph-rest-1.0#1-register-your-app)
 
 # Usage
-```bash
+```
+
 Usage:
   nnote [command]
 
 Available Commands:
   alias       add/list and remove alias
   browse      browse the pages within a onenote section
-  new         Create a new note
+  help        Help about any command
+  new         create a new note
+  search      do a search in your notes
 ```
 
 ## Creating a New Note
@@ -53,7 +56,7 @@ Use `new` command to take notes on your Onenote account. You can use the followi
 
 ### Usage
 
-```bash
+```
 Usage:
   nnote new [flags]
 
@@ -78,7 +81,7 @@ $ nnote new -i "taking inline notes are fun"
 **Example 2 - Taking an inline note using an alias**
 
 ```bash
-$ nnote new -i "aliases help you to save time" -a fooSection
+$ nnote new -i "aliases help you to save time" -a foo
 ```
 
 **Example 3 - Taking an inline note with a title**
@@ -100,7 +103,7 @@ Use `-f` flag to save the contents of a file as a Onenote page.
 
 
 ```bash
-$ cnote new -f /path/to/the/file.txt -t "it's recommended to speficy a title although it's not required!" -a barSection
+$ nnote new -f /path/to/the/file.txt -t "it's recommended to speficy a title although it's not required!" -a bar
 ```
 
 > NOTE: You'll be prompted to choose notebook and section if you don't specify `-a` flag.
@@ -158,11 +161,22 @@ $ nnote alias remove "asp.net"
 ```
 
 ## View your notes
-TODO: Update
-## Edit your notes
-TODO: Update
+
+Use `browse` command to browse in your notes. You can also view your notes in web browser, or Onenote desktop client.
+
+## Search in your notes
+
+Use `search` command to search in your notes. This command will perform a search in your all notesbooks and will prompt you to select one of the results to view the selected note. You can also view your notes in web browser, or Onenote desktop client.
+
+**Example**
+```
+$ nnote search "assigned to me"
+```
+
+# Thanks
 
 # Contribution
+
 # Licence
 
 
