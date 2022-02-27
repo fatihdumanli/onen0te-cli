@@ -39,6 +39,6 @@ jobs:
         with:
           version: latest
           args: release --rm-dist
-          workdir: ./cmd
+          workdir: ./cmd/nnote
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
