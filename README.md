@@ -4,8 +4,7 @@ A compact CLI tool to create/view the notes on your Onenote notebooks.
 
 ![Build Status](https://img.shields.io/github/workflow/status/fatihdumanli/onen0te-cli/Test)
 [![Build Status](https://dev.azure.com/fatihdumanli0884/onenote-cli/_apis/build/status/build-and-test?branchName=master)](https://dev.azure.com/fatihdumanli0884/onenote-cli/_build/latest?definitionId=24&branchName=master)
-![Build Status](https://img.shields.io/github/workflow/status/fatihdumanli/onen0te-cli/Test)
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/fatihdumanli/onen0te-cli)](https://goreportcard.com/report/github.com/fatihdumanli/onen0te-cli)
 
 
 ![preview](https://thumbs.gfycat.com/BasicJubilantBluebottle-size_restricted.gif)
