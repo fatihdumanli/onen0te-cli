@@ -24,7 +24,7 @@ type NotePage = msftgraph.NotePage
 
 var browseCmd = &cobra.Command{
 	Use:   "browse",
-	Short: "browse the pages within a onenote section",
+	Short: "browse through your notes - render content on termina",
 	RunE: func(c *cobra.Command, args []string) error {
 		var code, err = list()
 		os.Exit(code)
