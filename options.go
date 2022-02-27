@@ -4,7 +4,6 @@ import (
 	"github.com/fatihdumanli/onen0te-cli/internal/authentication"
 	"github.com/fatihdumanli/onen0te-cli/internal/config"
 	"github.com/fatihdumanli/onen0te-cli/pkg/oauthv2"
-	_ "github.com/joho/godotenv/autoload"
 )
 
 func getOptions() config.AppOptions {

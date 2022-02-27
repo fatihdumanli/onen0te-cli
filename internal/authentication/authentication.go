@@ -23,7 +23,6 @@ type Authenticator interface {
 }
 
 func AuthenticateUser(oauthClient *oauthv2.OAuthClient, opts config.AppOptions, storer storage.Storer) (oauthv2.OAuthToken, error) {
-
 	//If the user confirms to setup an account now we trigger the authentication process.
 	t, err := oauthClient.Authenticate(opts.OAuthParams)
 	if err != nil {
