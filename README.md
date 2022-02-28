@@ -21,6 +21,9 @@ Please bear in mind that this is an unofficial Onenote client and in order to us
 - Use aliases to quick access your sections
 - Browse in your notes
 - Search in notebooks
+- Display notes on the web browser
+- Display notes on the Onenote client
+
 
 # Installation 
 This tool is written in Go. Run the command below to install the Onenote CLI.
