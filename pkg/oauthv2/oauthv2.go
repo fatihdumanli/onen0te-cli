@@ -15,19 +15,6 @@ import (
 	errors "github.com/pkg/errors"
 )
 
-/*
-NOTE
-Go uses parameters of pointer type to indicate that a parameter might be modified by the function.
-The same rules apply for method receivers, too.
-
---> If your method modifies the receiver, you must use a pointer receiver
---> If your method needs to handle nil instances, then it must use a pointer receiver
---> If your method doesn't modify the receiver you can use a value receiver.
-
-
-notice that if we had used a value receiver, there wouldn't be a way to mutate the receiver...
-however, we don't need  to modify the receiver within this method.
-*/
 func (t *OAuthToken) IsExpired() bool {
 	return time.Now().After(t.ExpiresAt)
 }
@@ -74,12 +61,6 @@ func (o *OAuthClient) RefreshToken(p OAuthParams, refreshToken string) (OAuthTok
 	return newToken, nil
 }
 
-/*
-NOTE
-Rather than returning a pointer set to nil,
-Use comma ok idiom
-return a boolean and a value type
-*/
 func (o *OAuthClient) Authenticate(p OAuthParams) (OAuthToken, error) {
 
 	var token *OAuthToken
