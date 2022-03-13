@@ -26,6 +26,9 @@ func getOptions() config.AppOptions {
 		ClientId:      msGraphOptions.ClientId,
 	}
 
+	//need for 'ReservedKeys':
+	//the user mustn't be allowed to create an alias with any of the reserved keys.
+	//as aliases and reserved keys share the same storage
 	return config.AppOptions{
 		OAuthParams:  oauthParams,
 		ReservedKeys: []string{authentication.TOKEN_KEY},
