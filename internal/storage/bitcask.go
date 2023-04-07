@@ -8,12 +8,12 @@ import (
 	errors "github.com/pkg/errors"
 )
 
-type Bitcask struct{}
+type Bitcask struct{ Path string }
 
 //Get the value of the given key.
 func (b *Bitcask) Get(key string, obj interface{}) error {
 	//TODO: return an error if the obj is not a ptr type
-	var db, closer, err = openBitcaskDb()
+	var db, closer, err = b.openBitcaskDb()
 	defer closer()
 	if err != nil {
 		return errors.Wrap(err, "couldn't open bitcask db")
@@ -35,7 +35,7 @@ func (b *Bitcask) Get(key string, obj interface{}) error {
 //Save a key-value pair to the local storage
 func (b *Bitcask) Set(key string, val interface{}) error {
 
-	var db, closer, err = openBitcaskDb()
+	var db, closer, err = b.openBitcaskDb()
 	defer closer()
 	if err != nil {
 		return errors.Wrap(err, "couldn't open bitcask db")
@@ -55,7 +55,7 @@ func (b *Bitcask) Set(key string, val interface{}) error {
 
 //Remove the given key
 func (b *Bitcask) Remove(key string) error {
-	var db, closer, err = openBitcaskDb()
+	var db, closer, err = b.openBitcaskDb()
 	defer closer()
 	if err != nil {
 		return errors.Wrap(err, "couldn't open bitcask db")
@@ -74,7 +74,7 @@ func (b *Bitcask) Remove(key string) error {
 }
 
 func (b *Bitcask) GetKeys() (*[]string, error) {
-	var db, closer, err = openBitcaskDb()
+	var db, closer, err = b.openBitcaskDb()
 	var keys []string
 	defer closer()
 	if err != nil {
@@ -90,8 +90,8 @@ func (b *Bitcask) GetKeys() (*[]string, error) {
 	return &keys, nil
 }
 
-func openBitcaskDb() (*bitcask.Bitcask, func() error, error) {
-	db, err := bitcask.Open("/tmp/nnote")
+func (b *Bitcask) openBitcaskDb() (*bitcask.Bitcask, func() error, error) {
+	db, err := bitcask.Open(b.Path)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "couldn't open bitcask db")
 	}
