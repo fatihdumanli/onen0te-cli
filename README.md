@@ -7,7 +7,7 @@ create & view onenote notes on terminal.
 [![Go Report Card](https://goreportcard.com/badge/github.com/fatihdumanli/onen0te-cli)](https://goreportcard.com/report/github.com/fatihdumanli/onen0te-cli)
 
 
-![preview](https://thumbs.gfycat.com/BasicJubilantBluebottle-size_restricted.gif)
+![onenote](https://github.com/fatihdumanli/onen0te-cli/assets/7475244/9f05d75a-9f75-4fc0-a913-8e5d71956a44)
 
 # What is it?
 This tool (will be referenced as 'nnote') is used to view & create onenote pages on the terminal using Microsoft Graph APIs. 
@@ -92,7 +92,7 @@ $ nnote new -i "aliases help you to save time" -a foo
 $ nnote new -i "titles makes it easy to locate your notes!" -t "this is crazy important note!"
 ``` 
 
-![take an inline note](https://thumbs.gfycat.com/WeirdJealousJaeger-size_restricted.gif)
+![save-inline](https://github.com/fatihdumanli/onen0te-cli/assets/7475244/e4484166-525b-4dfe-be60-dd366e5b4901)
 
 <br/>
 
@@ -104,7 +104,7 @@ $ nnote new
 ```
 You'll be prompted to choose the notebook and section to which the note will be uploaded right after quitting the editor.
 
-![browse in notes](https://thumbs.gfycat.com/ImpressiveRemoteFerret-size_restricted.gif)
+![new-editor](https://github.com/fatihdumanli/onen0te-cli/assets/7475244/43828c4f-7bba-4e5a-8a97-80711a233de8)
 
 <br/>
 
@@ -128,7 +128,7 @@ You can navigate between your OneNote section/pages while displaying note conten
 $ nnote browse
 ```
 
-![browse in notes](https://thumbs.gfycat.com/SpanishPracticalBluejay-size_restricted.gif)
+![browse](https://github.com/fatihdumanli/onen0te-cli/assets/7475244/89afdc76-942d-43ef-a5a2-3166840280b2)
 
 
 ## Search in your notes
@@ -140,7 +140,7 @@ Use the `search` command to search in your notes. This command will perform a se
 $ nnote search "redis"
 ```
 
-![search in notes](https://thumbs.gfycat.com/ImpoliteEquatorialBlackandtancoonhound-size_restricted.gif)
+![search-in-notes](https://github.com/fatihdumanli/onen0te-cli/assets/7475244/1b240126-4cbb-43fe-943b-61fd7bd75be6)
 
 ## Aliases
 It's recommended you to tag your sections with aliases. It'll facilitate the process of taking a new note as you'll be skipping time-consuming HTTP requests to fetch your notebooks and sections.
