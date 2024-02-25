@@ -13,6 +13,7 @@ type Notebook = msftgraph.Notebook
 type Section = msftgraph.Section
 
 func Test_GetAlias(t *testing.T) {
+	Init(Options{CachePath: "/tmp/onenote_test"})
 	data := []struct {
 		name           string
 		expectedAlias  Alias

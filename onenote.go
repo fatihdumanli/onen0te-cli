@@ -18,6 +18,10 @@ import (
 	"github.com/pterm/pterm"
 )
 
+type Options struct {
+	CachePath string
+}
+
 type onenote struct {
 	storage     storage.Storer
 	auth        authentication.Authenticator
@@ -353,10 +357,11 @@ func printAliasReminder(section string) {
 	fmt.Println()
 }
 
-//Grab the token from the local storage upon startup
-func init() {
+func Init(options Options) {
+	//Grab the token from the local storage upon startup
 	api := msftgraph.NewApi(&rest.RestClient{}, "https://graph.microsoft.com/v1.0")
-	bitcask := &storage.Bitcask{}
+	// Set path: TODO
+	bitcask := &storage.Bitcask{Path: options.CachePath}
 	root = onenote{api: api, storage: bitcask}
 	root.token = &oauthv2.OAuthToken{}
 	root.oauthClient = oauthv2.NewOAuthClient(&rest.RestClient{})
@@ -366,4 +371,5 @@ func init() {
 		//token does not exist on the local storage
 		root.token = nil
 	}
+
 }
